@@ -1,4 +1,4 @@
-# Tox Reference Implementation for Java
+# ToxClient in Java for Linux [Minimal working Example]
 
 Build Status
 =
