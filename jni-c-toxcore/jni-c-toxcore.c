@@ -861,10 +861,28 @@ void friend_message_cb(Tox *tox, uint32_t friend_number, TOX_MESSAGE_TYPE type, 
 
 void friend_lossy_packet_cb(Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length, void *user_data)	
 {
+	JNIEnv *jnienv2;
+	jnienv2 = jni_getenv();
+
+	jbyteArray jbyte_data = (*jnienv2)->NewByteArray(jnienv2, (int)length);
+	(*jnienv2)->SetByteArrayRegion(jnienv2, jbyte_data, 0, (int)length, (const jbyte*)data);
+
+	// call java method here and send "jbyte_data"
+	// (*jnienv2)->CallStaticVoidMethod(jnienv2, MainActivity, xxx_method, jbyte_data);
+	(*jnienv2)->DeleteLocalRef(jnienv2, jbyte_data);
 }
 
 void friend_lossless_packet_cb(Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length, void *user_data)
 {
+	JNIEnv *jnienv2;
+	jnienv2 = jni_getenv();
+
+	jbyteArray jbyte_data = (*jnienv2)->NewByteArray(jnienv2, (int)length);
+	(*jnienv2)->SetByteArrayRegion(jnienv2, jbyte_data, 0, (int)length, (const jbyte*)data);
+
+	// call java method here and send "jbyte_data"
+	// (*jnienv2)->CallStaticVoidMethod(jnienv2, MainActivity, xxx_method, jbyte_data);
+	(*jnienv2)->DeleteLocalRef(jnienv2, jbyte_data);
 }
 
 void android_tox_callback_file_recv_control_cb(uint32_t friend_number, uint32_t file_number, TOX_FILE_CONTROL control)
