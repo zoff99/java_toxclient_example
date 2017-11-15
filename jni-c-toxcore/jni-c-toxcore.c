@@ -2023,6 +2023,40 @@ Java_com_zoffcc_applications_trifa_MainActivity_jnictoxcore_1version(JNIEnv* env
 }
 
 
+JNIEXPORT jint JNICALL
+Java_com_zoffcc_applications_trifa_MainActivity_tox_1friend_1send_1lossy_1packet(JNIEnv* env, jobject thiz, jlong friend_number, jobject data_buffer, jlong data_length)
+{
+	uint8_t *data_buffer_c = NULL;
+
+	if (data_buffer != NULL)
+	{
+		data_buffer_c = (uint8_t*)(*env)->GetDirectBufferAddress(env, data_buffer);
+		// capacity_data = (*env)->GetDirectBufferCapacity(env, data_buffer);
+	}
+
+	TOX_ERR_FRIEND_CUSTOM_PACKET error;
+	bool res = tox_friend_send_lossy_packet(tox_global, (uint32_t)friend_number, data_buffer_c, (size_t)data_length, &error);
+	return (jint)res;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_zoffcc_applications_trifa_MainActivity_tox_1friend_1send_1lossless_1packet(JNIEnv* env, jobject thiz, jlong friend_number, jobject data_buffer, jlong data_length)
+{
+	uint8_t *data_buffer_c = NULL;
+
+	if (data_buffer != NULL)
+	{
+		data_buffer_c = (uint8_t*)(*env)->GetDirectBufferAddress(env, data_buffer);
+		// capacity_data = (*env)->GetDirectBufferCapacity(env, data_buffer);
+	}
+
+	TOX_ERR_FRIEND_CUSTOM_PACKET error;
+	bool res = tox_friend_send_lossless_packet(tox_global, (uint32_t)friend_number, data_buffer_c, (size_t)data_length, &error);
+	return (jint)res;
+}
+
+
+
 JNIEXPORT jlong JNICALL
 Java_com_zoffcc_applications_trifa_MainActivity_tox_1friend_1send_1message(JNIEnv* env, jobject thiz, jlong friend_number, jint type, jobject message)
 {
