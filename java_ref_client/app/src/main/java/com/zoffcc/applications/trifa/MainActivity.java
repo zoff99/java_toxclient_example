@@ -56,7 +56,8 @@ public class MainActivity
     {
         public static void i(String tag, String message)
         {
-            System.out.println("" + tag + ":" + message + "\n");
+            message = message.replace("\r","").replace("\n","");
+            System.out.println("" + tag + ":" + message + "");
         }
     }
 
