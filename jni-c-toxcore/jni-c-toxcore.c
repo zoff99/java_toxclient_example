@@ -572,6 +572,8 @@ void init_tox_callbacks()
 	tox_callback_friend_read_receipt(tox_global, friend_read_receipt_cb);
 	tox_callback_friend_request(tox_global, friend_request_cb);
 	tox_callback_friend_message(tox_global, friend_message_cb);
+	tox_callback_friend_lossy_packet(tox_global, friend_lossy_packet_cb);
+	tox_callback_friend_lossless_packet(tox_global, friend_lossless_packet_cb);
 
 	tox_callback_file_recv_control(tox_global, file_recv_control_cb);
 	tox_callback_file_chunk_request(tox_global, file_chunk_request_cb);
@@ -582,9 +584,6 @@ void init_tox_callbacks()
 	tox_callback_conference_message(tox_global, conference_message_cb);
 	tox_callback_conference_title(tox_global, conference_title_cb);
 	tox_callback_conference_namelist_change(tox_global, conference_namelist_change_cb);
-
-	// tox_callback_friend_lossy_packet(tox_global, friend_lossy_packet_cb);
-	// tox_callback_friend_lossless_packet(tox_global, friend_lossless_packet_cb);
 	// -------- _callbacks_ --------
 }
 
@@ -856,6 +855,14 @@ void android_tox_callback_friend_message_cb(uint32_t friend_number, TOX_MESSAGE_
 void friend_message_cb(Tox *tox, uint32_t friend_number, TOX_MESSAGE_TYPE type, const uint8_t *message, size_t length, void *user_data)
 {
 	android_tox_callback_friend_message_cb(friend_number, type, message, length);
+}
+
+void friend_lossy_packet_cb(Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length, void *user_data)	
+{
+}
+
+void friend_lossless_packet_cb(Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length, void *user_data)
+{
 }
 
 void android_tox_callback_file_recv_control_cb(uint32_t friend_number, uint32_t file_number, TOX_FILE_CONTROL control)
