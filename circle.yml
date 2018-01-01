@@ -29,8 +29,11 @@ machine:
     # c-toxcore v0.1.4  27a97a8280813ec05a5209811c40ab23203bb292
     # c-toxcore v0.1.3  fdb46f6cf216a866d29402ae991be9c43282dde6
     # ---------------------------------------------------
-    # c-toxcore v0.1.9
-    CTOXCORE_VERSION_HASH: 6295d28a1ec00d1caa03adce8fac6baf456ca7da
+    # c-toxcore version used
+    CTOXCORE_VERSION_HASH: "zoff99/_0.1.10_2017_video_fix_07a"
+    # c-toxcore repo used
+    # CTOXCORE_URL: "https://github.com/TokTok/c-toxcore"
+    CTOXCORE_URL: "https://github.com/zoff99/c-toxcore"
     LIBSODIUM_VERSION: "tags/1.0.13"
     LIBSODIUM_BRANCH: "1.0.13"
     RASPBERRRY_TOOLS_HASH: d820ab9c21969013b4e56c7e9cba25518afcdd44
@@ -63,7 +66,7 @@ dependencies:
     - git submodule add --force https://github.com/jedisct1/libsodium libsodium ; echo ok
     - git submodule init ; git submodule update ; echo ok
     # -- sometimes submodule can't find commit hash, whatever ------
-    - rm -Rf c-toxcore ; git clone https://github.com/TokTok/c-toxcore
+    - rm -Rf c-toxcore ; git clone "$CTOXCORE_URL"
     # -- sometimes submodule can't find commit hash, whatever ------
     - cd c-toxcore/ ; git checkout $CTOXCORE_VERSION_HASH
     - cd libsodium/ ; git checkout $LIBSODIUM_VERSION
@@ -169,7 +172,7 @@ dependencies:
     - . ~/pp;cd "$_SYSROOT_" ; tar -xzvf ~/pkg1.tgz
     # install raspi binary pkgs -------------------------
 
-    - . ~/pp;cd $_s_;git clone https://github.com/TokTok/c-toxcore
+    - . ~/pp;cd $_s_;git clone "$CTOXCORE_URL"
     - . ~/pp;cd $_s_/c-toxcore/;git checkout $CTOXCORE_VERSION_HASH
     - . ~/pp;cd $_s_/c-toxcore/;./autogen.sh
     - . ~/pp;~/do_compile.sh "c-toxcore" --prefix="$_SYSROOT_"/usr --enable-logging --disable-soname-versions --host="$_TOOL_PREFIX" --with-sysroot="$_SYSROOT_" --disable-testing --disable-rt
