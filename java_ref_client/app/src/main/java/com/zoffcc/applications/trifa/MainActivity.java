@@ -353,6 +353,7 @@ public class MainActivity
 
     static void android_tox_callback_self_connection_status_cb_method(int a_TOX_CONNECTION)
     {
+		Log.i(TAG, "self_connection_status:status:" + a_TOX_CONNECTION);
     }
 
     static void android_tox_callback_friend_name_cb_method(long friend_number, String friend_name, long length)
@@ -373,6 +374,7 @@ public class MainActivity
 
     static void android_tox_callback_friend_connection_status_cb_method(long friend_number, int a_TOX_CONNECTION)
     {
+		Log.i(TAG, "friend_connection_status:friend:" + friend_number + " status:" + a_TOX_CONNECTION);
     }
 
     static void android_tox_callback_friend_typing_cb_method(long friend_number, final int typing)
@@ -390,6 +392,8 @@ public class MainActivity
 
         final String friend_public_key__final = friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
 		long friendnum = tox_friend_add_norequest(friend_public_key__final);
+
+        MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
     }
 
     static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length)
@@ -399,6 +403,7 @@ public class MainActivity
 
     static void android_tox_callback_friend_message_v2_cb_method(long friend_number, String friend_message, long length, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length)
     {
+		Log.i(TAG, "friend_message_v2:friendnum:" + friend_number + " message:" + friend_message);
     }
 
     static void android_tox_callback_friend_sync_message_v2_cb_method(long friend_number, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length, byte[] raw_data, long raw_data_length)

@@ -39,12 +39,7 @@ for system_to_build_for in $build_for ; do
 pkgs_Ubuntu_18_04="
     :u:
     ca-certificates
-    shtool
-    patch
-    bzip2
-    vim
     libconfig-dev
-    cmake
     wget
     unzip
     zip
@@ -79,11 +74,6 @@ pkgs_Ubuntu_16_04="
     libfuse-dev
     libfuse2
     ca-certificates
-    shtool
-    elfutils
-    patch
-    bzip2
-    vim
     libconfig-dev
     cmake
     wget
