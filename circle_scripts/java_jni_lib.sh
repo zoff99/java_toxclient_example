@@ -144,13 +144,13 @@ $_INST_/lib/libtoxencryptsave.a \
 -lpthread \
 -lm \
 -ldl \
--Wl,-soname,libjni-c-toxcore.so -o libjni-c-toxcore.so
+-Wl,-soname,libjni-c-toxcore.so -o libjni-c-toxcore.so || exit 1
 
 
-ls -al libjni-c-toxcore.so
+ls -al libjni-c-toxcore.so || exit 1
 pwd
 file libjni-c-toxcore.so
-cp -av libjni-c-toxcore.so /workspace/data/java_ref_client/app/src/main/java/
+cp -av libjni-c-toxcore.so /workspace/data/java_ref_client/app/src/main/java/ || exit 1
 
 # -------------- now compile the JNI lib ----------------------
 
@@ -162,7 +162,7 @@ javac com/zoffcc/applications/trifa/MainActivity.java
 javac com/zoffcc/applications/trifa/TrifaToxService.java
 # --------- package java example ---------
 cd /workspace/data/java_ref_client/app/src/main/java/
-# tar -cvf $CIRCLE_ARTIFACTS/ubuntu_14_04_binaries/install_linux.tar com *.sh *.so
+tar -cvf /artefacts/install_linux.tar com *.sh *.so
 # --------- run test java application ---------
 java -Djava.library.path="." com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
 # --------- run test java application ---------
@@ -172,6 +172,6 @@ cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 4
 sleep 10
 sleep 240
 cat ./trifa.log
-cp -v ./trifa.log $CIRCLE_ARTIFACTS/ ; exit 0
+cp -v ./trifa.log /artefacts/ ; exit 0
 
 

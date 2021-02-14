@@ -31,6 +31,8 @@ jobs:
             libcurl4-gnutls-dev
             openjdk-11-jdk
             coreutils
+            gdb
+            nano
 
       - checkout
       #- restore_cache:
