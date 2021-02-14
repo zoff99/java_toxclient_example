@@ -78,7 +78,7 @@ public class TrifaToxService
                 if (!old_is_tox_started)
                 {
                     MainActivity.init_tox_callbacks();
-                    MainActivity.update_savedata_file();
+                    MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
                 }
                 // ------ correct startup order ------
 
@@ -110,7 +110,7 @@ public class TrifaToxService
                 }
                 Log.i(TAG, "AAA:011");
 
-                MainActivity.update_savedata_file();
+                MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
 
                 MainActivity.friends = MainActivity.tox_self_get_friend_list();
                 Log.i(TAG, "loading_friend:number_of_friends=" + MainActivity.friends.length);
@@ -133,29 +133,15 @@ public class TrifaToxService
                     Log.i(TAG, "bootrapping:set to true");
 
                     // ----- UDP ------
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("178.62.250.138", 33445, "788236D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("nodes.tox.chat", 33445, "6FC41E2BD381D37E9748FC0E0328CE086AF9598BECC8FEB7DDF2E440475F300E"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("130.133.110.14", 33445, "461FA3776EF0FA655F1A05477DF1B3B614F7D6B124F7DB1DD4FE3C08B03B640F"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("tox.zodiaclabs.org", 33445, "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("163.172.136.118", 33445, "2C289F9F37C20D09DA83565588BF496FAB3764853FA38141817A72E3F18ACA0B"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("217.182.143.254", 443, "7AED21F94D82B05774F697B209628CD5A9AD17E0C073D9329076A4C28ED28147"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("185.14.30.213", 443, "2555763C8C460495B14157D234DD56B86300A2395554BCAE4621AC345B8C1B1B"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("136.243.141.187", 443, "6EE1FADE9F55CC7938234CC07C864081FC606D8FE7B751EDA217F268F1078A39"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("128.199.199.197", 33445, "B05C8869DBB4EDDD308F43C1A974A20A725A36EACCA123862FDE9945BF9D3E09"));
-                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("biribiri.org", 33445, "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67"));
+                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("tox.verdict.gg", 33445, "1C5293AEF2114717547B39DA8EA6F1E331E5E358B35F9B6B5F19317911C5F976"));
+                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("tox.initramfs.io", 33445, "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25"));
+                    Log.i(TAG, "bootstrap_single:res=" + MainActivity.bootstrap_single_wrapper("205.185.115.131", 53, "3091C6BEB2A993F1C6300C16549FABA67098FF3D62C6D253828B531470B53D68"));
                     // ----- UDP ------
                     //
                     // ----- TCP ------
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("178.62.250.138", 33445, "788236D34978D1D5BD822F0A5BEBD2C53C64CC31CD3149350EE27D4D9A2F9B6B"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("nodes.tox.chat", 33445, "6FC41E2BD381D37E9748FC0E0328CE086AF9598BECC8FEB7DDF2E440475F300E"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("130.133.110.14", 33445, "461FA3776EF0FA655F1A05477DF1B3B614F7D6B124F7DB1DD4FE3C08B03B640F"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("tox.zodiaclabs.org", 33445, "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("163.172.136.118", 33445, "2C289F9F37C20D09DA83565588BF496FAB3764853FA38141817A72E3F18ACA0B"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("217.182.143.254", 443, "7AED21F94D82B05774F697B209628CD5A9AD17E0C073D9329076A4C28ED28147"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("185.14.30.213", 443, "2555763C8C460495B14157D234DD56B86300A2395554BCAE4621AC345B8C1B1B"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("136.243.141.187", 443, "6EE1FADE9F55CC7938234CC07C864081FC606D8FE7B751EDA217F268F1078A39"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("128.199.199.197", 33445, "B05C8869DBB4EDDD308F43C1A974A20A725A36EACCA123862FDE9945BF9D3E09"));
-                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("biribiri.org", 33445, "F404ABAA1C99A9D37D61AB54898F56793E1DEF8BD46B1038B9D822E8460FAB67"));
+                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("tox.verdict.gg", 33445, "1C5293AEF2114717547B39DA8EA6F1E331E5E358B35F9B6B5F19317911C5F976"));
+                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("tox.initramfs.io", 33445, "3F0A45A268367C1BEA652F258C85F4A66DA76BCAA667A49E770BCC4917AB6A25"));
+                    Log.i(TAG, "add_tcp_relay_single:res=" + MainActivity.add_tcp_relay_single_wrapper("205.185.115.131", 443, "3091C6BEB2A993F1C6300C16549FABA67098FF3D62C6D253828B531470B53D68"));
                     // ----- TCP ------
                 }
 

@@ -1,6 +1,6 @@
 /**
  * [TRIfA], Java part of Tox Reference Implementation for Android
- * Copyright (C) 2017 Zoff <zoff@zoff.cc>
+ * Copyright (C) 2017 - 2021 Zoff <zoff@zoff.cc>
  * <p>
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ package com.zoffcc.applications.trifa;
 //  ==================================================
 
 
-
+import java.util.concurrent.Semaphore;
 
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -36,6 +36,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 public class MainActivity
 {
     private static final String TAG = "trifa.MainActivity";
+    private static final String Version = "1.0.1";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -51,6 +52,8 @@ public class MainActivity
     static boolean native_lib_loaded = false;
     static long[] friends = null;
 	static String app_files_directory = "./";
+    static String password_hash = "pass";
+    static Semaphore semaphore_tox_savedata = new Semaphore(1);
 
     static class Log
     {
@@ -64,7 +67,7 @@ public class MainActivity
     public static void main(String[] args)
     {
         // Prints "Hello, World" in the terminal window.
-        System.out.println("Hello, World");
+        System.out.println("Version:" + Version);
 
         TrifaToxService.TOX_SERVICE_STARTED = false;
         bootstrapping = false;
@@ -82,12 +85,26 @@ public class MainActivity
 			int PREF__orbot_enabled_to_int = 0;
 			String ORBOT_PROXY_HOST = "";
 			long ORBOT_PROXY_PORT = 0;
+            int PREF__local_discovery_enabled = 1;
+            int PREF__ipv6_enabled = 1;
+            int PREF__force_udp_only = 0;
+
 			app_files_directory = "./";
-			init(app_files_directory, PREF__udp_enabled, PREF__orbot_enabled_to_int, ORBOT_PROXY_HOST, ORBOT_PROXY_PORT);
+
+			init(app_files_directory,
+            PREF__udp_enabled,
+                PREF__local_discovery_enabled,
+                PREF__orbot_enabled_to_int,
+                ORBOT_PROXY_HOST,
+                ORBOT_PROXY_PORT,
+                password_hash,
+                PREF__ipv6_enabled,
+                PREF__force_udp_only);
             tox_service_fg.tox_thread_start_fg();
         }
 
-
+        String my_tox_id_temp = get_my_toxid();
+        Log.i(TAG, "MyToxID:" + my_tox_id_temp);
     }
 
 
@@ -111,9 +128,10 @@ public class MainActivity
     // -------- native methods --------
     // -------- native methods --------
     // -------- native methods --------
-    public static native void init(String data_dir, int udp_enabled, int orbot_enabled, String orbot_host, long orbot_port);
+    public static native void init(String data_dir, int udp_enabled, int local_discovery_enabled, int orbot_enabled,
+            String orbot_host, long orbot_port, String tox_encrypt_passphrase_hash, int enable_ipv6, int force_udp_only_mode);
 
-    public static native void update_savedata_file();
+    public static native void update_savedata_file(String tox_encrypt_passphrase_hash);
 
     public static native String get_my_toxid();
 
@@ -304,6 +322,25 @@ public class MainActivity
     {
     }
 
+    static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
+    {
+    }
+
+    static void android_toxav_callback_video_receive_frame_h264_cb_method(long friend_number, long buf_size)
+    {
+    }
+
+    static void android_toxav_callback_audio_receive_frame_pts_cb_method(long friend_number, long sample_count, int channels, long sampling_rate, long pts)
+    {
+    }
+
+    static void android_toxav_callback_group_audio_receive_frame_cb_method(long conference_number, long peer_number, long sample_count, int channels, long sampling_rate)
+    {
+    }
+
+    static void android_toxav_callback_call_comm_cb_method(long friend_number, long a_TOXAV_CALL_COMM_INFO, long comm_number)
+    {
+    }
 
     // -------- called by AV native methods --------
     // -------- called by AV native methods --------
@@ -323,6 +360,10 @@ public class MainActivity
     }
 
     static void android_tox_callback_friend_status_message_cb_method(long friend_number, String status_message, long length)
+    {
+    }
+
+    static void android_tox_callback_friend_lossless_packet_cb_method(long friend_number, byte[] data, long length)
     {
     }
 
@@ -356,6 +397,18 @@ public class MainActivity
 		Log.i(TAG, "friend_message:friendnum:" + friend_number + " message:" + friend_message);
     }
 
+    static void android_tox_callback_friend_message_v2_cb_method(long friend_number, String friend_message, long length, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length)
+    {
+    }
+
+    static void android_tox_callback_friend_sync_message_v2_cb_method(long friend_number, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length, byte[] raw_data, long raw_data_length)
+    {
+    }
+
+    static void android_tox_callback_friend_read_receipt_message_v2_cb_method(final long friend_number, long ts_sec, byte[] msg_id)
+    {
+    }
+
     static void android_tox_callback_file_recv_control_cb_method(long friend_number, long file_number, int a_TOX_FILE_CONTROL)
     {
     }
@@ -376,7 +429,8 @@ public class MainActivity
     {
         if (CTOXCORE_NATIVE_LOGGING)
         {
-            Log.i(TAG, "C-TOXCORE:" + ToxVars.TOX_LOG_LEVEL.value_str(a_TOX_LOG_LEVEL) + ":file=" + file + ":linenum=" + line + ":func=" + function + ":msg=" + message);
+            Log.i(TAG, "C-TOXCORE:" + ToxVars.TOX_LOG_LEVEL.value_str(a_TOX_LOG_LEVEL) + ":file=" + file + ":linenum=" +
+                       line + ":func=" + function + ":msg=" + message);
         }
     }
 
@@ -392,6 +446,9 @@ public class MainActivity
     {
     }
 
+    static void android_tox_callback_conference_connected_cb_method(long conference_number)
+    {
+    }
 
     static void android_tox_callback_conference_message_cb_method(long conference_number, long peer_number, int a_TOX_MESSAGE_TYPE, String message, long length)
     {
@@ -401,6 +458,13 @@ public class MainActivity
     {
     }
 
+    static void android_tox_callback_conference_peer_name_cb_method(long conference_number, long peer_number, String name, long name_length)
+    {
+    }
+
+    static void android_tox_callback_conference_peer_list_changed_cb_method(long conference_number)
+    {
+    }
 
     static void android_tox_callback_conference_namelist_change_cb_method(long conference_number, long peer_number, int a_TOX_CONFERENCE_STATE_CHANGE)
     {
@@ -410,6 +474,24 @@ public class MainActivity
     // -------- called by native Conference methods --------
     // -------- called by native Conference methods --------
 
+    static void update_savedata_file_wrapper(String password_hash_2)
+    {
+        try
+        {
+            MainActivity.semaphore_tox_savedata.acquire();
+            long start_timestamp = System.currentTimeMillis();
+            MainActivity.update_savedata_file(password_hash_2);
+            long end_timestamp = System.currentTimeMillis();
+            MainActivity.semaphore_tox_savedata.release();
+            Log.i(TAG,
+                  "update_savedata_file() took:" + (((float) (end_timestamp - start_timestamp)) / 1000f) + "s");
+        }
+        catch (InterruptedException e)
+        {
+            MainActivity.semaphore_tox_savedata.release();
+            e.printStackTrace();
+        }
+    }
 
     static int add_tcp_relay_single_wrapper(String ip, long port, String key_hex)
     {
