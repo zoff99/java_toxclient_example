@@ -229,6 +229,8 @@ $C_FLAGS $CXX_FLAGS $LD_FLAGS \
 -L/usr/local/lib \
 -I/usr/local/include/ \
 jni-c-toxcore.c \
+coffeecatch.c \
+coffeejni.c \
 -Wl,-whole-archive \
 $_INST_/lib/libtoxcore.a \
 $_INST_/lib/libtoxav.a \
@@ -239,7 +241,7 @@ $_INST_/lib/libx264.a \
 $_INST_/lib/libavcodec.a \
 $_INST_/lib/libavutil.a \
 $_INST_/lib/libsodium.a \
--Wl,-no-whole-archive
+-Wl,-no-whole-archive \
 -lpthread -shared \
 -lm \
 -ldl \
