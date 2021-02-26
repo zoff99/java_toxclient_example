@@ -22,6 +22,7 @@ package com.zoffcc.applications.trifa;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class HelperGeneric
@@ -46,7 +47,7 @@ public class HelperGeneric
             String ret = null;
             Statement statement = sqldb.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "select key, value from TRIFADatabaseGlobalsNew where key='" + key + "'");
+                    "select key, value from TRIFADatabaseGlobalsNew where key='" + s(key) + "'");
             if (rs.next())
             {
                 ret = rs.getString("value");
@@ -72,8 +73,8 @@ public class HelperGeneric
             try
             {
                 Statement statement = sqldb.createStatement();
-                statement.execute("insert into TRIFADatabaseGlobalsNew (key, value) values('" + g_opts.key + "', '" +
-                                  g_opts.value + "')");
+                statement.execute("insert into TRIFADatabaseGlobalsNew (key, value) values('" + s(g_opts.key) + "', '" +
+                                  s(g_opts.value) + "')");
                 Log.i(TAG, "set_g_opts:(INSERT):key=" + key + " value=" + g_opts.value);
             }
             catch (Exception e)
@@ -82,8 +83,8 @@ public class HelperGeneric
                 {
                     Statement statement = sqldb.createStatement();
                     statement.executeUpdate(
-                            "update TRIFADatabaseGlobalsNew set key='" + g_opts.key + "' where value='" + g_opts.value +
-                            "'");
+                            "update TRIFADatabaseGlobalsNew set key='" + s(g_opts.key) + "' where value='" +
+                            s(g_opts.value) + "'");
 
                     Log.i(TAG, "set_g_opts:(UPDATE):key=" + key + " value=" + g_opts.value);
                 }

@@ -19,15 +19,6 @@
 
 package com.zoffcc.applications.trifa;
 
-//  ==================================================
-//  compile with:
-//   javac com/zoffcc/applications/trifa/MainActivity.java
-//   javac com/zoffcc/applications/trifa/ToxVars.java
-//   javac com/zoffcc/applications/trifa/TRIFAGlobals.java
-//   javac com/zoffcc/applications/trifa/TrifaToxService.java
-//  ==================================================
-
-
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -35,6 +26,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 import javax.swing.BoxLayout;
@@ -46,6 +39,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 
@@ -76,13 +70,26 @@ public class MainActivity extends JFrame
     static JFrame MainFrame = null;
 
     static JSplitPane splitPane;
-    static JPanel FriendPanel;
+    static FriendListFragmentJ FriendPanel;
     static JPanel MessagePanel;
     static JScrollPane MessageScrollPane;
     static JTextArea MessageTextArea;
     static JPanel MessageTextInputPanel;
     static JTextField sendTextField;
     static JButton sendButton;
+
+    // ---- lookup cache ----
+    static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
+    static Map<Long, String> cache_fnum_pubkey = new HashMap<Long, String>();
+    static Map<String, String> cache_peernum_pubkey = new HashMap<String, String>();
+    // static Map<String, String> cache_peername_pubkey = new HashMap<String, String>();
+    static Map<String, String> cache_peername_pubkey2 = new HashMap<String, String>();
+    static Map<String, Long> cache_confid_confnum = new HashMap<String, Long>();
+    // ---- lookup cache ----
+
+    // ---- lookup cache for conference drawer ----
+    static Map<String, Long> lookup_peer_listnum_pubkey = new HashMap<String, Long>();
+    // ---- lookup cache for conference drawer ----
 
     static class Log
     {
@@ -91,6 +98,31 @@ public class MainActivity extends JFrame
             message = message.replace("\r", "").replace("\n", "");
             System.out.println("" + tag + ":" + message + "");
         }
+    }
+
+    /* escape to prevent SQL injection, very basic and bad! */
+    public static String s(String str)
+    {
+        // TODO: bad!! use prepared statements
+        String data = "";
+
+        if (str == null || str.length() == 0)
+        {
+            return "";
+        }
+
+        if (str != null && str.length() > 0)
+        {
+            str = str.replace("\\", "\\\\");
+            str = str.replace("'", "\\'");
+            str = str.replace("\0", "\\0");
+            str = str.replace("\n", "\\n");
+            str = str.replace("\r", "\\r");
+            str = str.replace("\"", "\\\"");
+            str = str.replace("\\x1a", "\\Z");
+            data = str;
+        }
+        return data;
     }
 
     public MainActivity()
@@ -104,7 +136,7 @@ public class MainActivity extends JFrame
 
         splitPane = new JSplitPane();
 
-        FriendPanel = new JPanel();
+        FriendPanel = new FriendListFragmentJ();
         MessagePanel = new JPanel();
         MessageScrollPane = new JScrollPane();
         MessageTextArea = new JTextArea();
@@ -171,25 +203,13 @@ public class MainActivity extends JFrame
                     ")");
 
             statement.executeUpdate(
-                    "create table FriendList ("+
-                    "tox_public_key_string string NOT NULL PRIMARY KEY , "+
-                    "name string,"+
-                    "alias_name string,"+
-                    "status_message string,"+
-                    "TOX_CONNECTION integer,"+
-                    "TOX_CONNECTION_real integer,"+
-                    "TOX_CONNECTION_on_off integer,"+
-                    "TOX_USER_STATUS integer,"+
-                    "avatar_pathname string,"+
-                    "avatar_filename string,"+
-                    "avatar_update integer,"+
-                    "avatar_update_timestamp integer,"+
-                    "notification_silent integer,"+
-                    "sort integer,"+
-                    "last_online_timestamp integer,"+
-                    "last_online_timestamp_real integer,"+
-                    "added_timestamp integer,"+
-                    "is_relay integer )" );
+                    "create table FriendList (" + "tox_public_key_string string NOT NULL PRIMARY KEY , " +
+                    "name string," + "alias_name string," + "status_message string," + "TOX_CONNECTION integer," +
+                    "TOX_CONNECTION_real integer," + "TOX_CONNECTION_on_off integer," + "TOX_USER_STATUS integer," +
+                    "avatar_pathname string," + "avatar_filename string," + "avatar_update integer," +
+                    "avatar_update_timestamp integer," + "notification_silent integer," + "sort integer," +
+                    "last_online_timestamp integer," + "last_online_timestamp_real integer," +
+                    "added_timestamp integer," + "is_relay integer )");
         }
         catch (SQLException e)
         {
@@ -221,7 +241,6 @@ public class MainActivity extends JFrame
         new MainActivity().setVisible(true);
     }
 
-
     static
     {
         try
@@ -237,7 +256,6 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
     }
-
 
     // -------- native methods --------
     // -------- native methods --------
@@ -471,6 +489,16 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_name_cb_method(long friend_number, String friend_name, long length)
     {
+        // Log.i(TAG, "friend_alias_name:friend:" + friend_number + " name:" + friend_alias_name);
+        FriendList f = main_get_friend(friend_number);
+
+        // Log.i(TAG, "friend_alias_name:002:" + f);
+        if (f != null)
+        {
+            f.name = friend_name;
+            HelperFriend.update_friend_in_db_name(f);
+            HelperFriend.update_single_friend_in_friendlist_view(f);
+        }
     }
 
     static void android_tox_callback_friend_status_message_cb_method(long friend_number, String status_message, long length)

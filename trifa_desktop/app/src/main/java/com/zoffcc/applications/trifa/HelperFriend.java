@@ -22,11 +22,62 @@ package com.zoffcc.applications.trifa;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class HelperFriend
 {
     private static final String TAG = "trifa.Hlp.Friend";
+
+    static FriendList main_get_friend(long friendnum)
+    {
+        FriendList f = null;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            ResultSet rs = statement.executeQuery("select * from FriendList where tox_public_key_string='" +
+                                                  s(tox_friend_get_public_key__wrapper(friendnum)) + "'");
+            if (rs.next())
+            {
+                f = new FriendList();
+                f.tox_public_key_string = rs.getString("tox_public_key_string");
+                f.name = rs.getString("name");
+                if (rs.getInt("is_relay") == 0)
+                {
+                    f.is_relay = false;
+                }
+                else
+                {
+                    f.is_relay = true;
+                }
+            }
+            else
+            {
+                f = null;
+            }
+        }
+        catch (Exception e)
+        {
+            f = null;
+        }
+
+        return f;
+    }
+
+    synchronized static void update_friend_in_db_name(FriendList f)
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.executeUpdate("update FriendList set name='" + s(f.name) + "' where tox_public_key_string = '" +
+                                    s(f.tox_public_key_string) + "'");
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
 
     static void add_friend_real(String friend_tox_id)
     {
@@ -71,7 +122,7 @@ public class HelperFriend
                 // e.printStackTrace();
             }
 
-            // TODO: update_single_friend_in_friendlist_view(f);
+            update_single_friend_in_friendlist_view(f);
         }
 
         if (friendnum == -1)
@@ -92,6 +143,24 @@ public class HelperFriend
         // add friend ---------------
     }
 
+    static void update_single_friend_in_friendlist_view(final FriendList f)
+    {
+        try
+        {
+            if (MainActivity.FriendPanel != null)
+            {
+                CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
+                cc.is_friend = true;
+                cc.friend_item = f;
+                MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     synchronized static void insert_into_friendlist_db(final FriendList f)
     {
         //        Thread t = new Thread()
@@ -104,8 +173,8 @@ public class HelperFriend
             int count = 0;
             Statement statement = sqldb.createStatement();
             ResultSet rs = statement.executeQuery(
-                    "select count(*) as count from FriendList where tox_public_key_string='" + f.tox_public_key_string +
-                    "'");
+                    "select count(*) as count from FriendList where tox_public_key_string='" +
+                    s(f.tox_public_key_string) + "'");
             rs.next();
             count = rs.getInt("count");
             Log.i(TAG, "friend to DB: count=" + count);
@@ -113,8 +182,9 @@ public class HelperFriend
             if (count == 0)
             {
                 f.added_timestamp = System.currentTimeMillis();
-                statement.executeUpdate("insert into FriendList (" + "tox_public_key_string" + ")" + " values(" + "'" +
-                                        f.tox_public_key_string + "'" + ")");
+                statement.executeUpdate(
+                        "insert into FriendList (" + "tox_public_key_string , is_relay, name" + ")" + " values(" + "'" +
+                        f.tox_public_key_string + "' , '0', '" + f.name + "' " + ")");
                 Log.i(TAG, "friend added to DB: " + f.tox_public_key_string);
             }
             else
@@ -134,4 +204,24 @@ public class HelperFriend
         //        t.start();
     }
 
+    public static String tox_friend_get_public_key__wrapper(long friend_number)
+    {
+        if (MainActivity.cache_fnum_pubkey.containsKey(friend_number))
+        {
+            // Log.i(TAG, "cache hit:2");
+            return MainActivity.cache_fnum_pubkey.get(friend_number);
+        }
+        else
+        {
+            if (MainActivity.cache_fnum_pubkey.size() >= 180)
+            {
+                // TODO: bad!
+                MainActivity.cache_fnum_pubkey.clear();
+            }
+
+            String result = MainActivity.tox_friend_get_public_key(friend_number);
+            MainActivity.cache_fnum_pubkey.put(friend_number, result);
+            return result;
+        }
+    }
 }

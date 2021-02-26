@@ -61,6 +61,8 @@ public class TRIFAGlobals
     static long last_video_frame_received = -1;
     static int count_video_frame_received = 0;
 
+    static long ONE_HOUR_IN_MS = 3600 * 1000;
+
     final static int GLOBAL_MIN_VIDEO_BITRATE = 64;
     final static int GLOBAL_MIN_AUDIO_BITRATE = 8; // allowed values: (xx>=6) && (xx<=510)
 
