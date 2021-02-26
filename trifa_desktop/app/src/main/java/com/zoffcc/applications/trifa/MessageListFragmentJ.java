@@ -19,6 +19,9 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -26,6 +29,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
 import static com.zoffcc.applications.trifa.MainActivity.add_message_ml;
+import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
@@ -47,7 +51,6 @@ public class MessageListFragmentJ extends JPanel
     public MessageListFragmentJ()
     {
         Log.i(TAG, "MessageListFragmentJ:start");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
     }
 
     /* HINT: send a message to a friend */
@@ -203,9 +206,28 @@ public class MessageListFragmentJ extends JPanel
         SwingUtilities.invokeLater(myRunnable);
     }
 
+    public static long get_current_friendnum()
+    {
+        return friendnum;
+    }
+
     public void add_item(Message new_item)
     {
-        add_message_ml("2021-02-02 15:30", new_item.tox_friendpubkey, new_item.text);
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final Date now = new Date();
+        final String datetime = sdf.format(now);
+
+        Log.i(TAG, "a=" + new_item.tox_friendpubkey + " b=" +
+                   get_my_toxid().substring(0, (ToxVars.TOX_PUBLIC_KEY_SIZE * 2)));
+
+        if (new_item.direction == 1)
+        {
+            add_message_ml(datetime, new_item.tox_friendpubkey, new_item.text, true);
+        }
+        else
+        {
+            add_message_ml(datetime, new_item.tox_friendpubkey, new_item.text, false);
+        }
     }
 
     public void setCurrentPK(String current_pk_)

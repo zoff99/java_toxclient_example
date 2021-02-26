@@ -58,6 +58,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 
 public class MainActivity extends JFrame
@@ -129,13 +130,12 @@ public class MainActivity extends JFrame
 
         if (str != null && str.length() > 0)
         {
-            str = str.replace("\\", "\\\\");
-            str = str.replace("'", "\\'");
-            str = str.replace("\0", "\\0");
-            str = str.replace("\n", "\\n");
-            str = str.replace("\r", "\\r");
-            str = str.replace("\"", "\\\"");
-            str = str.replace("\\x1a", "\\Z");
+            str = str.
+                    replace("\\", "\\\\"). // \ -> \\
+                    replace("%", "\\%"). // % -> \%
+                    replace("_", "\\_"). // _ -> \_
+                    replace("'", "''"). // ' -> ''
+                    replace("\\x1a", "\\Z");
             data = str;
         }
         return data;
@@ -162,7 +162,7 @@ public class MainActivity extends JFrame
         long error_num;
     }
 
-    public static void add_message_ml(String datetime, String username, String message)
+    public static void add_message_ml(String datetime, String username, String message, boolean self)
     {
         //Runnable myRunnable = new Runnable()
         //{
@@ -179,17 +179,27 @@ public class MainActivity extends JFrame
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
             MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
             MessageTextArea.setCharacterAttributes(defaultStyle, true);
-            MessageTextArea.replaceSelection(":");
+            MessageTextArea.replaceSelection("|");
 
-            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(redStyle, true);
-            MessageTextArea.replaceSelection(username);
+            if (self)
+            {
+                MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+                MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+                MessageTextArea.setCharacterAttributes(redStyle, true);
+                MessageTextArea.replaceSelection("self");
+            }
+            else
+            {
+                MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+                MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+                MessageTextArea.setCharacterAttributes(blueStyle, true);
+                MessageTextArea.replaceSelection(username);
+            }
 
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
             MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
             MessageTextArea.setCharacterAttributes(defaultStyle, true);
-            MessageTextArea.replaceSelection(":" + message + "\n");
+            MessageTextArea.replaceSelection("|" + message + "\n");
         }
         catch (Exception e)
         {
@@ -301,20 +311,6 @@ public class MainActivity extends JFrame
         {
             e.printStackTrace();
         }
-
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
 
         sendTextField.requestFocus();
 
@@ -886,7 +882,12 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length)
     {
-        Log.i(TAG, "friend_message:friendnum:" + friend_number + " message:" + friend_message);
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:007:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        HelperGeneric.receive_incoming_message(0, friend_number, friend_message, null, 0, null);
     }
 
     static void android_tox_callback_friend_message_v2_cb_method(long friend_number, String friend_message, long length, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length)

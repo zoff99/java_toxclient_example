@@ -142,7 +142,7 @@ public class HelperMessage
     {
         try
         {
-            // Log.i(TAG, "add_single_message_from_messge_id:message_id=" + message_id);
+            Log.i(TAG, "add_single_message_from_messge_id:message_id=" + message_id);
             Thread t = new Thread()
             {
                 @Override
@@ -150,7 +150,7 @@ public class HelperMessage
                 {
                     if (message_id != -1)
                     {
-                        // Log.i(TAG, "add_single_message_from_messge_id:message_id=" + message_id);
+                        Log.i(TAG, "add_single_message_from_messge_id:message_id=" + message_id);
 
                         try
                         {
@@ -158,13 +158,14 @@ public class HelperMessage
 
                             if (m.id != -1)
                             {
-                                // Log.i(TAG, "add_single_message_from_messge_id:m.id=" + m.id);
+                                Log.i(TAG, "add_single_message_from_messge_id:m.id=" + m.id);
 
                                 if ((force) || (MainActivity.update_all_messages_global_timestamp +
                                                 MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
                                                 System.currentTimeMillis()))
                                 {
-                                    // Log.i(TAG, "add_single_message_from_messge_id:add_message()");
+                                    Log.i(TAG,
+                                          "add_single_message_from_messge_id:add_message() pk=" + m.tox_friendpubkey);
 
                                     MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
                                     MessagePanel.add_message(m);
@@ -173,6 +174,7 @@ public class HelperMessage
                         }
                         catch (Exception e2)
                         {
+                            e2.printStackTrace();
                             Log.i(TAG, "add_single_message_from_messge_id:EE1:" + e2.getMessage());
                         }
                     }
@@ -187,7 +189,7 @@ public class HelperMessage
         }
     }
 
-    static Message get_message_from_db(long message_id)
+    static Message get_message_from_db(long m_id)
     {
         Message m = null;
         Statement statement = null;
@@ -195,18 +197,23 @@ public class HelperMessage
         try
         {
             statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery("select * from Message where message_id='" + message_id + "'");
+            final String sql = "select * from Message where id='" + m_id + "'";
+            Log.i(TAG, "sql=" + sql);
+            ResultSet rs = statement.executeQuery(sql);
 
             if (rs.next())
             {
                 m = new Message();
                 m.text = rs.getString("text");
                 m.tox_friendpubkey = rs.getString("tox_friendpubkey");
+                m.direction = rs.getInt("direction");
+                Log.i(TAG, "m=" + m);
                 // TODO: read all fields
             }
         }
         catch (Exception e)
         {
+            e.printStackTrace();
         }
 
         return m;

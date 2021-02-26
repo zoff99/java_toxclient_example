@@ -28,6 +28,8 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
@@ -182,7 +184,8 @@ public class HelperGeneric
 
         //** workaround **//
         byte[] tmp_buf_ = new byte[raw_message_length_buf.remaining()];
-        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" + raw_message_length_buf.remaining());
+        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" +
+                   raw_message_length_buf.remaining());
         raw_message_length_buf.slice().get(tmp_buf_);
         int raw_message_length_int = tmp_buf_[0] & 0xFF + (tmp_buf_[1] & 0xFF) * 256;
         Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_int=" + raw_message_length_int);
@@ -242,6 +245,97 @@ public class HelperGeneric
         }
 
         return new String(hexChars);
+    }
+
+    static void receive_incoming_message(int msg_type, long friend_number, String friend_message_text_utf8, byte[] raw_message, long raw_message_length, String original_sender_pubkey)
+    {
+        // incoming msg can be:
+        // (msg_type == 0) msgV1 text only message -> msg_type, friend_number, friend_message_text_utf8
+        // (msg_type == 1) msgV2 direct message    -> msg_type, friend_number, friend_message_text_utf8, raw_message, raw_message_length
+        // (msg_type == 2) msgV2 relay message     -> msg_type, friend_number, friend_message_text_utf8, raw_message, raw_message_length, original_sender_pubkey
+        if (msg_type == 0)
+        {
+            // msgV1 text only message
+            // Log.i(TAG, "friend_message:friend:" + friend_number + " message:" + friend_message);
+            // if message list for this friend is open, then don't do notification and "new" badge
+            boolean do_notification = true;
+            boolean do_badge_update = true;
+
+            // Log.i(TAG, "noti_and_badge:001:" + message_list_activity);
+            // Log.i(TAG, "noti_and_badge:002:" + message_list_activity.get_current_friendnum() + ":" + friend_number);
+            if (get_current_friendnum() == friend_number)
+            {
+                // Log.i(TAG, "noti_and_badge:003:");
+                // no notifcation and no badge update
+                do_notification = false;
+                do_badge_update = false;
+            }
+
+            Message m = new Message();
+
+            if (!do_badge_update)
+            {
+                Log.i(TAG, "noti_and_badge:004a:");
+                m.is_new = false;
+            }
+            else
+            {
+                Log.i(TAG, "noti_and_badge:004b:");
+                m.is_new = true;
+            }
+
+            // m.tox_friendnum = friend_number;
+            m.tox_friendpubkey = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
+            m.direction = 0; // msg received
+            m.TOX_MESSAGE_TYPE = 0;
+            m.read = false;
+            m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+            m.rcvd_timestamp = System.currentTimeMillis();
+            m.rcvd_timestamp_ms = 0;
+            m.sent_timestamp = System.currentTimeMillis();
+            m.sent_timestamp_ms = 0;
+            m.text = friend_message_text_utf8;
+            m.msg_version = 0;
+
+            if (get_current_friendnum() == friend_number)
+            {
+                Log.i(TAG, "insert_into_message_db:true:fn=" + friend_number);
+                HelperMessage.insert_into_message_db(m, true);
+            }
+            else
+            {
+                Log.i(TAG, "insert_into_message_db:false");
+                HelperMessage.insert_into_message_db(m, false);
+            }
+
+            try
+            {
+                // update "new" status on friendlist fragment
+                //**// FriendList f = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
+                //**// HelperFriend.update_single_friend_in_friendlist_view(f);
+
+                //**//if (f.notification_silent)
+                {
+                    do_notification = false;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+            }
+
+            if (do_notification)
+            {
+                //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+            }
+        }
+        else if (msg_type == 1)
+        {
+        }
+        else if (msg_type == 2)
+        {
+        }
     }
 
     public static long get_last_rowid(Statement statement)
