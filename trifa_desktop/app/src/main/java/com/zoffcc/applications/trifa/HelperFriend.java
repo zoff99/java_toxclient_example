@@ -224,4 +224,25 @@ public class HelperFriend
             return result;
         }
     }
+
+    public static long tox_friend_by_public_key__wrapper(String friend_public_key_string)
+    {
+        if (MainActivity.cache_pubkey_fnum.containsKey(friend_public_key_string))
+        {
+            // Log.i(TAG, "cache hit:1");
+            return MainActivity.cache_pubkey_fnum.get(friend_public_key_string);
+        }
+        else
+        {
+            if (MainActivity.cache_pubkey_fnum.size() >= 180)
+            {
+                // TODO: bad!
+                MainActivity.cache_pubkey_fnum.clear();
+            }
+
+            long result = MainActivity.tox_friend_by_public_key(friend_public_key_string);
+            MainActivity.cache_pubkey_fnum.put(friend_public_key_string, result);
+            return result;
+        }
+    }
 }

@@ -25,6 +25,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -41,6 +42,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
@@ -48,6 +52,11 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 
@@ -79,7 +88,7 @@ public class MainActivity extends JFrame
 
     static JSplitPane splitPane;
     static FriendListFragmentJ FriendPanel;
-    static JPanel MessagePanel;
+    static MessageListFragmentJ MessagePanel;
     static JScrollPane MessageScrollPane;
     static JTextPane MessageTextArea;
     static JPanel MessageTextInputPanel;
@@ -101,6 +110,11 @@ public class MainActivity extends JFrame
     // ---- lookup cache for conference drawer ----
     static Map<String, Long> lookup_peer_listnum_pubkey = new HashMap<String, Long>();
     // ---- lookup cache for conference drawer ----
+
+    static boolean PREF__X_battery_saving_mode = false;
+    final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    static long update_all_messages_global_timestamp = -1;
+    final static long UPDATE_MESSAGES_NORMAL_MILLIS = 500; // ~0.5 seconds
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -127,27 +141,63 @@ public class MainActivity extends JFrame
         return data;
     }
 
-    public static void add_message(String datetime, String username, String message)
+    public static int b(boolean in)
     {
-        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(blueStyle, true);
-        MessageTextArea.replaceSelection(datetime);
+        if (in)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
-        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(defaultStyle, true);
-        MessageTextArea.replaceSelection(":");
+    static class send_message_result
+    {
+        long msg_num;
+        boolean msg_v2;
+        String msg_hash_hex;
+        String raw_message_buf_hex;
+        long error_num;
+    }
 
-        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(redStyle, true);
-        MessageTextArea.replaceSelection(username);
+    public static void add_message_ml(String datetime, String username, String message)
+    {
+        //Runnable myRunnable = new Runnable()
+        //{
+        //@Override
+        //public void run()
+        //{
+        try
+        {
+            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+            MessageTextArea.setCharacterAttributes(blueStyle, true);
+            MessageTextArea.replaceSelection(datetime);
 
-        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(defaultStyle, true);
-        MessageTextArea.replaceSelection(":" + message + "\n");
+            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+            MessageTextArea.setCharacterAttributes(defaultStyle, true);
+            MessageTextArea.replaceSelection(":");
+
+            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+            MessageTextArea.setCharacterAttributes(redStyle, true);
+            MessageTextArea.replaceSelection(username);
+
+            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+            MessageTextArea.setCharacterAttributes(defaultStyle, true);
+            MessageTextArea.replaceSelection(":" + message + "\n");
+        }
+        catch (Exception e)
+        {
+        }
+        // }
+        //};
+
+        //SwingUtilities.invokeLater(myRunnable);
     }
 
     public MainActivity()
@@ -162,7 +212,9 @@ public class MainActivity extends JFrame
         splitPane = new JSplitPane();
 
         FriendPanel = new FriendListFragmentJ();
-        MessagePanel = new JPanel();
+        MessagePanel = new MessageListFragmentJ();
+        MessagePanel.setCurrentPK(null);
+
         MessageScrollPane = new JScrollPane();
 
         // ------------------
@@ -235,7 +287,8 @@ public class MainActivity extends JFrame
             @Override
             public void actionPerformed(ActionEvent evt)
             {
-                Log.i(TAG,"sendButton pressed");
+                Log.i(TAG, "sendButton pressed");
+                send_message_onclick();
             }
         });
 
@@ -249,19 +302,125 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
-        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message_ml("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+
+        sendTextField.requestFocus();
+
+        sendTextField.getDocument().addDocumentListener(new DocumentListener()
+        {
+
+            @Override
+            public void removeUpdate(DocumentEvent e)
+            {
+                updated();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e)
+            {
+                updated();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e)
+            {
+                updated();
+            }
+
+            void updated()
+            {
+                if (global_typing == 0)
+                {
+                    global_typing = 1;  // typing = 1
+
+                    Runnable myRunnable = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                tox_self_set_typing(friendnum, global_typing);
+                                Log.i(TAG, "typing:fn#" + friendnum + ":activated");
+                            }
+                            catch (Exception e)
+                            {
+                                Log.i(TAG, "typing:fn#" + friendnum + ":EE1" + e.getMessage());
+                            }
+                        }
+                    };
+
+                    SwingUtilities.invokeLater(myRunnable);
+
+                    try
+                    {
+                        typing_flag_thread.interrupt();
+                    }
+                    catch (Exception e)
+                    {
+                        // e.printStackTrace();
+                    }
+
+                    typing_flag_thread = new Thread()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            boolean skip_flag_update = false;
+                            try
+                            {
+                                Thread.sleep(TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS); // sleep for n seconds
+                            }
+                            catch (Exception e)
+                            {
+                                // e.printStackTrace();
+                                // ok, dont update typing flag
+                                skip_flag_update = true;
+                            }
+
+                            if (global_typing == 1)
+                            {
+                                if (skip_flag_update == false)
+                                {
+                                    global_typing = 0;  // typing = 0
+                                    Runnable myRunnable = new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            try
+                                            {
+                                                tox_self_set_typing(friendnum, global_typing);
+                                                Log.i(TAG, "typing:fn#" + friendnum + ":DEactivated");
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Log.i(TAG, "typing:fn#" + friendnum + ":EE2" + e.getMessage());
+                                            }
+                                        }
+                                    };
+
+                                    SwingUtilities.invokeLater(myRunnable);
+                                }
+                            }
+                        }
+                    };
+                    typing_flag_thread.start();
+                }
+            }
+        });
     }
 
     private void initComponents()
@@ -294,21 +453,78 @@ public class MainActivity extends JFrame
 
         try
         {
+            // @formatter:off
             Statement statement = sqldb.createStatement();
             statement.setQueryTimeout(10);  // set timeout to 30 sec.
 
             statement.executeUpdate(
-                    "create table TRIFADatabaseGlobalsNew (" + "key string NOT NULL PRIMARY KEY," + "value string" +
+                    "create table TRIFADatabaseGlobalsNew (" +
+                    "key string NOT NULL PRIMARY KEY," +
+                    "value string" +
                     ")");
 
             statement.executeUpdate(
-                    "create table FriendList (" + "tox_public_key_string string NOT NULL PRIMARY KEY , " +
-                    "name string," + "alias_name string," + "status_message string," + "TOX_CONNECTION integer," +
-                    "TOX_CONNECTION_real integer," + "TOX_CONNECTION_on_off integer," + "TOX_USER_STATUS integer," +
-                    "avatar_pathname string," + "avatar_filename string," + "avatar_update integer," +
-                    "avatar_update_timestamp integer," + "notification_silent integer," + "sort integer," +
-                    "last_online_timestamp integer," + "last_online_timestamp_real integer," +
-                    "added_timestamp integer," + "is_relay integer )");
+                    "create table FriendList (" +
+                    "tox_public_key_string string NOT NULL PRIMARY KEY , " +
+                    "name string," +
+                    "alias_name string," +
+                    "status_message string," +
+                    "TOX_CONNECTION integer DEFAULT '0' CHECK (TOX_CONNECTION IN ('0', '1', '2'))," +
+                    "TOX_CONNECTION_real integer DEFAULT '0' CHECK (TOX_CONNECTION_real IN ('0', '1', '2'))," +
+                    "TOX_CONNECTION_on_off integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off IN ('0', '1'))," +
+                    "TOX_CONNECTION_on_off_real integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off_real IN ('0', '1'))," +
+                    "TOX_USER_STATUS integer DEFAULT '0' CHECK (TOX_USER_STATUS IN ('0', '1', '2'))," +
+                    "avatar_pathname string," +
+                    "avatar_filename string," +
+                    "avatar_update integer DEFAULT '0' CHECK (avatar_update IN ('0', '1'))," +
+                    "avatar_update_timestamp integer DEFAULT '-1'," +
+                    "notification_silent integer DEFAULT '0' CHECK (notification_silent IN ('0', '1'))," +
+                    "sort integer DEFAULT '0'," +
+                    "last_online_timestamp integer DEFAULT '-1'," +
+                    "last_online_timestamp_real integer DEFAULT '-1'," +
+                    "added_timestamp integer DEFAULT '-1'," +
+                    "is_relay integer DEFAULT '0' CHECK (is_relay IN ('0', '1'))  )");
+
+            statement.executeUpdate("create table Message("+
+                                    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "+
+                                    "message_id integer DEFAULT '-1', "+
+                                    "tox_friendpubkey string NOT NULL, "+
+                                    "direction INTEGER NOT NULL DEFAULT '0' CHECK (direction IN ('0', '1')), "+
+                                    "TOX_MESSAGE_TYPE INTEGER NOT NULL DEFAULT '0' CHECK (TOX_MESSAGE_TYPE IN ('0', '1')), "+
+                                    "TRIFA_MESSAGE_TYPE integer DEFAULT '0', "+
+                                    "state integer DEFAULT '1', "+
+                                    "ft_accepted integer DEFAULT '0' CHECK (ft_accepted IN ('0', '1')), "+
+                                    "ft_outgoing_started integer DEFAULT '0' CHECK (ft_outgoing_started IN ('0', '1')), "+
+                                    "filedb_id integer DEFAULT '-1', "+
+                                    "filetransfer_id integer DEFAULT '-1', "+
+                                    "sent_timestamp integer DEFAULT '0', "+
+                                    "sent_timestamp_ms integer DEFAULT '0', "+
+                                    "rcvd_timestamp integer DEFAULT '0', "+
+                                    "rcvd_timestamp_ms integer DEFAULT '0', "+
+                                    "read integer DEFAULT '0' CHECK (read IN ('0', '1')), "+
+                                    "send_retries integer DEFAULT '0', "+
+                                    "is_new DEFAULT '0' CHECK (is_new IN ('0', '1')), "+
+                                    "text string, "+
+                                    "filename_fullpath string, "+
+                                    "msg_id_hash string, "+
+                                    "raw_msgv2_bytes string, "+
+                                    "msg_version integer DEFAULT '0' CHECK (msg_version IN ('0', '1')), "+
+                                    "resend_count integer DEFAULT '2' CHECK (resend_count IN ('0', '1', '2')) "+
+               ")"
+            );
+
+            statement.executeUpdate(
+                    "create table RelayListDB (" +
+                    "tox_public_key_string string NOT NULL PRIMARY KEY , " +
+                    "TOX_CONNECTION integer DEFAULT '0' CHECK (TOX_CONNECTION IN ('0', '1', '2')), " +
+                    "TOX_CONNECTION_on_off integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off IN ('0', '1')), " +
+                    "own_relay integer DEFAULT '0' CHECK (own_relay IN ('0', '1')), " +
+                    "last_online_timestamp integer DEFAULT '-1', " +
+                    "tox_public_key_string_of_owner string " +
+                    ")"
+            );
+
+            // @formatter:on
         }
         catch (SQLException e)
         {
@@ -447,6 +663,34 @@ public class MainActivity extends JFrame
 
     public static native int tox_file_send_chunk(long friend_number, long file_number, long position, java.
             nio.ByteBuffer data_buffer, long data_length);
+
+    // --------------- Message V2 -------------
+    // --------------- Message V2 -------------
+    // --------------- Message V2 -------------
+    public static native long tox_messagev2_size(long text_length, long type, long alter_type);
+
+    public static native int tox_messagev2_wrap(long text_length, long type, long alter_type, ByteBuffer message_text_buffer, long ts_sec, long ts_ms, ByteBuffer raw_message_buffer, ByteBuffer msgid_buffer);
+
+    public static native int tox_messagev2_get_message_id(ByteBuffer raw_message_buffer, ByteBuffer msgid_buffer);
+
+    public static native long tox_messagev2_get_ts_sec(ByteBuffer raw_message_buffer);
+
+    public static native long tox_messagev2_get_ts_ms(ByteBuffer raw_message_buffer);
+
+    public static native long tox_messagev2_get_message_text(ByteBuffer raw_message_buffer, long raw_message_len, int is_alter_msg, long alter_type, ByteBuffer message_text_buffer);
+
+    public static native String tox_messagev2_get_sync_message_pubkey(ByteBuffer raw_message_buffer);
+
+    public static native long tox_messagev2_get_sync_message_type(ByteBuffer raw_message_buffer);
+
+    public static native int tox_util_friend_send_msg_receipt_v2(long friend_number, long ts_sec, ByteBuffer msgid_buffer);
+
+    public static native long tox_util_friend_send_message_v2(long friend_number, int type, long ts_sec, String message, long length, ByteBuffer raw_message_back_buffer, ByteBuffer raw_message_back_buffer_length, ByteBuffer msgid_back_buffer);
+
+    public static native int tox_util_friend_resend_message_v2(long friend_number, ByteBuffer raw_message_buffer, long raw_msg_len);
+    // --------------- Message V2 -------------
+    // --------------- Message V2 -------------
+    // --------------- Message V2 -------------
 
     // --------------- Conference -------------
     // --------------- Conference -------------

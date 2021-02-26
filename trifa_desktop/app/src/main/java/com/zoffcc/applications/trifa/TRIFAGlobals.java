@@ -70,6 +70,8 @@ public class TRIFAGlobals
 
     static final String TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY = "-1";
 
+    static long global_last_activity_for_battery_savings_ts = -1;
+
     public static enum TRIFA_FT_DIRECTION
     {
         TRIFA_FT_DIRECTION_INCOMING(0), TRIFA_FT_DIRECTION_OUTGOING(1);

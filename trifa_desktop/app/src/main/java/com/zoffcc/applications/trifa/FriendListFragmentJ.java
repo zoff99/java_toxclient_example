@@ -31,8 +31,12 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -56,6 +60,35 @@ public class FriendListFragmentJ extends JPanel
         friends_and_confs_list = new JList<>(friends_and_confs_list_model);
         friends_and_confs_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         friends_and_confs_list.setSelectedIndex(0);
+
+        friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
+        {
+
+            @Override
+            public void valueChanged(ListSelectionEvent e)
+            {
+                try
+                {
+                    System.out.println("ListSelectionListener:e.getFirstIndex()" + e.getFirstIndex());
+                    String pk = friends_and_confs_list_model.elementAt(e.getFirstIndex()).substring(0,
+                                                                                                    TOX_PUBLIC_KEY_SIZE *
+                                                                                                    2);
+
+                    if (pk.length() == (TOX_PUBLIC_KEY_SIZE * 2))
+                    {
+                        MessagePanel.setCurrentPK(pk);
+                        MessagePanel.friendnum = tox_friend_by_public_key__wrapper(pk);
+                        System.out.println(
+                                "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
+                    }
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+            }
+
+        });
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -139,7 +172,6 @@ public class FriendListFragmentJ extends JPanel
         in_update_data = false;
         // Log.i(TAG, "add_all_friends_clear:READY");
     }
-
 
     synchronized void modify_friend(final CombinedFriendsAndConferences c, boolean is_friend)
     {

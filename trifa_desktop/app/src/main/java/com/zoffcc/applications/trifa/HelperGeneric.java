@@ -19,11 +19,19 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_MAX_FILETRANSFER_SIZE_MSGV2;
 
 public class HelperGeneric
 {
@@ -132,4 +140,128 @@ public class HelperGeneric
         }
     }
 
+    public static MainActivity.send_message_result tox_friend_send_message_wrapper(long friendnum, int a_TOX_MESSAGE_TYPE, String message)
+    {
+        Log.d(TAG, "tox_friend_send_message_wrapper:" + friendnum);
+        long friendnum_to_use = friendnum;
+        FriendList f = main_get_friend(friendnum);
+        Log.d(TAG, "tox_friend_send_message_wrapper:f=" + f);
+
+        if (f != null)
+        {
+            Log.d(TAG, "tox_friend_send_message_wrapper:f conn" + f.TOX_CONNECTION_real);
+
+            if (f.TOX_CONNECTION_real == TOX_CONNECTION_NONE.value)
+            {
+                String relay_pubkey = HelperRelay.get_relay_for_friend(f.tox_public_key_string);
+
+                if (relay_pubkey != null)
+                {
+                    // friend has a relay
+                    friendnum_to_use = tox_friend_by_public_key__wrapper(relay_pubkey);
+                    Log.d(TAG, "tox_friend_send_message_wrapper:friendnum_to_use=" + friendnum_to_use);
+                }
+            }
+        }
+
+        MainActivity.send_message_result result = new MainActivity.send_message_result();
+        ByteBuffer raw_message_buf = ByteBuffer.allocateDirect((int) TOX_MAX_FILETRANSFER_SIZE_MSGV2);
+        ByteBuffer raw_message_length_buf = ByteBuffer.allocateDirect((int) 2); // 2 bytes for length
+        ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+        // use msg V2 API Call
+        long t_sec = (System.currentTimeMillis() / 1000);
+        long res = MainActivity.tox_util_friend_send_message_v2(friendnum_to_use, a_TOX_MESSAGE_TYPE, t_sec, message,
+                                                                message.length(), raw_message_buf,
+                                                                raw_message_length_buf, msg_id_buffer);
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:002:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
+
+        //** workaround **//
+        byte[] tmp_buf_ = new byte[raw_message_length_buf.remaining()];
+        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" + raw_message_length_buf.remaining());
+        raw_message_length_buf.slice().get(tmp_buf_);
+        int raw_message_length_int = tmp_buf_[0] & 0xFF + (tmp_buf_[1] & 0xFF) * 256;
+        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_int=" + raw_message_length_int);
+
+        //int raw_message_length_int = raw_message_length_buf.
+        //        array()[raw_message_length_buf.arrayOffset()] & 0xFF + (raw_message_length_buf.
+        //        array()[raw_message_length_buf.arrayOffset() + 1] & 0xFF) * 256;
+        //** workaround **//
+
+
+        // Log.i(TAG,
+        //      "tox_friend_send_message_wrapper:message=" + message + " res=" + res + " len=" + raw_message_length_int);
+        result.error_num = res;
+
+        if (res == -9999)
+        {
+            // msg V2 OK
+            result.msg_num = (Long.MAX_VALUE - 1);
+            result.msg_v2 = true;
+            result.msg_hash_hex = bytesToHex(msg_id_buffer.array(), msg_id_buffer.arrayOffset(), msg_id_buffer.limit());
+            result.raw_message_buf_hex = bytesToHex(raw_message_buf.array(), raw_message_buf.arrayOffset(),
+                                                    raw_message_length_int);
+            Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
+                       result.raw_message_buf_hex);
+            return result;
+        }
+        else if (res == -9991)
+        {
+            // msg V2 error
+            result.msg_num = -1;
+            result.msg_v2 = true;
+            result.msg_hash_hex = "";
+            result.raw_message_buf_hex = "";
+            return result;
+        }
+        else
+        {
+            // old message
+            result.msg_num = res;
+            result.msg_v2 = false;
+            result.msg_hash_hex = "";
+            result.raw_message_buf_hex = "";
+            return result;
+        }
+    }
+
+    public static String bytesToHex(byte[] bytes, int start, int len)
+    {
+        char[] hexChars = new char[(len) * 2];
+        // System.out.println("blen=" + (len));
+
+        for (int j = start; j < (start + len); j++)
+        {
+            int v = bytes[j] & 0xFF;
+            hexChars[(j - start) * 2] = MainActivity.hexArray[v >>> 4];
+            hexChars[(j - start) * 2 + 1] = MainActivity.hexArray[v & 0x0F];
+        }
+
+        return new String(hexChars);
+    }
+
+    public static long get_last_rowid(Statement statement)
+    {
+        try
+        {
+            long ret = -1;
+            ResultSet rs = statement.executeQuery("select last_insert_rowid() as lastrowid");
+            if (rs.next())
+            {
+                ret = rs.getLong("lastrowid");
+            }
+            Log.i(TAG, "get_last_rowid:ret=" + ret);
+            return ret;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "get_last_rowid:EE1:" + e.getMessage());
+            return -1;
+        }
+    }
 }
