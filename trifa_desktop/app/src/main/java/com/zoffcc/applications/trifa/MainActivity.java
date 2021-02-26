@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -99,15 +101,6 @@ public class MainActivity extends JFrame
     // ---- lookup cache for conference drawer ----
     static Map<String, Long> lookup_peer_listnum_pubkey = new HashMap<String, Long>();
     // ---- lookup cache for conference drawer ----
-
-    static class Log
-    {
-        public static void i(String tag, String message)
-        {
-            message = message.replace("\r", "").replace("\n", "");
-            System.out.println("" + tag + ":" + message + "");
-        }
-    }
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -237,6 +230,14 @@ public class MainActivity extends JFrame
         sendTextField.setEditable(true);
         MessageTextInputPanel.add(sendButton);
 
+        sendButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG,"sendButton pressed");
+            }
+        });
 
         doc.setLogicalStyle(0, mainStyle);
         try

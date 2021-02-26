@@ -50,14 +50,6 @@ public class TrifaToxService
     static boolean global_toxid_text_set = false;
     static boolean TOX_SERVICE_STARTED = false;
 
-    static class Log
-    {
-        public static void i(String tag, String message)
-        {
-            System.out.println("" + tag + ":" + message + "");
-        }
-    }
-
     void tox_thread_start_fg()
     {
         Log.i(TAG, "tox_thread_start_fg");

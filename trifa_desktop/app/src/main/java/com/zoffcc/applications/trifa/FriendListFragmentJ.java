@@ -42,7 +42,6 @@ public class FriendListFragmentJ extends JPanel
 
     private static final String TAG = "trifa.FriendListFrgnt";
 
-    List<FriendList> data_values2 = new ArrayList<FriendList>();
     private JList<String> friends_and_confs_list;
     DefaultListModel<String> friends_and_confs_list_model;
     JScrollPane FriendScrollPane;

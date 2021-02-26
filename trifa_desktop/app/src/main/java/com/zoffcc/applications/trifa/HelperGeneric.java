@@ -111,9 +111,7 @@ public class HelperGeneric
             MainActivity.update_savedata_file(password_hash_2);
             long end_timestamp = System.currentTimeMillis();
             MainActivity.semaphore_tox_savedata.release();
-            MainActivity.Log.i(TAG,
-                               "update_savedata_file() took:" + (((float) (end_timestamp - start_timestamp)) / 1000f) +
-                               "s");
+            Log.i(TAG, "update_savedata_file() took:" + (((float) (end_timestamp - start_timestamp)) / 1000f) + "s");
         }
         catch (InterruptedException e)
         {
