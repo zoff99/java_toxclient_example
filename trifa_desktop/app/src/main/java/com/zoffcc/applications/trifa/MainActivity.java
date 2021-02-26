@@ -39,7 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -83,6 +83,9 @@ public class MainActivity extends JFrame
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
     static JButton sendButton;
+    static Style blueStyle;
+    static Style redStyle;
+    static Style defaultStyle;
 
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
@@ -131,6 +134,29 @@ public class MainActivity extends JFrame
         return data;
     }
 
+    public static void add_message(String datetime, String username, String message)
+    {
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(blueStyle, true);
+        MessageTextArea.replaceSelection(datetime);
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(defaultStyle, true);
+        MessageTextArea.replaceSelection(":");
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(redStyle, true);
+        MessageTextArea.replaceSelection(username);
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(defaultStyle, true);
+        MessageTextArea.replaceSelection(":" + message + "\n");
+    }
+
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
@@ -153,24 +179,25 @@ public class MainActivity extends JFrame
         final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
 
         // Create and add the main document style
-        Style defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
+        defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
         final Style mainStyle = sc.addStyle("MainStyle", defaultStyle);
         StyleConstants.setFontFamily(mainStyle, "monospaced");
         StyleConstants.setFontSize(mainStyle, 12);
 
         // Create and add the constant width style
-        final Style redStyle = sc.addStyle("ConstantWidthRed", null);
+        redStyle = sc.addStyle("ConstantWidthRed", null);
         StyleConstants.setFontFamily(redStyle, "monospaced");
         StyleConstants.setFontSize(redStyle, 12);
         StyleConstants.setForeground(redStyle, Color.red);
 
         // Create and add the constant width style
-        final Style blueStyle = sc.addStyle("ConstantWidthBlue", null);
+        blueStyle = sc.addStyle("ConstantWidthBlue", null);
         StyleConstants.setFontFamily(blueStyle, "monospaced");
         StyleConstants.setFontSize(blueStyle, 12);
         StyleConstants.setForeground(blueStyle, Color.blue);
 
         // Create and add the heading style
+        /*
         final Style heading2Style = sc.addStyle("Heading2", null);
         StyleConstants.setForeground(heading2Style, Color.red);
         StyleConstants.setFontSize(heading2Style, 16);
@@ -178,6 +205,7 @@ public class MainActivity extends JFrame
         StyleConstants.setBold(heading2Style, true);
         StyleConstants.setLeftIndent(heading2Style, 8);
         StyleConstants.setFirstLineIndent(heading2Style, 0);
+        */
         // ------------------
         // ------------------
         // ------------------
@@ -210,33 +238,29 @@ public class MainActivity extends JFrame
         MessageTextInputPanel.add(sendButton);
 
 
+        doc.setLogicalStyle(0, mainStyle);
         try
         {
-            SwingUtilities.invokeAndWait(new Runnable()
-            {
-                public void run()
-                {
-                    try
-                    {
-                        doc.setLogicalStyle(0, mainStyle);
-
-                        doc.insertString(0,
-                                         "2021-02-02 15:30:user1:Text message öäöö4ä3ö4ä3ö2 ä4öä234öä eporkeow krpowek",
-                                         null);
-                        doc.setCharacterAttributes(0, 17, blueStyle, false);
-                        doc.setCharacterAttributes(17, 5, redStyle, false);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            doc.insertString(0, "", null);
         }
-        catch (Exception e)
+        catch (BadLocationException e)
         {
-            System.out.println("Exception when constructing document: " + e);
+            e.printStackTrace();
         }
+
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
+        add_message("2021-02-02 15:30", "user1", "mesafoejwr jw3r3 krk3rk32ißrk2kß0 ßk0k0rß3irß03 kßrß03r kß0");
     }
 
     private void initComponents()
