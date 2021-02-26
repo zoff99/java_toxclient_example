@@ -150,33 +150,50 @@ public class MainActivity extends JFrame
         Log.i(TAG, "loaded:jni-c-toxcore:v" + jnictoxcore_version());
 
 
+        // create a database connection
         try
         {
-            // create a database connection
+            // Class.forName("org.sqlite.JDBC");
             sqldb = DriverManager.getConnection("jdbc:sqlite:main.db");
-            Statement statement = sqldb.createStatement();
-            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
-            statement.executeUpdate("create table person (id integer, name string)");
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.setQueryTimeout(10);  // set timeout to 30 sec.
+
+            statement.executeUpdate(
+                    "create table TRIFADatabaseGlobalsNew (" + "key string NOT NULL PRIMARY KEY," + "value string" +
+                    ")");
+
+            statement.executeUpdate(
+                    "create table FriendList ("+
+                    "tox_public_key_string string NOT NULL PRIMARY KEY , "+
+                    "name string,"+
+                    "alias_name string,"+
+                    "status_message string,"+
+                    "TOX_CONNECTION integer,"+
+                    "TOX_CONNECTION_real integer,"+
+                    "TOX_CONNECTION_on_off integer,"+
+                    "TOX_USER_STATUS integer,"+
+                    "avatar_pathname string,"+
+                    "avatar_filename string,"+
+                    "avatar_update integer,"+
+                    "avatar_update_timestamp integer,"+
+                    "notification_silent integer,"+
+                    "sort integer,"+
+                    "last_online_timestamp integer,"+
+                    "last_online_timestamp_real integer,"+
+                    "added_timestamp integer,"+
+                    "is_relay integer )" );
         }
         catch (SQLException e)
         {
             System.err.println(e.getMessage());
-        }
-
-        finally
-        {
-            try
-            {
-                if (sqldb != null)
-                {
-                    sqldb.close();
-                }
-            }
-            catch (SQLException e)
-            {
-                System.err.println(e);
-            }
         }
 
         tox_service_fg = new TrifaToxService();
@@ -490,7 +507,7 @@ public class MainActivity extends JFrame
         final String friend_public_key__final = friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
         long friendnum = tox_friend_add_norequest(friend_public_key__final);
 
-        MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
+        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
     }
 
     static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length)
@@ -575,24 +592,6 @@ public class MainActivity extends JFrame
     // -------- called by native Conference methods --------
     // -------- called by native Conference methods --------
     // -------- called by native Conference methods --------
-
-    static void update_savedata_file_wrapper(String password_hash_2)
-    {
-        try
-        {
-            MainActivity.semaphore_tox_savedata.acquire();
-            long start_timestamp = System.currentTimeMillis();
-            MainActivity.update_savedata_file(password_hash_2);
-            long end_timestamp = System.currentTimeMillis();
-            MainActivity.semaphore_tox_savedata.release();
-            Log.i(TAG, "update_savedata_file() took:" + (((float) (end_timestamp - start_timestamp)) / 1000f) + "s");
-        }
-        catch (InterruptedException e)
-        {
-            MainActivity.semaphore_tox_savedata.release();
-            e.printStackTrace();
-        }
-    }
 
     static int add_tcp_relay_single_wrapper(String ip, long port, String key_hex)
     {

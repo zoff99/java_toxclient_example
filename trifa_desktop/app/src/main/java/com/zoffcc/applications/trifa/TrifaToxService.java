@@ -19,16 +19,18 @@
 
 package com.zoffcc.applications.trifa;
 
+import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
+import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
+import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
-import static com.zoffcc.applications.trifa.MainActivity.tox_friend_add;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_status_message;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.ADD_BOTS_ON_STARTUP;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ECHOBOT_TOXID;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUPBOT_TOXID;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_status_message;
@@ -77,7 +79,7 @@ public class TrifaToxService
                 if (!old_is_tox_started)
                 {
                     MainActivity.init_tox_callbacks();
-                    MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
+                    HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
                 }
                 // ------ correct startup order ------
 
@@ -112,7 +114,7 @@ public class TrifaToxService
                 }
                 Log.i(TAG, "AAA:011");
 
-                MainActivity.update_savedata_file_wrapper(MainActivity.password_hash);
+                HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
 
                 MainActivity.friends = MainActivity.tox_self_get_friend_list();
                 Log.i(TAG, "loading_friend:number_of_friends=" + MainActivity.friends.length);
@@ -166,13 +168,36 @@ public class TrifaToxService
 
                 MainActivity.tox_iterate();
 
-                // --- add echobot and groupbot ---
-                long friendnum;
-                friendnum = tox_friend_add(ECHOBOT_TOXID, "please add me");
-                Log.i(TAG, "tox_friend_add:add friend #:" + friendnum);
-                friendnum = tox_friend_add(GROUPBOT_TOXID, "please add me");
-                Log.i(TAG, "tox_friend_add:add friend #:" + friendnum);
-                // --- add echobot and groupbot ---
+                if (ADD_BOTS_ON_STARTUP)
+                {
+                    boolean need_add_bots = true;
+
+                    try
+                    {
+                        Log.i(TAG, "need_add_bots read:" + get_g_opts("ADD_BOTS_ON_STARTUP_done"));
+
+                        if (get_g_opts("ADD_BOTS_ON_STARTUP_done") != null)
+                        {
+                            if (get_g_opts("ADD_BOTS_ON_STARTUP_done").equals("true"))
+                            {
+                                need_add_bots = false;
+                                Log.i(TAG, "need_add_bots=false");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    if (need_add_bots)
+                    {
+                        Log.i(TAG, "need_add_bots:start");
+                        add_friend_real(ECHOBOT_TOXID);
+                        set_g_opts("ADD_BOTS_ON_STARTUP_done", "true");
+                        Log.i(TAG, "need_add_bots=true (INSERT)");
+                    }
+                }
 
 
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
