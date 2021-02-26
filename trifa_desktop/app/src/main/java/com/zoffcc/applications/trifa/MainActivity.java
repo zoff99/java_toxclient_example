@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -37,7 +38,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -73,9 +79,9 @@ public class MainActivity extends JFrame
     static FriendListFragmentJ FriendPanel;
     static JPanel MessagePanel;
     static JScrollPane MessageScrollPane;
-    static JTextArea MessageTextArea;
+    static JTextPane MessageTextArea;
     static JPanel MessageTextInputPanel;
-    static JTextField sendTextField;
+    static JTextArea sendTextField;
     static JButton sendButton;
 
     // ---- lookup cache ----
@@ -139,10 +145,47 @@ public class MainActivity extends JFrame
         FriendPanel = new FriendListFragmentJ();
         MessagePanel = new JPanel();
         MessageScrollPane = new JScrollPane();
-        MessageTextArea = new JTextArea();
+
+        // ------------------
+        // ------------------
+        // ------------------
+        StyleContext sc = new StyleContext();
+        final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
+
+        // Create and add the main document style
+        Style defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
+        final Style mainStyle = sc.addStyle("MainStyle", defaultStyle);
+        StyleConstants.setFontFamily(mainStyle, "monospaced");
+        StyleConstants.setFontSize(mainStyle, 12);
+
+        // Create and add the constant width style
+        final Style redStyle = sc.addStyle("ConstantWidthRed", null);
+        StyleConstants.setFontFamily(redStyle, "monospaced");
+        StyleConstants.setFontSize(redStyle, 12);
+        StyleConstants.setForeground(redStyle, Color.red);
+
+        // Create and add the constant width style
+        final Style blueStyle = sc.addStyle("ConstantWidthBlue", null);
+        StyleConstants.setFontFamily(blueStyle, "monospaced");
+        StyleConstants.setFontSize(blueStyle, 12);
+        StyleConstants.setForeground(blueStyle, Color.blue);
+
+        // Create and add the heading style
+        final Style heading2Style = sc.addStyle("Heading2", null);
+        StyleConstants.setForeground(heading2Style, Color.red);
+        StyleConstants.setFontSize(heading2Style, 16);
+        StyleConstants.setFontFamily(heading2Style, "serif");
+        StyleConstants.setBold(heading2Style, true);
+        StyleConstants.setLeftIndent(heading2Style, 8);
+        StyleConstants.setFirstLineIndent(heading2Style, 0);
+        // ------------------
+        // ------------------
+        // ------------------
+
+        MessageTextArea = new JTextPane(doc);
 
         MessageTextInputPanel = new JPanel();
-        sendTextField = new JTextField();
+        sendTextField = new JTextArea();
         sendButton = new JButton("send");
 
         getContentPane().setLayout(new GridLayout());
@@ -156,13 +199,44 @@ public class MainActivity extends JFrame
         MessagePanel.setLayout(new BoxLayout(MessagePanel, BoxLayout.Y_AXIS));
         MessagePanel.add(MessageScrollPane);
         MessageScrollPane.setViewportView(MessageTextArea);
+        // MessageTextArea.setEditable(false);
         MessagePanel.add(MessageTextInputPanel);
 
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
 
         MessageTextInputPanel.add(sendTextField);
+        sendTextField.setEditable(true);
         MessageTextInputPanel.add(sendButton);
+
+
+        try
+        {
+            SwingUtilities.invokeAndWait(new Runnable()
+            {
+                public void run()
+                {
+                    try
+                    {
+                        doc.setLogicalStyle(0, mainStyle);
+
+                        doc.insertString(0,
+                                         "2021-02-02 15:30:user1:Text message öäöö4ä3ö4ä3ö2 ä4öä234öä eporkeow krpowek",
+                                         null);
+                        doc.setCharacterAttributes(0, 17, blueStyle, false);
+                        doc.setCharacterAttributes(17, 5, redStyle, false);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception when constructing document: " + e);
+        }
     }
 
     private void initComponents()
@@ -340,11 +414,14 @@ public class MainActivity extends JFrame
 
     public static native int tox_file_seek(long friend_number, long file_number, long position);
 
-    public static native int tox_file_get_file_id(long friend_number, long file_number, java.nio.ByteBuffer file_id_buffer);
+    public static native int tox_file_get_file_id(long friend_number, long file_number, java.
+            nio.ByteBuffer file_id_buffer);
 
-    public static native long tox_file_send(long friend_number, long kind, long file_size, java.nio.ByteBuffer file_id_buffer, String file_name, long filename_length);
+    public static native long tox_file_send(long friend_number, long kind, long file_size, java.
+            nio.ByteBuffer file_id_buffer, String file_name, long filename_length);
 
-    public static native int tox_file_send_chunk(long friend_number, long file_number, long position, java.nio.ByteBuffer data_buffer, long data_length);
+    public static native int tox_file_send_chunk(long friend_number, long file_number, long position, java.
+            nio.ByteBuffer data_buffer, long data_length);
 
     // --------------- Conference -------------
     // --------------- Conference -------------
