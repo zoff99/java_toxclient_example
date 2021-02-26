@@ -19,18 +19,22 @@
 
 package com.zoffcc.applications.trifa;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.MainActivity.MessageTextArea;
 import static com.zoffcc.applications.trifa.MainActivity.add_message_ml;
-import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
+import static com.zoffcc.applications.trifa.MainActivity.mainStyle;
+import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 
@@ -47,10 +51,12 @@ public class MessageListFragmentJ extends JPanel
     static long friendnum_prev = -1;
     static boolean attachemnt_instead_of_send = false;
     static boolean is_at_bottom = true;
+    static boolean show_only_files = false;
 
     public MessageListFragmentJ()
     {
         Log.i(TAG, "MessageListFragmentJ:start");
+        friendnum = -1;
     }
 
     /* HINT: send a message to a friend */
@@ -94,7 +100,7 @@ public class MessageListFragmentJ extends JPanel
                 {
                     MainActivity.send_message_result result = tox_friend_send_message_wrapper(friendnum, 0, msg);
                     long res = result.msg_num;
-                    Log.i(TAG, "tox_friend_send_message_wrapper:result=" + res + " m=" + m);
+                    // Log.i(TAG, "tox_friend_send_message_wrapper:result=" + res + " m=" + m);
 
                     if (res > -1) // sending was OK
                     {
@@ -180,7 +186,7 @@ public class MessageListFragmentJ extends JPanel
         // Log.i(TAG,"send_message_onclick:---end");
     }
 
-    synchronized void add_message(final Message m)
+    synchronized static void add_message(final Message m)
     {
         Runnable myRunnable = new Runnable()
         {
@@ -206,27 +212,96 @@ public class MessageListFragmentJ extends JPanel
         SwingUtilities.invokeLater(myRunnable);
     }
 
+    static void update_all_messages(boolean always)
+    {
+        Log.i(TAG, "update_all_messages");
+
+        try
+        {
+            if (always)
+            {
+                // Log.i(TAG, "data_values:005a");
+
+                Runnable myRunnable = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        MessageTextArea.setSelectionStart(0);
+                        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+                        MessageTextArea.setCharacterAttributes(mainStyle, true);
+                        MessageTextArea.replaceSelection("");
+                        // Log.i(TAG, "data_values:005b");
+
+                        if (show_only_files)
+                        {
+                            // TODO:
+                        }
+                        else
+                        {
+
+                            try
+                            {
+                                Statement statement = sqldb.createStatement();
+                                final String sql = "select * from Message where tox_friendpubkey='" +
+                                                   s(tox_friend_get_public_key__wrapper(friendnum)) +
+                                                   "' order by Sent_timestamp asc, Sent_timestamp_ms asc";
+                                // Log.i(TAG, "sql=" + sql);
+                                ResultSet rs = statement.executeQuery(sql);
+
+                                while (rs.next())
+                                {
+                                    Message m = new Message();
+                                    m.text = rs.getString("text");
+                                    m.tox_friendpubkey = rs.getString("tox_friendpubkey");
+                                    m.direction = rs.getInt("direction");
+                                    m.rcvd_timestamp = rs.getLong("rcvd_timestamp");
+                                    m.rcvd_timestamp_ms = rs.getLong("rcvd_timestamp_ms");
+                                    m.sent_timestamp = rs.getLong("sent_timestamp");
+                                    m.sent_timestamp_ms = rs.getLong("sent_timestamp_ms");
+                                    m.state = rs.getInt("state");
+                                    // Log.i(TAG, "XXXX->m=" + m);
+                                    add_message(m);
+                                    // TODO: read all fields
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                        // Log.i(TAG, "data_values:005c");
+                    }
+
+                };
+                SwingUtilities.invokeLater(myRunnable);
+            }
+            // Log.i(TAG, "data_values:005d");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "data_values:005:EE1:" + e.getMessage());
+        }
+
+    }
+
     public static long get_current_friendnum()
     {
         return friendnum;
     }
 
-    public void add_item(Message new_item)
+    public static void add_item(Message new_item)
     {
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        final Date now = new Date();
-        final String datetime = sdf.format(now);
-
-        Log.i(TAG, "a=" + new_item.tox_friendpubkey + " b=" +
-                   get_my_toxid().substring(0, (ToxVars.TOX_PUBLIC_KEY_SIZE * 2)));
-
         if (new_item.direction == 1)
         {
-            add_message_ml(datetime, new_item.tox_friendpubkey, new_item.text, true);
+            add_message_ml(long_date_time_format(new_item.sent_timestamp), new_item.tox_friendpubkey, new_item.text,
+                           true);
         }
         else
         {
-            add_message_ml(datetime, new_item.tox_friendpubkey, new_item.text, false);
+            add_message_ml(long_date_time_format(new_item.rcvd_timestamp), new_item.tox_friendpubkey, new_item.text,
+                           false);
         }
     }
 

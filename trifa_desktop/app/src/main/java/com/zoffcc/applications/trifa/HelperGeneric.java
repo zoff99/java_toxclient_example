@@ -22,6 +22,7 @@ package com.zoffcc.applications.trifa;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Date;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -144,14 +145,14 @@ public class HelperGeneric
 
     public static MainActivity.send_message_result tox_friend_send_message_wrapper(long friendnum, int a_TOX_MESSAGE_TYPE, String message)
     {
-        Log.d(TAG, "tox_friend_send_message_wrapper:" + friendnum);
+        // Log.d(TAG, "tox_friend_send_message_wrapper:" + friendnum);
         long friendnum_to_use = friendnum;
         FriendList f = main_get_friend(friendnum);
-        Log.d(TAG, "tox_friend_send_message_wrapper:f=" + f);
+        // Log.d(TAG, "tox_friend_send_message_wrapper:f=" + f);
 
         if (f != null)
         {
-            Log.d(TAG, "tox_friend_send_message_wrapper:f conn" + f.TOX_CONNECTION_real);
+            // Log.d(TAG, "tox_friend_send_message_wrapper:f conn" + f.TOX_CONNECTION_real);
 
             if (f.TOX_CONNECTION_real == TOX_CONNECTION_NONE.value)
             {
@@ -161,7 +162,7 @@ public class HelperGeneric
                 {
                     // friend has a relay
                     friendnum_to_use = tox_friend_by_public_key__wrapper(relay_pubkey);
-                    Log.d(TAG, "tox_friend_send_message_wrapper:friendnum_to_use=" + friendnum_to_use);
+                    // Log.d(TAG, "tox_friend_send_message_wrapper:friendnum_to_use=" + friendnum_to_use);
                 }
             }
         }
@@ -180,7 +181,7 @@ public class HelperGeneric
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:002:*PING*");
         }
         global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
-        Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
+        // Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
 
         //** workaround **//
         byte[] tmp_buf_ = new byte[raw_message_length_buf.remaining()];
@@ -208,8 +209,8 @@ public class HelperGeneric
             result.msg_hash_hex = bytesToHex(msg_id_buffer.array(), msg_id_buffer.arrayOffset(), msg_id_buffer.limit());
             result.raw_message_buf_hex = bytesToHex(raw_message_buf.array(), raw_message_buf.arrayOffset(),
                                                     raw_message_length_int);
-            Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
-                       result.raw_message_buf_hex);
+            // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
+            //            result.raw_message_buf_hex);
             return result;
         }
         else if (res == -9991)
@@ -337,6 +338,46 @@ public class HelperGeneric
         {
         }
     }
+
+    static String long_date_time_format(long timestamp_in_millis)
+    {
+        try
+        {
+            return MainActivity.df_date_time_long.format(new Date(timestamp_in_millis));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "_Datetime_ERROR_";
+        }
+    }
+
+    static String long_date_time_format_or_empty(long timestamp_in_millis)
+    {
+        try
+        {
+            return MainActivity.df_date_time_long.format(new Date(timestamp_in_millis));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    static String only_date_time_format(long timestamp_in_millis)
+    {
+        try
+        {
+            return MainActivity.df_date_only.format(new Date(timestamp_in_millis));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return "_Datetime_ERROR_";
+        }
+    }
+
 
     public static long get_last_rowid(Statement statement)
     {

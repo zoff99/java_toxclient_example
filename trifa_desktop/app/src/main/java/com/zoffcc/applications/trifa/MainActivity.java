@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -97,6 +98,7 @@ public class MainActivity extends JFrame
     static JButton sendButton;
     static Style blueStyle;
     static Style redStyle;
+    static Style mainStyle;
     static Style defaultStyle;
 
     // ---- lookup cache ----
@@ -116,6 +118,8 @@ public class MainActivity extends JFrame
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
     final static long UPDATE_MESSAGES_NORMAL_MILLIS = 500; // ~0.5 seconds
+    final static SimpleDateFormat df_date_time_long = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    final static SimpleDateFormat df_date_only = new SimpleDateFormat("yyyy-MM-dd");
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -178,7 +182,7 @@ public class MainActivity extends JFrame
 
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
             MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(defaultStyle, true);
+            MessageTextArea.setCharacterAttributes(mainStyle, true);
             MessageTextArea.replaceSelection("|");
 
             if (self)
@@ -198,7 +202,7 @@ public class MainActivity extends JFrame
 
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
             MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(defaultStyle, true);
+            MessageTextArea.setCharacterAttributes(mainStyle, true);
             MessageTextArea.replaceSelection("|" + message + "\n");
         }
         catch (Exception e)
@@ -235,20 +239,20 @@ public class MainActivity extends JFrame
 
         // Create and add the main document style
         defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
-        final Style mainStyle = sc.addStyle("MainStyle", defaultStyle);
+        mainStyle = sc.addStyle("MainStyle", defaultStyle);
         StyleConstants.setFontFamily(mainStyle, "monospaced");
-        StyleConstants.setFontSize(mainStyle, 12);
+        StyleConstants.setFontSize(mainStyle, 9);
 
         // Create and add the constant width style
         redStyle = sc.addStyle("ConstantWidthRed", null);
         StyleConstants.setFontFamily(redStyle, "monospaced");
-        StyleConstants.setFontSize(redStyle, 12);
+        StyleConstants.setFontSize(redStyle, 9);
         StyleConstants.setForeground(redStyle, Color.red);
 
         // Create and add the constant width style
         blueStyle = sc.addStyle("ConstantWidthBlue", null);
         StyleConstants.setFontFamily(blueStyle, "monospaced");
-        StyleConstants.setFontSize(blueStyle, 12);
+        StyleConstants.setFontSize(blueStyle, 9);
         StyleConstants.setForeground(blueStyle, Color.blue);
 
         // Create and add the heading style
@@ -311,8 +315,6 @@ public class MainActivity extends JFrame
         {
             e.printStackTrace();
         }
-
-        sendTextField.requestFocus();
 
         sendTextField.getDocument().addDocumentListener(new DocumentListener()
         {
@@ -417,6 +419,8 @@ public class MainActivity extends JFrame
                 }
             }
         });
+
+        sendTextField.requestFocus();
     }
 
     private void initComponents()
