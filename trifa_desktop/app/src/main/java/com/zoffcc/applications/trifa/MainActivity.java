@@ -458,8 +458,10 @@ public class MainActivity extends JFrame
     {
         System.out.println("Version:" + Version);
 
+        // // how to change locale ---------------
         // Locale.setDefault(Locale.GERMAN);
         // ResourceBundle.clearCache();
+        // // how to change locale ---------------
 
         Locale locale = Locale.getDefault();
         Log.i(TAG, locale.getDisplayCountry());
