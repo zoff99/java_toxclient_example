@@ -33,6 +33,30 @@ jobs:
             coreutils
             gdb
             nano
+            ca-certificates
+            libconfig-dev
+            wget
+            unzip
+            zip
+            automake
+            autotools-dev
+            build-essential
+            check
+            checkinstall
+            libtool
+            pkg-config
+            rsync
+            git
+            ffmpeg
+            libavcodec-dev
+            libavdevice-dev
+            libsodium-dev
+            libvpx-dev
+            libopus-dev
+            libx264-dev
+            openjdk-11-jdk
+            gdb
+            nano
 
       - checkout
       #- restore_cache:
