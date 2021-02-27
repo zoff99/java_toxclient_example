@@ -40,6 +40,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
+import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.s;
@@ -153,17 +154,35 @@ public class FriendListFragmentJ extends JPanel
 
             Log.i(TAG, "pk=" + pk);
 
-            l.setText("_");
-            l.setBackground(Color.GRAY);
-            l.setForeground(Color.GRAY);
+            try
+            {
+                final FriendList f = main_get_friend(tox_friend_by_public_key__wrapper(pk));
 
-            l.setText("T");
-            l.setBackground(Color.ORANGE);
-            l.setForeground(Color.BLACK);
-
-            l.setText("U");
-            l.setBackground(Color.GREEN);
-            l.setForeground(Color.BLACK);
+                if (f.TOX_CONNECTION == 2)
+                {
+                    l.setText("U");
+                    l.setBackground(Color.GREEN);
+                    l.setForeground(Color.BLACK);
+                }
+                else if (f.TOX_CONNECTION == 1)
+                {
+                    l.setText("T");
+                    l.setBackground(Color.ORANGE);
+                    l.setForeground(Color.BLACK);
+                }
+                else
+                {
+                    l.setText("_");
+                    l.setBackground(Color.GRAY);
+                    l.setForeground(Color.GRAY);
+                }
+            }
+            catch (Exception e)
+            {
+                l.setText("_");
+                l.setBackground(Color.GRAY);
+                l.setForeground(Color.GRAY);
+            }
 
             return p;
         }

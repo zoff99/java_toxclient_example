@@ -46,6 +46,14 @@ public class HelperFriend
                 f = new FriendList();
                 f.tox_public_key_string = rs.getString("tox_public_key_string");
                 f.name = rs.getString("name");
+                f.alias_name = rs.getString("alias_name");
+                f.TOX_CONNECTION = rs.getInt("TOX_CONNECTION");
+                f.TOX_CONNECTION_real = rs.getInt("TOX_CONNECTION_real");
+                f.TOX_CONNECTION_on_off = rs.getInt("TOX_CONNECTION_on_off");
+                f.TOX_CONNECTION_on_off_real = rs.getInt("TOX_CONNECTION_on_off_real");
+                f.TOX_USER_STATUS = rs.getInt("TOX_USER_STATUS");
+                f.last_online_timestamp = rs.getLong("last_online_timestamp");
+                f.last_online_timestamp_real = rs.getLong("last_online_timestamp_real");
                 if (rs.getInt("is_relay") == 0)
                 {
                     f.is_relay = false;
