@@ -254,11 +254,12 @@ public class TrifaToxService
                 {
                     try
                     {
-                        if (tox_iteration_interval_ms < 3)
+                        tox_iteration_interval_ms = 1;
+                        if (tox_iteration_interval_ms < 1)
                         {
-                            Log.i(TAG, "tox_iterate:(tox_iteration_interval_ms < 2ms!!):" + tox_iteration_interval_ms +
+                            Log.i(TAG, "tox_iterate:(tox_iteration_interval_ms < 1ms!!):" + tox_iteration_interval_ms +
                                        "ms");
-                            Thread.sleep(3);
+                            Thread.sleep(1);
                         }
                         else
                         {
@@ -282,7 +283,7 @@ public class TrifaToxService
                         tox_iteration_interval_ms = MainActivity.tox_iteration_interval();
                         Log.i(TAG, "tox_iterate:--END--:took" +
                                    (long) (((float) (s_time - System.currentTimeMillis()) / 1000f)) +
-                                   "s, new inerval=" + tox_iteration_interval_ms + "ms");
+                                   "s, new interval=" + tox_iteration_interval_ms + "ms");
                     }
                 }
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------

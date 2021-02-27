@@ -69,6 +69,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
+import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
 import static java.awt.Font.PLAIN;
 
 public class MainActivity extends JFrame
@@ -78,7 +79,7 @@ public class MainActivity extends JFrame
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
-    final static boolean CTOXCORE_NATIVE_LOGGING = true; // set "false" for release builds
+    final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
     final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
@@ -96,7 +97,7 @@ public class MainActivity extends JFrame
     static Connection sqldb = null;
 
     static JFrame MainFrame = null;
-    static JFrame VideoInFrame = null;
+    static VideoInFrame VideoInFrame1 = null;
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
@@ -237,7 +238,7 @@ public class MainActivity extends JFrame
         super("TRIfA - Desktop - " + Version + "   ");
         MainFrame = this;
 
-        VideoInFrame = new VideoInFrame();
+        VideoInFrame1 = new VideoInFrame();
 
         initComponents();
         setSize(600, 400);
@@ -880,10 +881,26 @@ public class MainActivity extends JFrame
         buffer_size_in_bytes = y_layer_size + v_layer_size + u_layer_size;
         if (video_buffer_1 == null)
         {
+            Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:11:1");
             video_buffer_1 = ByteBuffer.allocateDirect(buffer_size_in_bytes);
             set_JNI_video_buffer(video_buffer_1, frame_width_px1, frame_height_px1);
+            setup_video_in_resolution(frame_width_px1, frame_height_px1,buffer_size_in_bytes);
+            Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:11:2");
         }
-        new_video_in_frame(video_buffer_1,frame_width_px1,frame_height_px1);
+        else
+        {
+            if ((VideoInFrame1.width != frame_width_px1) || (VideoInFrame1.height != frame_height_px1))
+            {
+                Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:22:1");
+                video_buffer_1 = ByteBuffer.allocateDirect(buffer_size_in_bytes);
+                set_JNI_video_buffer(video_buffer_1, frame_width_px1, frame_height_px1);
+                setup_video_in_resolution(frame_width_px1, frame_height_px1,buffer_size_in_bytes);
+                Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:22:2");
+            }
+        }
+
+        new_video_in_frame(video_buffer_1, frame_width_px1, frame_height_px1);
+        Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:099");
     }
 
     static void android_toxav_callback_call_state_cb_method(long friend_number, int a_TOXAV_FRIEND_CALL_STATE)
@@ -900,12 +917,14 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
     {
+        Log.i(TAG, "android_toxav_callback_video_receive_frame_pts_cb_method");
         android_toxav_callback_video_receive_frame_cb_method(friend_number, frame_width_px, frame_height_px, ystride,
                                                              ustride, vstride);
     }
 
     static void android_toxav_callback_video_receive_frame_h264_cb_method(long friend_number, long buf_size)
     {
+        Log.i(TAG, "android_toxav_callback_video_receive_frame_h264_cb_method");
         // HINT: Disabled. this is now handled by c-toxcore. how nice.
     }
 

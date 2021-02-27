@@ -48,8 +48,11 @@ public class JPictureBox extends JComponent
     @Override
     public void paintComponent(Graphics g)
     {
+        // Log.i(TAG, "paintComponent:001");
         if (ii != null)
         {
+            // Log.i(TAG, "paintComponent:002");
+
             switch (getSizeMode())
             {
                 case NORMAL:
@@ -78,7 +81,7 @@ public class JPictureBox extends JComponent
         return icon;
     }
 
-    public void setIcon(Icon icon)
+    public synchronized void setIcon(Icon icon)
     {
         this.icon = icon;
         ii = (ImageIcon) icon;
