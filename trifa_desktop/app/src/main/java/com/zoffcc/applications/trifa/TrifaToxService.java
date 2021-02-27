@@ -184,8 +184,6 @@ public class TrifaToxService
                 Log.i(TAG, "myToxID.setText:001");
                 while ((myToxID == null) || (!myToxID.isShowing()))
                 {
-
-
                     try
                     {
                         Log.i(TAG, "myToxID.setText:sleep");
