@@ -156,6 +156,23 @@ public class FriendListFragmentJ extends JPanel
 
             try
             {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
+                if (isSelected)
+                {
+                    p.setBackground(Color.LIGHT_GRAY);
+                }
+                else
+                {
+                    p.setBackground(Color.WHITE);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            try
+            {
                 final FriendList f = main_get_friend(tox_friend_by_public_key__wrapper(pk));
 
                 if (f.TOX_CONNECTION == 2)
