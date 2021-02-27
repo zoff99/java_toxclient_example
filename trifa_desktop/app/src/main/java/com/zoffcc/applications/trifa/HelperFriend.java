@@ -574,4 +574,73 @@ public class HelperFriend
             MainActivity.tox_util_friend_send_msg_receipt_v2(friend_number, t_sec_receipt, msg_id_buffer);
         }
     }
+
+    synchronized static void set_all_friends_offline()
+    {
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate("update FriendList set TOX_CONNECTION='0'");
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate("update FriendList set TOX_CONNECTION_real='0'");
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate("update FriendList set TOX_CONNECTION_on_off='0'");
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate("update FriendList set TOX_CONNECTION_on_off_real='0'");
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate(
+                            "update FriendList set last_online_timestamp='" + s(System.currentTimeMillis()) +
+                            "' where last_online_timestamp='+s(LAST_ONLINE_TIMSTAMP_ONLINE_NOW)+'");
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    statement.executeUpdate(
+                            "update FriendList set last_online_timestamp_real='" + s(System.currentTimeMillis()) +
+                            "' where last_online_timestamp_real='+s(LAST_ONLINE_TIMSTAMP_ONLINE_NOW)+'");
+                }
+                catch (Exception e)
+                {
+                }
+            }
+        };
+        t.start();
+    }
 }

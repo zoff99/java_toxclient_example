@@ -97,6 +97,7 @@ public class MainActivity extends JFrame
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
+    static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
     static JScrollPane MessageScrollPane;
     static JTextPane MessageTextArea;
@@ -108,6 +109,7 @@ public class MainActivity extends JFrame
     static Style redStyle;
     static Style mainStyle;
     static Style defaultStyle;
+    static JTextArea ownProfileShort;
 
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
@@ -286,6 +288,8 @@ public class MainActivity extends JFrame
         MessageTextInputPanel = new JPanel();
         sendTextField = new JTextArea();
         sendButton = new JButton("send");
+        leftPanel = new JPanel();
+        ownProfileShort = new JTextArea();
 
         myToxID = new JTextField();
         myToxID.setVisible(true);
@@ -296,8 +300,17 @@ public class MainActivity extends JFrame
 
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(80);
-        splitPane.setLeftComponent(FriendPanel);
+        splitPane.setLeftComponent(leftPanel);
         splitPane.setRightComponent(MessagePanel);
+
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.add(ownProfileShort);
+        leftPanel.add(FriendPanel);
+        leftPanel.setVisible(true);
+
+        ownProfileShort.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        ownProfileShort.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
+        ownProfileShort.setEditable(false);
 
         MessagePanel.setLayout(new BoxLayout(MessagePanel, BoxLayout.Y_AXIS));
         MessagePanel.add(MessageScrollPane);
@@ -891,6 +904,56 @@ public class MainActivity extends JFrame
     static void android_tox_callback_self_connection_status_cb_method(int a_TOX_CONNECTION)
     {
         Log.i(TAG, "self_connection_status:status:" + a_TOX_CONNECTION);
+
+        Runnable myRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    // ownProfileShort.setEditable(true);
+                    if (a_TOX_CONNECTION == 2)
+                    {
+                        ownProfileShort.setBackground(Color.GREEN);
+                    }
+                    else if (a_TOX_CONNECTION == 1)
+                    {
+                        ownProfileShort.setBackground(Color.ORANGE);
+                    }
+                    else
+                    {
+                        ownProfileShort.setBackground(Color.LIGHT_GRAY);
+                    }
+                    // ownProfileShort.setEditable(false);
+                }
+                catch (Exception e)
+                {
+                    Log.i(TAG, "android_tox_callback_self_connection_status_cb_method:005:EE:" + e.getMessage());
+                }
+            }
+        };
+
+        long loop = 0;
+        while ((ownProfileShort == null) || (!ownProfileShort.isShowing()))
+        {
+            try
+            {
+                // Log.i(TAG, "myToxID.setText:sleep");
+                Thread.sleep(10);
+                loop++;
+                if (loop > 20)
+                {
+                    break;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        SwingUtilities.invokeLater(myRunnable);
     }
 
     static void android_tox_callback_friend_name_cb_method(long friend_number, String friend_name, long length)

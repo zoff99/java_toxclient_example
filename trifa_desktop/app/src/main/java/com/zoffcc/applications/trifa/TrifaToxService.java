@@ -21,11 +21,14 @@ package com.zoffcc.applications.trifa;
 
 import javax.swing.SwingUtilities;
 
+import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
+import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
+import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
@@ -73,6 +76,8 @@ public class TrifaToxService
 
                 if (!old_is_tox_started)
                 {
+                    set_all_friends_offline();
+                    set_all_conferences_inactive();
                     MainActivity.init_tox_callbacks();
                     HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
                 }
@@ -172,6 +177,9 @@ public class TrifaToxService
                         {
                             Log.i(TAG, "myToxID.setText:003");
                             myToxID.setText(my_tox_id_local);
+                            ownProfileShort.setEditable(true);
+                            ownProfileShort.setText(global_my_name);
+                            ownProfileShort.setEditable(false);
                             Log.i(TAG, "myToxID.setText:004");
                         }
                         catch (Exception e)
@@ -182,12 +190,18 @@ public class TrifaToxService
                 };
 
                 Log.i(TAG, "myToxID.setText:001");
+                long loop = 0;
                 while ((myToxID == null) || (!myToxID.isShowing()))
                 {
                     try
                     {
-                        Log.i(TAG, "myToxID.setText:sleep");
+                        // Log.i(TAG, "myToxID.setText:sleep");
                         Thread.sleep(10);
+                        loop++;
+                        if (loop > 1000)
+                        {
+                            break;
+                        }
                     }
                     catch (Exception e)
                     {
