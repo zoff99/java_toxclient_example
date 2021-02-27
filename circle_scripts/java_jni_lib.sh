@@ -38,6 +38,7 @@ ls -al
 git checkout zoff99/zoxcore_local_fork
 
 ./autogen.sh
+
 make clean
 export CFLAGS_=" $CF2 -D_GNU_SOURCE -I$_INST_/include/ -O2 -g3 -fno-omit-frame-pointer -fstack-protector-all -fPIC "
 export CFLAGS="$CFLAGS_"
@@ -230,7 +231,17 @@ export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protec
 
 set -x
 
-clang-10 $CFLAGS \
+type clang-10
+res=$?
+
+if [ $res == 0 ]; then
+    echo "have clang-10"
+    clang_="clang-10"
+else
+    clang_="clang"
+fi
+
+$clang_ $CFLAGS \
 -DJAVA_LINUX \
 $ASAN_CLANG_FLAGS \
 $C_FLAGS $CXX_FLAGS $LD_FLAGS \

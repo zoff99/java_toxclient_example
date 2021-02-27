@@ -10,8 +10,16 @@ cd $_HOME_
 
 
 build_for='
+alpine:3.12.0
 ubuntu:18.04
+debian:10
+ubuntu:20.04
+debian:9
+ubuntu:16.04
 '
+
+# archlinux/archlinux:base-20210118.0.13862
+
 
 for system_to_build_for in $build_for ; do
 
@@ -102,6 +110,76 @@ pkgs_Ubuntu_16_04="
     nano
 "
 
+    pkgs_AlpineLinux_3_12_0="
+        :c:apk\supdate
+        :c:apk\sadd\sshadow
+        :c:apk\sadd\sgit
+        :c:apk\sadd\sunzip
+        :c:apk\sadd\szip
+        :c:apk\sadd\smake
+        :c:apk\sadd\scmake
+        :c:apk\sadd\sgcc
+        :c:apk\sadd\slinux-headers
+        :c:apk\sadd\smusl-dev
+        :c:apk\sadd\sautomake
+        :c:apk\sadd\sautoconf
+        :c:apk\sadd\scheck
+        :c:apk\sadd\slibtool
+        :c:apk\sadd\srsync
+        :c:apk\sadd\sgit
+        :c:apk\sadd\slibx11-dev
+        :c:apk\sadd\slibxext-dev
+        :c:apk\sadd\sfreetype-deb
+        :c:apk\sadd\sfontconfig-dev
+        :c:apk\sadd\sopenal-soft-dev
+        :c:apk\sadd\slibxrender-dev
+        :c:apk\sadd\sffmpeg
+        :c:apk\sadd\sffmpeg-dev
+        :c:apk\sadd\salsa-lib
+        :c:apk\sadd\salsa-lib-dev
+        :c:apk\sadd\sv4l-utils
+        :c:apk\sadd\sv4l-utils-dev
+        :c:apk\sadd\slibjpeg
+        :c:apk\sadd\slibsodium
+        :c:apk\sadd\slibsodium-dev
+        :c:apk\sadd\slibsodium-static
+        :c:apk\sadd\slibvpx
+        :c:apk\sadd\slibvpx-dev
+        :c:apk\sadd\sopus
+        :c:apk\sadd\sopus-dev
+        :c:apk\sadd\sx264
+        :c:apk\sadd\sx264-dev
+        :c:apk\sadd\sclang
+        :c:apk\sadd\sfile
+        :c:apk\sadd\sjava-common
+        :c:apk\sadd\sopenjdk11-jdk
+        :c:apk\sadd\sopenjdk11-jre
+"
+
+    pkgs_ArchLinux_="
+        :c:pacman\s-Sy
+        :c:pacman\s-S\s--noconfirm\score/make
+        :c:pacman\s-S\s--noconfirm\scmake
+        :c:pacman\s-S\s--noconfirm\sopenal
+        :c:pacman\s-S\s--noconfirm\sffmpeg
+        :c:pacman\s-S\s--noconfirm\slibsodium
+        :c:pacman\s-S\s--noconfirm\sv4l-utils
+        :c:pacman\s-S\s--noconfirm\sautomake\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\slibx11
+        :c:pacman\s-S\s--noconfirm\slibxext
+        :c:pacman\s-S\s--noconfirm\slibxrender
+        :c:pacman\s-S\s--noconfirm\sextra/check
+        :c:pacman\s-S\s--noconfirm\sautoconf\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\slibtool\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\sgit
+        :c:pacman\s-S\s--noconfirm\sjdk11-openjdk
+        :c:pacman\s-S\s--noconfirm\sjre11-openjdk
+        :c:pacman\s-S\s--noconfirm\sgcc\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\sclang\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\sbase-devel\s--ignore=perl,gcc-libs
+        :c:pacman\s-S\s--noconfirm\sglibc\s--ignore=perl,gcc-libs
+"
+
 
 pkgs_Ubuntu_20_04="$pkgs_Ubuntu_18_04"
 pkgs_DebianGNU_Linux_9="$pkgs_Ubuntu_18_04"
@@ -135,6 +213,16 @@ for i in ${!pkgs_name} ; do
 done
 
 #------------------------
+
+if [ "$pkgs_name""x" == "pkgs_AlpineLinux_3_12_0""x" ]; then
+    ls -al /usr/lib/jvm/java-11-openjdk/bin/
+    JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
+    export JAVA_HOME
+    PATH="$JAVA_HOME/bin:${PATH}"
+    export PATH
+    echo $PATH
+    javac -version
+fi
 
 pwd
 ls -al
