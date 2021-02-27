@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -46,6 +47,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -65,6 +67,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thr
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
+import static java.awt.Font.PLAIN;
 
 public class MainActivity extends JFrame
 {
@@ -92,7 +95,7 @@ public class MainActivity extends JFrame
 
     static JFrame MainFrame = null;
 
-    static JSplitPane splitPane;
+    static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
     static MessageListFragmentJ MessagePanel;
     static JScrollPane MessageScrollPane;
@@ -100,6 +103,7 @@ public class MainActivity extends JFrame
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
     static JButton sendButton;
+    static JTextField myToxID = null;
     static Style blueStyle;
     static Style redStyle;
     static Style mainStyle;
@@ -173,11 +177,6 @@ public class MainActivity extends JFrame
 
     public static void add_message_ml(String datetime, String username, String message, boolean self)
     {
-        //Runnable myRunnable = new Runnable()
-        //{
-        //@Override
-        //public void run()
-        //{
         try
         {
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
@@ -213,20 +212,18 @@ public class MainActivity extends JFrame
         catch (Exception e)
         {
         }
-        // }
-        //};
-
-        //SwingUtilities.invokeLater(myRunnable);
     }
 
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
+
+        MainFrame = this;
+
         initComponents();
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        MainFrame = this;
+        this.setVisible(true);
 
         splitPane = new JSplitPane();
 
@@ -280,8 +277,12 @@ public class MainActivity extends JFrame
         sendTextField = new JTextArea();
         sendButton = new JButton("send");
 
+        myToxID = new JTextField();
+        myToxID.setVisible(true);
+
         getContentPane().setLayout(new GridLayout());
         getContentPane().add(splitPane);
+        splitPane.setVisible(true);
 
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(80);
@@ -293,6 +294,8 @@ public class MainActivity extends JFrame
         MessageScrollPane.setViewportView(MessageTextArea);
         // MessageTextArea.setEditable(false);
         MessagePanel.add(MessageTextInputPanel);
+        myToxID.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        MessagePanel.add(myToxID, BorderLayout.SOUTH);
 
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
@@ -386,7 +389,9 @@ public class MainActivity extends JFrame
                         }
                     };
 
+                    Log.i(TAG, "invokeLater:002:s");
                     SwingUtilities.invokeLater(myRunnable);
+                    Log.i(TAG, "invokeLater:002:e");
 
                     try
                     {
@@ -436,7 +441,9 @@ public class MainActivity extends JFrame
                                         }
                                     };
 
+                                    Log.i(TAG, "invokeLater:003:s");
                                     SwingUtilities.invokeLater(myRunnable);
+                                    Log.i(TAG, "invokeLater:003:e");
                                 }
                             }
                         }

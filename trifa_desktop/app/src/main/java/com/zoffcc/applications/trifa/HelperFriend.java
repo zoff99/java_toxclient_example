@@ -372,7 +372,9 @@ public class HelperFriend
                 }
             };
 
+            Log.i(TAG,"invokeLater:001:s");
             SwingUtilities.invokeLater(myRunnable);
+            Log.i(TAG,"invokeLater:001:e");
 
         }
         catch (Exception e)

@@ -19,10 +19,13 @@
 
 package com.zoffcc.applications.trifa;
 
+import javax.swing.SwingUtilities;
+
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
+import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
@@ -159,6 +162,44 @@ public class TrifaToxService
                 Log.i(TAG, "tox_iteration_interval_ms=" + tox_iteration_interval_ms);
 
                 MainActivity.tox_iterate();
+
+                Runnable myRunnable = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            Log.i(TAG, "myToxID.setText:003");
+                            myToxID.setText(my_tox_id_local);
+                            Log.i(TAG, "myToxID.setText:004");
+                        }
+                        catch (Exception e)
+                        {
+                            Log.i(TAG, "myToxID.setText:005:EE:" + e.getMessage());
+                        }
+                    }
+                };
+
+                Log.i(TAG, "myToxID.setText:001");
+                while ((myToxID == null) || (!myToxID.isShowing()))
+                {
+
+
+                    try
+                    {
+                        Log.i(TAG, "myToxID.setText:sleep");
+                        Thread.sleep(10);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+                Log.i(TAG, "invokeLater:008:s");
+                SwingUtilities.invokeLater(myRunnable);
+                Log.i(TAG, "invokeLater:008:e");
+                Log.i(TAG, "myToxID.setText:002");
 
                 if (ADD_BOTS_ON_STARTUP)
                 {
