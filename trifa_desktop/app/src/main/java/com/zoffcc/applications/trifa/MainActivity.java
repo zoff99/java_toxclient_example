@@ -28,6 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -43,6 +45,7 @@ import java.util.concurrent.Semaphore;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -71,6 +74,8 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
 import static java.awt.Font.PLAIN;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
+import static javax.swing.JOptionPane.YES_OPTION;
 
 public class MainActivity extends JFrame
 {
@@ -242,7 +247,41 @@ public class MainActivity extends JFrame
 
         initComponents();
         setSize(600, 400);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                int selected_answer = JOptionPane.showConfirmDialog(null, lo.getString("exit_app_msg"),
+                                                                    lo.getString("exit_app_title"), YES_NO_OPTION);
+                if (selected_answer == YES_OPTION)
+                {
+                    try
+                    {
+                        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                    }
+                    catch (Exception e3)
+                    {
+                        e3.printStackTrace();
+                    }
+
+                    tox_service_fg.stop_me = true;
+
+                    try
+                    {
+                        sqldb.close();
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+
+                    System.exit(0);
+                }
+            }
+        });
+
         this.setVisible(true);
 
         splitPane = new JSplitPane();
@@ -534,18 +573,52 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
+        Statement statement = null;
+
         try
         {
-            // @formatter:off
-            Statement statement = sqldb.createStatement();
+            statement = sqldb.createStatement();
             statement.setQueryTimeout(10);  // set timeout to 30 sec.
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
 
+        // @formatter:off
+        try
+        {
             statement.executeUpdate(
                     "create table TRIFADatabaseGlobalsNew (" +
                     "key string NOT NULL PRIMARY KEY," +
                     "value string" +
                     ")");
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
 
+        try
+        {
+            statement.executeUpdate(
+                    "CREATE TABLE `BootstrapNodeEntryDB` \n" +
+                    "(\n" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                    "`num` INTEGER NOT NULL,\n" +
+                    "`udp_node` BOOLEAN NOT NULL,\n" +
+                    "`ip` TEXT NOT NULL,\n" +
+                    "`port` INTEGER NOT NULL,\n" +
+                    "`key_hex` TEXT NOT NULL\n" +
+                    ")");
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
+
+        try
+        {
             statement.executeUpdate(
                     "create table FriendList (" +
                     "tox_public_key_string string NOT NULL PRIMARY KEY , " +
@@ -567,7 +640,14 @@ public class MainActivity extends JFrame
                     "last_online_timestamp_real integer DEFAULT '-1'," +
                     "added_timestamp integer DEFAULT '-1'," +
                     "is_relay integer DEFAULT '0' CHECK (is_relay IN ('0', '1'))  )");
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
 
+        try
+        {
             statement.executeUpdate("create table Message("+
                                     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "+
                                     "message_id integer DEFAULT '-1', "+
@@ -595,7 +675,14 @@ public class MainActivity extends JFrame
                                     "resend_count integer DEFAULT '2' CHECK (resend_count IN ('0', '1', '2')) "+
                ")"
             );
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
 
+        try
+        {
             statement.executeUpdate(
                     "create table RelayListDB (" +
                     "tox_public_key_string string NOT NULL PRIMARY KEY , " +
@@ -606,13 +693,77 @@ public class MainActivity extends JFrame
                     "tox_public_key_string_of_owner string " +
                     ")"
             );
-
-            // @formatter:on
         }
         catch (SQLException e)
         {
             System.err.println(e.getMessage());
         }
+
+        try
+        {
+            statement.executeUpdate(
+                    "create table ConferenceDB" +
+                    "(" +
+                    "    conference_identifier string NOT NULL PRIMARY KEY ," +
+                    "    who_invited__tox_public_key_string string," +
+                    "    name string," +
+                    "    peer_count integer DEFAULT '-1'," +
+                    "    own_peer_number integer DEFAULT '-1'," +
+                    "    kind integer DEFAULT '0'," +
+                    "    tox_conference_number integer DEFAULT '-1'," +
+                    "    conference_active integer DEFAULT '0' CHECK (conference_active IN ('0', '1'))," +
+                    "    notification_silent integer DEFAULT '0' CHECK (notification_silent IN ('0', '1'))" +
+                    ")"
+            );
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
+
+        try
+        {
+            statement.executeUpdate(
+                    "CREATE TABLE ConferencePeerCacheDB\n" +
+                    "(\n" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                    "conference_identifier TEXT NOT NULL, \n" +
+                    "peer_pubkey TEXT NOT NULL, \n" +
+                    "peer_name TEXT NOT NULL, \n" +
+                    "last_update_timestamp INTEGER NOT NULL DEFAULT '-1'\n" +
+                    ")"
+            );
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
+
+        try
+        {
+            statement.executeUpdate(
+                    "CREATE TABLE `ConferenceMessage`\n" +
+                    "(\n" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                    "`conference_identifier` TEXT NOT NULL DEFAULT -1,\n" +
+                    "`tox_peerpubkey` TEXT NOT NULL,\n" +
+                    "`tox_peername` TEXT ,\n" +
+                    "`direction` INTEGER NOT NULL,\n" +
+                    "`TOX_MESSAGE_TYPE` INTEGER NOT NULL,\n" +
+                    "`TRIFA_MESSAGE_TYPE` INTEGER NOT NULL DEFAULT 0,\n" +
+                    "`sent_timestamp` INTEGER ,\n" +
+                    "`rcvd_timestamp` INTEGER ,\n" +
+                    "`read` BOOLEAN NOT NULL,\n" +
+                    "`is_new` BOOLEAN NOT NULL,\n" +
+                    "`text` TEXT \n" +
+                    ")\n"
+            );
+        }
+        catch (SQLException e)
+        {
+            System.err.println(e.getMessage());
+        }
+        // @formatter:on
 
         tox_service_fg = new TrifaToxService();
 
@@ -884,7 +1035,7 @@ public class MainActivity extends JFrame
             Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:11:1");
             video_buffer_1 = ByteBuffer.allocateDirect(buffer_size_in_bytes);
             set_JNI_video_buffer(video_buffer_1, frame_width_px1, frame_height_px1);
-            setup_video_in_resolution(frame_width_px1, frame_height_px1,buffer_size_in_bytes);
+            setup_video_in_resolution(frame_width_px1, frame_height_px1, buffer_size_in_bytes);
             Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:11:2");
         }
         else
@@ -894,7 +1045,7 @@ public class MainActivity extends JFrame
                 Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:22:1");
                 video_buffer_1 = ByteBuffer.allocateDirect(buffer_size_in_bytes);
                 set_JNI_video_buffer(video_buffer_1, frame_width_px1, frame_height_px1);
-                setup_video_in_resolution(frame_width_px1, frame_height_px1,buffer_size_in_bytes);
+                setup_video_in_resolution(frame_width_px1, frame_height_px1, buffer_size_in_bytes);
                 Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:22:2");
             }
         }
