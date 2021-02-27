@@ -22,6 +22,9 @@ package com.zoffcc.applications.trifa;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import javax.swing.SwingUtilities;
+
+import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
@@ -243,6 +246,138 @@ public class HelperFriend
             long result = MainActivity.tox_friend_by_public_key(friend_public_key_string);
             MainActivity.cache_pubkey_fnum.put(friend_public_key_string, result);
             return result;
+        }
+    }
+
+    static void add_friend_to_system(final String friend_public_key, final boolean as_friends_relay, final String owner_public_key)
+    {
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    // toxcore needs this!!
+                    Thread.sleep(10);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                // ---- auto add all friends ----
+                // ---- auto add all friends ----
+                // ---- auto add all friends ----
+                long friendnum = MainActivity.tox_friend_add_norequest(friend_public_key); // add friend
+                Log.d(TAG, "add_friend_to_system:fnum add=" + friendnum);
+
+                if (friendnum == 0xffffffff) // 0xffffffff == UINT32_MAX
+                {
+                    // adding friend failed
+                    return;
+                }
+
+                try
+                {
+                    Thread.sleep(20);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                HelperGeneric.update_savedata_file_wrapper(
+                        MainActivity.password_hash); // save toxcore datafile (new friend added)
+                final FriendList f = new FriendList();
+                f.tox_public_key_string = friend_public_key;
+                f.TOX_USER_STATUS = 0;
+                f.TOX_CONNECTION = 0;
+                f.TOX_CONNECTION_on_off = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
+                // set name as the last 5 char of the publickey (until we get a proper name)
+                f.name = friend_public_key.substring(friend_public_key.length() - 5, friend_public_key.length());
+                f.avatar_pathname = null;
+                f.avatar_filename = null;
+
+                try
+                {
+                    // Log.i(TAG, "friend_request:insert:001:f=" + f);
+                    f.added_timestamp = System.currentTimeMillis();
+                    insert_into_friendlist_db(f);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    Log.i(TAG, "friend_request:insert:EE2:" + e.getMessage());
+                    return;
+                }
+
+                if (as_friends_relay)
+                {
+                    // add relay for friend to DB
+                    // Log.d(TAG, "add_friend_to_system:add_or_update_friend_relay");
+                    HelperRelay.add_or_update_friend_relay(friend_public_key, owner_public_key);
+                    // update friendlist on screen
+                    add_all_friends_clear_wrapper(10);
+                }
+                else
+                {
+                    update_single_friend_in_friendlist_view(f);
+                }
+
+                // ---- auto add all friends ----
+                // ---- auto add all friends ----
+                // ---- auto add all friends ----
+
+                try
+                {
+                    Thread.sleep(100);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                //**//if (MainActivity.PREF__U_keep_nospam == false)
+                {
+                    // ---- set new random nospam value after each added friend ----
+                    // ---- set new random nospam value after each added friend ----
+                    // ---- set new random nospam value after each added friend ----
+                    //**//HelperGeneric.set_new_random_nospam_value();
+                    // ---- set new random nospam value after each added friend ----
+                    // ---- set new random nospam value after each added friend ----
+                    // ---- set new random nospam value after each added friend ----
+                }
+            }
+        };
+        t.start();
+    }
+
+    static void add_all_friends_clear_wrapper(int delay)
+    {
+        try
+        {
+            Runnable myRunnable = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        add_all_friends_clear(delay);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            };
+
+            SwingUtilities.invokeLater(myRunnable);
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 }

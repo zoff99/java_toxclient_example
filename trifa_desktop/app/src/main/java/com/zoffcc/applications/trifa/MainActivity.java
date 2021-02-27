@@ -874,14 +874,11 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_request_cb_method(String friend_public_key, String friend_request_message, long length)
     {
-        Log.i(TAG, "friend_request:friend:" + friend_public_key + " friend request message:" + friend_request_message);
-        Log.i(TAG, "friend_request:friend:" + friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2) +
-                   " friend request message:" + friend_request_message);
-
-        final String friend_public_key__final = friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
-        long friendnum = tox_friend_add_norequest(friend_public_key__final);
-
-        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+        // Log.i(TAG, "friend_request:friend:" + friend_public_key + " friend request message:" + friend_request_message);
+        // Log.i(TAG, "friend_request:friend:" + friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2) +
+        //            " friend request message:" + friend_request_message);
+        String friend_public_key__ = friend_public_key.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
+        HelperFriend.add_friend_to_system(friend_public_key__.toUpperCase(), false, null);
     }
 
     static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length)

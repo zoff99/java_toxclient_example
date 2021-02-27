@@ -53,7 +53,7 @@ public class FriendListFragmentJ extends JPanel
     private static final String TAG = "trifa.FriendListFrgnt";
 
     private JList<String> friends_and_confs_list;
-    DefaultListModel<String> friends_and_confs_list_model;
+    static DefaultListModel<String> friends_and_confs_list_model;
     JScrollPane FriendScrollPane;
 
     static Boolean in_update_data = false;
@@ -71,23 +71,36 @@ public class FriendListFragmentJ extends JPanel
 
         friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
         {
-
             @Override
             public void valueChanged(ListSelectionEvent e)
             {
                 try
                 {
-                    // System.out.println("ListSelectionListener:e.getFirstIndex()" + e.getFirstIndex());
-                    String pk = friends_and_confs_list_model.elementAt(e.getFirstIndex()).substring(0,
-                                                                                                    TOX_PUBLIC_KEY_SIZE *
-                                                                                                    2);
+                    if (e.getValueIsAdjusting())
+                    {
+                        return;
+                    }
+
+                    System.out.println("ListSelectionListener:e.getFirstIndex()" + e.getFirstIndex());
+                    System.out.println("ListSelectionListener:friends_and_confs_list.getSelectedIndex()" +
+                                       friends_and_confs_list.getSelectedIndex());
+
+                    if (friends_and_confs_list.getSelectedIndex() == -1)
+                    {
+                        return;
+                    }
+
+                    String pk = friends_and_confs_list_model.elementAt(
+                            friends_and_confs_list.getSelectedIndex()).substring(0, TOX_PUBLIC_KEY_SIZE * 2);
+
+                    // friends_and_confs_list.clearSelection();
 
                     if (pk.length() == (TOX_PUBLIC_KEY_SIZE * 2))
                     {
                         MessagePanel.setCurrentPK(pk);
                         MessagePanel.friendnum = tox_friend_by_public_key__wrapper(pk);
-                        // System.out.println(
-                        //         "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
+                        System.out.println(
+                                "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
 
                         update_all_messages(true);
                     }
@@ -136,7 +149,7 @@ public class FriendListFragmentJ extends JPanel
         }
     }
 
-    synchronized void add_all_friends_clear(final int delay)
+    synchronized static void add_all_friends_clear(final int delay)
     {
         // Log.i(TAG, "add_all_friends_clear");
         try
