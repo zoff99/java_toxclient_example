@@ -34,7 +34,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
 
 import javax.swing.BoxLayout;
@@ -122,6 +124,7 @@ public class MainActivity extends JFrame
     final static long UPDATE_MESSAGES_NORMAL_MILLIS = 500; // ~0.5 seconds
     final static SimpleDateFormat df_date_time_long = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     final static SimpleDateFormat df_date_only = new SimpleDateFormat("yyyy-MM-dd");
+    static ResourceBundle lo = null;
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -455,13 +458,27 @@ public class MainActivity extends JFrame
     {
         System.out.println("Version:" + Version);
 
+        // Locale.setDefault(Locale.GERMAN);
+        // ResourceBundle.clearCache();
+
+        Locale locale = Locale.getDefault();
+        Log.i(TAG, locale.getDisplayCountry());
+        Log.i(TAG, locale.getDisplayLanguage());
+        Log.i(TAG, locale.getDisplayName());
+        Log.i(TAG, locale.getISO3Country());
+        Log.i(TAG, locale.getISO3Language());
+        Log.i(TAG, locale.getLanguage());
+        Log.i(TAG, locale.getCountry());
+
+        lo = ResourceBundle.getBundle("i18n.ResourceBundle", locale);
+        Log.i(TAG, "locale_test:" + lo.getString("locale_test"));
+
         TrifaToxService.TOX_SERVICE_STARTED = false;
         bootstrapping = false;
         Log.i(TAG, "java.library.path:" + System.getProperty("java.library.path"));
 
         Log.i(TAG, "loaded:c-toxcore:v" + tox_version_major() + "." + tox_version_minor() + "." + tox_version_patch());
         Log.i(TAG, "loaded:jni-c-toxcore:v" + jnictoxcore_version());
-
 
         // create a database connection
         try
