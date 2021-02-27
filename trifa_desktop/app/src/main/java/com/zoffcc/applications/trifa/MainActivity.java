@@ -25,6 +25,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -294,6 +296,27 @@ public class MainActivity extends JFrame
 
         MessageTextInputPanel.add(sendTextField);
         sendTextField.setEditable(true);
+
+        sendTextField.addKeyListener(new KeyAdapter()
+        {
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    if (e.isShiftDown())
+                    {
+                        Log.i(TAG, "SHIFT Enter pressed");
+                        sendTextField.append("\n");
+                        return;
+                    }
+                    Log.i(TAG, "Enter key pressed");
+                    send_message_onclick();
+                }
+            }
+        });
+
+
         MessageTextInputPanel.add(sendButton);
 
         sendButton.addActionListener(new ActionListener()
