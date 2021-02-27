@@ -211,7 +211,7 @@ public class MainActivity extends JFrame
                 MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
                 MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
                 MessageTextArea.setCharacterAttributes(blueStyle, true);
-                MessageTextArea.replaceSelection(username);
+                MessageTextArea.replaceSelection("user");
             }
 
             MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
