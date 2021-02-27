@@ -203,6 +203,14 @@ pwd
 ls -al
 ## ---------------------------
 
+echo "JAVADIR1------------------"
+find /usr -name 'jni.h'
+echo "JAVADIR1------------------"
+
+echo "JAVADIR2------------------"
+find /usr -name 'jni_md.h'
+echo "JAVADIR2------------------"
+
 dirname $(find /usr -name 'jni.h' 2>/dev/null|head -1) > /tmp/xx1
 dirname $(find /usr -name 'jni_md.h' 2>/dev/null|head -1) > /tmp/xx2
 export JAVADIR1=$(cat /tmp/xx1)
