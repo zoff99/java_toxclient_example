@@ -71,7 +71,7 @@ jobs:
       - run: type -a clang-10
       - run: clang-10 --version
 
-
+      - run: mkdir -p /workspace/data/ ; rsync -a ~/work/deploy/ --exclude=.localrun /workspace/data 
       - run: cd build_dir ; bash ../circle_scripts/java_jni_lib.sh '../'
 
       #- save_cache:

@@ -3,6 +3,10 @@
 _HOME_="$(pwd)"
 export _HOME_
 
+id -a
+pwd
+ls -al
+
 _CTC_SRC_DIR_="/root/work/c-toxcore"
 export _CTC_SRC_DIR_
 
@@ -20,6 +24,8 @@ mkdir -p $_INST_
 
 export LD_LIBRARY_PATH=$_INST_/lib/
 export PKG_CONFIG_PATH=$_INST_/lib/pkgconfig
+
+mkdir -p /workspace/data/
 
 mkdir -p /root/work/
 cd /root/work/
