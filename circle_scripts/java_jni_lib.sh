@@ -273,15 +273,19 @@ javac com/zoffcc/applications/trifa/MainActivity.java
 javac com/zoffcc/applications/trifa/TrifaToxService.java
 # --------- package java example ---------
 cd /workspace/data/java_ref_client/app/src/main/java/
-tar -cvf /artefacts/install_linux.tar com *.sh *.so || tar -cvf ~/work/artefact/install_linux.tar com *.sh *.so
+tar -cvf /artefacts/install_linux.tar com *.sh *.so || tar -cvf ~/work/artefacts/install_linux.tar com *.sh *.so
 # --------- run test java application ---------
 java -Djava.library.path="." com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
 # --------- run test java application ---------
 sleep 10
-cat ./trifa.log
+cat ./trifa.log|head -20
+echo
+echo
 cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 3
+echo
+echo
 sleep 40
-cat ./trifa.log
-cp -v ./trifa.log /artefacts/ || cp -v ./trifa.log ~/work/artefact/ ; exit 0
+# cat ./trifa.log
+cp -v ./trifa.log /artefacts/ || cp -v ./trifa.log ~/work/artefacts/ ; exit 0
 
 
