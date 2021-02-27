@@ -26,6 +26,7 @@ import java.util.Date;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
@@ -35,6 +36,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MS
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_TCP;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MAX_FILETRANSFER_SIZE_MSGV2;
 
@@ -208,9 +210,16 @@ public class HelperGeneric
             // msg V2 OK
             result.msg_num = (Long.MAX_VALUE - 1);
             result.msg_v2 = true;
-            result.msg_hash_hex = bytesToHex(msg_id_buffer.array(), msg_id_buffer.arrayOffset(), msg_id_buffer.limit());
-            result.raw_message_buf_hex = bytesToHex(raw_message_buf.array(), raw_message_buf.arrayOffset(),
-                                                    raw_message_length_int);
+
+
+            byte[] tmp_buf2_ = new byte[msg_id_buffer.remaining()];
+            msg_id_buffer.slice().get(tmp_buf2_);
+            result.msg_hash_hex = bytesToHex(tmp_buf2_, 0, tmp_buf2_.length);
+
+            byte[] tmp_buf3_ = new byte[raw_message_buf.remaining()];
+            raw_message_buf.slice().get(tmp_buf3_);
+
+            result.raw_message_buf_hex = bytesToHex(tmp_buf3_, 0, tmp_buf3_.length);
             // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
             //            result.raw_message_buf_hex);
             return result;
@@ -288,7 +297,7 @@ public class HelperGeneric
             }
 
             // m.tox_friendnum = friend_number;
-            m.tox_friendpubkey = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
+            m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friend_number);
             m.direction = 0; // msg received
             m.TOX_MESSAGE_TYPE = 0;
             m.read = false;
@@ -335,6 +344,117 @@ public class HelperGeneric
         }
         else if (msg_type == 1)
         {
+            // msgV2 direct message
+            // Log.i(TAG,
+            //      "friend_message_v2:friend:" + friend_number + " ts:" + ts_sec + " systime" + System.currentTimeMillis() +
+            //      " message:" + friend_message);
+            // if message list for this friend is open, then don't do notification and "new" badge
+            boolean do_notification = true;
+            boolean do_badge_update = true;
+
+            ByteBuffer raw_message_buf = ByteBuffer.allocateDirect((int) raw_message_length);
+            raw_message_buf.put(raw_message, 0, (int) raw_message_length);
+            ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+            MainActivity.tox_messagev2_get_message_id(raw_message_buf, msg_id_buffer);
+            long ts_sec = MainActivity.tox_messagev2_get_ts_sec(raw_message_buf);
+            long ts_ms = MainActivity.tox_messagev2_get_ts_ms(raw_message_buf);
+
+            ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+            String msg_id_as_hex_string = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(),
+                                                     msg_id_buffer_compat.limit());
+            // Log.i(TAG, "TOX_FILE_KIND_MESSAGEV2_SEND:MSGv2HASH:2=" + msg_id_as_hex_string);
+
+            int already_have_message = 0;
+
+            try
+            {
+                Statement statement = sqldb.createStatement();
+                ResultSet rs = statement.executeQuery("SELECT count(*) FROM Message where tox_friendpubkey='" +
+                                                      s(tox_friend_get_public_key__wrapper(friend_number)) + "'" +
+                                                      " and msg_id_hash='" + s(msg_id_as_hex_string) + "'");
+                if (rs.next())
+                {
+                    already_have_message = rs.getInt("count");
+                }
+            }
+            catch (Exception e)
+            {
+            }
+
+            if (already_have_message > 0)
+            {
+                // it's a double send, ignore it
+                // send message receipt v2, most likely the other party did not get it yet
+                // TODO: use received timstamp, not "now" here!
+                HelperFriend.send_friend_msg_receipt_v2_wrapper(friend_number, msg_type, msg_id_buffer);
+                return;
+            }
+
+            // add FT message to UI
+            Message m = new Message();
+
+            if (!do_badge_update)
+            {
+                Log.i(TAG, "noti_and_badge:004a:");
+                m.is_new = false;
+            }
+            else
+            {
+                Log.i(TAG, "noti_and_badge:004b:");
+                m.is_new = true;
+            }
+
+            m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friend_number);
+            m.direction = 0; // msg received
+            m.TOX_MESSAGE_TYPE = 0;
+            m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+            m.filetransfer_id = -1;
+            m.filedb_id = -1;
+            m.state = TOX_FILE_CONTROL_RESUME.value;
+            m.ft_accepted = false;
+            m.ft_outgoing_started = false;
+            m.sent_timestamp = (ts_sec * 1000); // sent time as unix timestamp -> convert to milliseconds
+            m.sent_timestamp_ms = ts_ms; // "ms" part of timestamp (could be just an increasing number)
+            m.rcvd_timestamp = System.currentTimeMillis();
+            m.rcvd_timestamp_ms = 0;
+            m.text = friend_message_text_utf8;
+            m.msg_version = 1;
+            m.msg_id_hash = msg_id_as_hex_string;
+            Log.i(TAG, "TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
+
+            if (get_current_friendnum() == friend_number)
+            {
+                HelperMessage.insert_into_message_db(m, true);
+            }
+            else
+            {
+                HelperMessage.insert_into_message_db(m, false);
+            }
+
+            HelperFriend.send_friend_msg_receipt_v2_wrapper(friend_number, msg_type, msg_id_buffer);
+
+            try
+            {
+                // update "new" status on friendlist fragment
+
+                FriendList f = main_get_friend(tox_friend_by_public_key__wrapper(m.tox_friendpubkey));
+                HelperFriend.update_single_friend_in_friendlist_view(f);
+
+                if (f.notification_silent)
+                {
+                    do_notification = false;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+            }
+
+            if (do_notification)
+            {
+                //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+            }
         }
         else if (msg_type == 2)
         {

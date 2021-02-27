@@ -73,6 +73,7 @@ public class TRIFAGlobals
     static long global_last_activity_for_battery_savings_ts = -1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_NOW = Long.MAX_VALUE - 1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_OFFLINE = -1;
+    public static final int DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS = 4 * 1000; // 4 sec.
 
     public static enum TRIFA_FT_DIRECTION
     {

@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -27,6 +28,7 @@ import javax.swing.SwingUtilities;
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS;
 
 public class HelperFriend
 {
@@ -450,6 +452,126 @@ public class HelperFriend
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+
+    static void send_friend_msg_receipt_v2_wrapper(final long friend_number, final int msg_type, final ByteBuffer msg_id_buffer)
+    {
+        // (msg_type == 1) msgV2 direct message
+        // (msg_type == 2) msgV2 relay message
+        // (msg_type == 3) msgV2 group confirm msg received message
+        // (msg_type == 4) msgV2 confirm unknown received message
+        if (msg_type == 1)
+        {
+            // send message receipt v2
+            long t_sec_receipt = (System.currentTimeMillis() / 1000);
+            MainActivity.tox_util_friend_send_msg_receipt_v2(friend_number, t_sec_receipt, msg_id_buffer);
+
+            try
+            {
+                String relay_for_friend = HelperRelay.get_relay_for_friend(
+                        tox_friend_get_public_key__wrapper(friend_number));
+
+                if (relay_for_friend != null)
+                {
+                    // if friend has a relay, send the "msg receipt" also to the relay. just to be sure.
+                    MainActivity.tox_util_friend_send_msg_receipt_v2(
+                            tox_friend_by_public_key__wrapper(relay_for_friend), t_sec_receipt, msg_id_buffer);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else if (msg_type == 2)
+        {
+            // send message receipt v2
+            final long t_sec_receipt = (System.currentTimeMillis() / 1000);
+            final Thread t = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    // delay sending of msg receipt for x milliseconds
+                    try
+                    {
+                        Thread.sleep(DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    // send msg receipt on main thread
+                    final Runnable myRunnable = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+                                String msg_id_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
+                                                                                       msg_id_buffer_compat.arrayOffset(),
+                                                                                       msg_id_buffer_compat.limit());
+                                // Log.i(TAG, "send_friend_msg_receipt_v2_wrapper:send delayed -> now msgid=" +
+                                //            msg_id_as_hex_string);
+
+                                try
+                                {
+                                    MainActivity.tox_util_friend_send_msg_receipt_v2(friend_number, t_sec_receipt,
+                                                                                     msg_id_buffer);
+
+                                    try
+                                    {
+                                        String relay_for_friend = HelperRelay.get_relay_for_friend(
+                                                tox_friend_get_public_key__wrapper(friend_number));
+
+                                        if (relay_for_friend != null)
+                                        {
+                                            // if friend has a relay, send the "msg receipt" also to the relay. just to be sure.
+                                            MainActivity.tox_util_friend_send_msg_receipt_v2(
+                                                    tox_friend_by_public_key__wrapper(relay_for_friend), t_sec_receipt,
+                                                    msg_id_buffer);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+
+                    Log.i(TAG, "invokeLater:010:s");
+                    SwingUtilities.invokeLater(myRunnable);
+                    Log.i(TAG, "invokeLater:010:e");
+                }
+            };
+            t.start();
+        }
+        else if (msg_type == 3)
+        {
+            // send message receipt v2
+            long t_sec_receipt = (System.currentTimeMillis() / 1000);
+            MainActivity.tox_util_friend_send_msg_receipt_v2(friend_number, t_sec_receipt, msg_id_buffer);
+        }
+        else if (msg_type == 4)
+        {
+            // send message receipt v2 for unknown message
+            long t_sec_receipt = (System.currentTimeMillis() / 1000);
+            MainActivity.tox_util_friend_send_msg_receipt_v2(friend_number, t_sec_receipt, msg_id_buffer);
         }
     }
 }
