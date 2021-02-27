@@ -94,6 +94,7 @@ public class MainActivity extends JFrame
     static Connection sqldb = null;
 
     static JFrame MainFrame = null;
+    static JFrame VideoInFrame = null;
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
@@ -231,6 +232,8 @@ public class MainActivity extends JFrame
         super("TRIfA - Desktop - " + Version + "   ");
 
         MainFrame = this;
+
+        VideoInFrame = new VideoInFrame();
 
         initComponents();
         setSize(600, 400);
@@ -604,6 +607,8 @@ public class MainActivity extends JFrame
             System.err.println(e.getMessage());
         }
 
+        new MainActivity().setVisible(true);
+
         tox_service_fg = new TrifaToxService();
 
         if (!TrifaToxService.TOX_SERVICE_STARTED)
@@ -625,8 +630,6 @@ public class MainActivity extends JFrame
 
         String my_tox_id_temp = get_my_toxid();
         Log.i(TAG, "MyToxID:" + my_tox_id_temp);
-
-        new MainActivity().setVisible(true);
     }
 
     static
