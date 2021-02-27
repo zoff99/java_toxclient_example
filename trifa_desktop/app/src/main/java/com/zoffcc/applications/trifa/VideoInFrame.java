@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -31,6 +32,8 @@ public class VideoInFrame extends JFrame
     static JPictureBox video_in_frame = null;
     static int width = 640;
     static int height = 480;
+    static byte[] imageInByte = null;
+    static BufferedImage imageIn = null;
 
     public VideoInFrame()
     {
@@ -49,6 +52,45 @@ public class VideoInFrame extends JFrame
         Log.i(TAG, "004");
     }
 
+    public static void new_video_in_frame(ByteBuffer vbuf, int w, int h)
+    {
+        if ((w != width) || (h != height))
+        {
+            setup_video_in_resolution(w, h);
+        }
+
+        if (!video_in_frame.isShowing())
+        {
+            return;
+        }
+
+        try
+        {
+            vbuf.rewind();
+            Log.i(TAG, "vbuf:" + vbuf.limit() + " len=" + vbuf.remaining() + " imageInByte:" + imageInByte.length);
+            vbuf.slice().get(imageInByte);
+            for (int j = 0; j < h; j++)
+            {
+                for (int i = 0; i < w; i++)
+                {
+                    int rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                    imageIn.setRGB(i, j, rColor);
+                }
+            }
+            Log.i(TAG, "bImageFromConvert=" + imageIn);
+            ImageIcon i = new ImageIcon(imageIn);
+            if (i != null)
+            {
+                video_in_frame.setIcon(i);
+                video_in_frame.repaint();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public static void setup_video_in_resolution(int w, int h)
     {
         while (!video_in_frame.isShowing())
@@ -64,31 +106,10 @@ public class VideoInFrame extends JFrame
             }
         }
 
-        byte[] imageInByte = new byte[w * h * 3];
-        BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-
-        try
-        {
-            for (int j = 0; j < h; j++)
-            {
-                for (int i = 0; i < w; i++)
-                {
-                    int rColor = getRGBFromStream(i, j, w, h, imageInByte);
-                    image.setRGB(i, j, rColor);
-                }
-            }
-            Log.i(TAG, "bImageFromConvert=" + image);
-            ImageIcon i = new ImageIcon(image);
-            if (i != null)
-            {
-                video_in_frame.setIcon(i);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
+        Log.i(TAG, "w=" + w + " h=" + h);
+        imageInByte = new byte[(int) ((float) (w * h) * (float) (1.5))];
+        Log.i(TAG, "w=" + w + " h=" + h + " len=" + (int) ((float) (w * h) * (float) (1.5)));
+        imageIn = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         width = w;
         height = h;
     }

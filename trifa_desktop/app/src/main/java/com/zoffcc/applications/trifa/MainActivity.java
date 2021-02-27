@@ -64,9 +64,11 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
+import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static java.awt.Font.PLAIN;
 
 public class MainActivity extends JFrame
@@ -132,6 +134,9 @@ public class MainActivity extends JFrame
     final static SimpleDateFormat df_date_time_long = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     final static SimpleDateFormat df_date_only = new SimpleDateFormat("yyyy-MM-dd");
     static ResourceBundle lo = null;
+    static ByteBuffer video_buffer_1 = null;
+    static ByteBuffer video_buffer_2 = null;
+    static int buffer_size_in_bytes = 0;
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -230,7 +235,6 @@ public class MainActivity extends JFrame
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
-
         MainFrame = this;
 
         VideoInFrame = new VideoInFrame();
@@ -481,6 +485,8 @@ public class MainActivity extends JFrame
         });
 
         sendTextField.requestFocus();
+        this.toFront();
+        this.revalidate();
     }
 
     private void initComponents()
@@ -607,8 +613,6 @@ public class MainActivity extends JFrame
             System.err.println(e.getMessage());
         }
 
-        new MainActivity().setVisible(true);
-
         tox_service_fg = new TrifaToxService();
 
         if (!TrifaToxService.TOX_SERVICE_STARTED)
@@ -627,6 +631,8 @@ public class MainActivity extends JFrame
                  ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
             tox_service_fg.tox_thread_start_fg();
         }
+
+        new MainActivity();
 
         String my_tox_id_temp = get_my_toxid();
         Log.i(TAG, "MyToxID:" + my_tox_id_temp);
@@ -815,13 +821,16 @@ public class MainActivity extends JFrame
 
     public static native int toxav_video_send_frame(long friendnum, int frame_width_px, int frame_height_px);
 
+    // buffer is for incoming video (call)
     public static native long set_JNI_video_buffer(java.nio.ByteBuffer buffer, int frame_width_px, int frame_height_px);
 
+    // buffer2 is for sending video (call)
     public static native void set_JNI_video_buffer2(java.nio.ByteBuffer buffer2, int frame_width_px, int frame_height_px);
 
+    // audio_buffer is for sending audio (group and call)
     public static native void set_JNI_audio_buffer(java.nio.ByteBuffer audio_buffer);
 
-    // buffer2 is for incoming audio
+    // audio_buffer2 is for incoming audio (group and call)
     public static native void set_JNI_audio_buffer2(java.nio.ByteBuffer audio_buffer2);
 
     /**
@@ -857,10 +866,24 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_call_cb_method(long friend_number, int audio_enabled, int video_enabled)
     {
+        int res1 = toxav_answer(friend_number, GLOBAL_AUDIO_BITRATE, 0);
     }
 
     static void android_toxav_callback_video_receive_frame_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride)
     {
+        Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method");
+        int y_layer_size = (int) Math.max(frame_width_px, Math.abs(ystride)) * (int) frame_height_px;
+        int u_layer_size = (int) Math.max((frame_width_px / 2), Math.abs(ustride)) * ((int) frame_height_px / 2);
+        int v_layer_size = (int) Math.max((frame_width_px / 2), Math.abs(vstride)) * ((int) frame_height_px / 2);
+        int frame_width_px1 = (int) Math.max(frame_width_px, Math.abs(ystride));
+        int frame_height_px1 = (int) frame_height_px;
+        buffer_size_in_bytes = y_layer_size + v_layer_size + u_layer_size;
+        if (video_buffer_1 == null)
+        {
+            video_buffer_1 = ByteBuffer.allocateDirect(buffer_size_in_bytes);
+            set_JNI_video_buffer(video_buffer_1, frame_width_px1, frame_height_px1);
+        }
+        new_video_in_frame(video_buffer_1,frame_width_px1,frame_height_px1);
     }
 
     static void android_toxav_callback_call_state_cb_method(long friend_number, int a_TOXAV_FRIEND_CALL_STATE)
@@ -877,10 +900,13 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
     {
+        android_toxav_callback_video_receive_frame_cb_method(friend_number, frame_width_px, frame_height_px, ystride,
+                                                             ustride, vstride);
     }
 
     static void android_toxav_callback_video_receive_frame_h264_cb_method(long friend_number, long buf_size)
     {
+        // HINT: Disabled. this is now handled by c-toxcore. how nice.
     }
 
     static void android_toxav_callback_audio_receive_frame_pts_cb_method(long friend_number, long sample_count, int channels, long sampling_rate, long pts)
