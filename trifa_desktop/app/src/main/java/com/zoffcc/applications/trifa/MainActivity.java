@@ -295,6 +295,7 @@ public class MainActivity extends JFrame
         // MessageTextArea.setEditable(false);
         MessagePanel.add(MessageTextInputPanel);
         myToxID.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        myToxID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
         MessagePanel.add(myToxID, BorderLayout.SOUTH);
 
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
