@@ -154,6 +154,16 @@ public class MainActivity extends JFrame
         return data;
     }
 
+    public static String s(int i)
+    {
+        return "" + i;
+    }
+
+    public static String s(long l)
+    {
+        return "" + l;
+    }
+
     public static int b(boolean in)
     {
         if (in)
@@ -911,7 +921,29 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_connection_status_cb_method(long friend_number, int a_TOX_CONNECTION)
     {
-        Log.i(TAG, "friend_connection_status:friend:" + friend_number + " status:" + a_TOX_CONNECTION);
+        FriendList f = main_get_friend(friend_number);
+        //Log.i(TAG,
+        //      "friend_connection_status:friend:" + friend_number + " connection status:" + a_TOX_CONNECTION + " f=" +
+        //      f);
+
+        if (f != null)
+        {
+            if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
+            {
+                f.TOX_CONNECTION_real = a_TOX_CONNECTION;
+                f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
+                HelperFriend.update_friend_in_db_connection_status_real(f);
+            }
+
+            HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
+
+            if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
+            {
+                f.TOX_CONNECTION_real = a_TOX_CONNECTION;
+                f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
+                HelperFriend.update_friend_in_db_connection_status_real(f);
+            }
+        }
     }
 
     static void android_tox_callback_friend_typing_cb_method(long friend_number, final int typing)

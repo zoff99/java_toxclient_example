@@ -142,9 +142,9 @@ public class MessageListFragmentJ extends JPanel
                                 }
                             }
                         };
-                        Log.i(TAG,"invokeLater:004:s");
+                        Log.i(TAG, "invokeLater:004:s");
                         SwingUtilities.invokeLater(myRunnable);
-                        Log.i(TAG,"invokeLater:004:e");
+                        Log.i(TAG, "invokeLater:004:e");
 
                         //**//stop_self_typing_indicator_s();
                     }
@@ -172,9 +172,9 @@ public class MessageListFragmentJ extends JPanel
                                 }
                             }
                         };
-                        Log.i(TAG,"invokeLater:005:s");
+                        Log.i(TAG, "invokeLater:005:s");
                         SwingUtilities.invokeLater(myRunnable);
-                        Log.i(TAG,"invokeLater:005:e");
+                        Log.i(TAG, "invokeLater:005:e");
 
                         //**//stop_self_typing_indicator_s();
                     }
@@ -213,9 +213,9 @@ public class MessageListFragmentJ extends JPanel
             }
         };
 
-        Log.i(TAG,"invokeLater:006:s");
+        // Log.i(TAG, "invokeLater:006:s");
         SwingUtilities.invokeLater(myRunnable);
-        Log.i(TAG,"invokeLater:006:e");
+        // Log.i(TAG, "invokeLater:006:e");
     }
 
     static void update_all_messages(boolean always)
@@ -280,9 +280,9 @@ public class MessageListFragmentJ extends JPanel
                     }
 
                 };
-                Log.i(TAG,"invokeLater:007:s");
+                Log.i(TAG, "invokeLater:007:s");
                 SwingUtilities.invokeLater(myRunnable);
-                Log.i(TAG,"invokeLater:007:e");
+                Log.i(TAG, "invokeLater:007:e");
             }
             // Log.i(TAG, "data_values:005d");
         }

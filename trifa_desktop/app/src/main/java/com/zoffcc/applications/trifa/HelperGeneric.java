@@ -30,9 +30,11 @@ import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_TCP;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MAX_FILETRANSFER_SIZE_MSGV2;
 
@@ -378,6 +380,145 @@ public class HelperGeneric
         }
     }
 
+    public static void update_friend_connection_status_helper(int a_TOX_CONNECTION, FriendList f, boolean from_relay)
+    {
+        // Log.i(TAG, "android_tox_callback_friend_connection_status_cb_method:ENTER");
+
+        final long friend_number_ = tox_friend_by_public_key__wrapper(f.tox_public_key_string);
+        boolean went_online = false;
+
+        if (f.TOX_CONNECTION != a_TOX_CONNECTION)
+        {
+            if ((!from_relay) && (!HelperRelay.is_any_relay(f.tox_public_key_string)))
+            {
+                if (f.TOX_CONNECTION == TOX_CONNECTION_NONE.value)
+                {
+                    //**//send_avatar_to_friend(tox_friend_by_public_key__wrapper(f.tox_public_key_string));
+                }
+            }
+
+            if (a_TOX_CONNECTION == TOX_CONNECTION_NONE.value)
+            {
+                // ******** friend going offline ********
+                // Log.i(TAG, "friend_connection_status:friend going offline:" + System.currentTimeMillis());
+            }
+            else
+            {
+                went_online = true;
+                // ******** friend coming online ********
+                // Log.i(TAG, "friend_connection_status:friend coming online:" + LAST_ONLINE_TIMSTAMP_ONLINE_NOW);
+            }
+        }
+
+        if (!from_relay)
+        {
+            if (went_online)
+            {
+                f.last_online_timestamp_real = LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
+            }
+            else
+            {
+                f.last_online_timestamp_real = System.currentTimeMillis();
+            }
+            HelperFriend.update_friend_in_db_last_online_timestamp_real(f);
+        }
+
+        if (went_online)
+        {
+            // Log.i(TAG, "friend_connection_status:friend status seems: ONLINE");
+            f.last_online_timestamp = LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
+            HelperFriend.update_friend_in_db_last_online_timestamp(f);
+            f.TOX_CONNECTION = a_TOX_CONNECTION;
+            f.TOX_CONNECTION_on_off = get_toxconnection_wrapper(f.TOX_CONNECTION);
+            HelperFriend.update_friend_in_db_connection_status(f);
+
+            HelperFriend.add_all_friends_clear_wrapper(0);
+        }
+        else // went offline -------------------
+        {
+            // check for combined online status of (friend + possible relay)
+            int status_new = a_TOX_CONNECTION;
+            int combined_connection_status_ = get_combined_connection_status(f.tox_public_key_string, status_new);
+            // Log.i(TAG, "friend_connection_status:friend status combined con status:" + combined_connection_status_);
+
+            if (get_toxconnection_wrapper(combined_connection_status_) == TOX_CONNECTION_NONE.value)
+            {
+                // Log.i(TAG, "friend_connection_status:friend status combined: OFFLINE");
+                f.last_online_timestamp = System.currentTimeMillis();
+                HelperFriend.update_friend_in_db_last_online_timestamp(f);
+                f.TOX_CONNECTION = combined_connection_status_;
+                f.TOX_CONNECTION_on_off = get_toxconnection_wrapper(f.TOX_CONNECTION);
+                HelperFriend.update_friend_in_db_connection_status(f);
+
+                HelperFriend.add_all_friends_clear_wrapper(0);
+            }
+            else
+            {
+                // Log.i(TAG, "friend or relay offline, combined still ONLINE");
+                HelperFriend.update_single_friend_in_friendlist_view(f);
+            }
+        }
+    }
+
+    static int get_combined_connection_status(String friend_pubkey, int a_TOX_CONNECTION)
+    {
+        int ret = TOX_CONNECTION_NONE.value;
+
+        if (HelperRelay.is_any_relay(friend_pubkey))
+        {
+            ret = a_TOX_CONNECTION;
+        }
+        else
+        {
+            String relay_ = HelperRelay.get_relay_for_friend(friend_pubkey);
+
+            if (relay_ == null)
+            {
+                // friend has no relay
+                ret = a_TOX_CONNECTION;
+            }
+            else
+            {
+                // friend with relay
+                if (a_TOX_CONNECTION != TOX_CONNECTION_NONE.value)
+                {
+                    ret = a_TOX_CONNECTION;
+                }
+                else
+                {
+                    Statement statement = null;
+                    try
+                    {
+                        statement = sqldb.createStatement();
+                        ResultSet rs = statement.executeQuery(
+                                "select TOX_CONNECTION_real from FriendList where tox_public_key_string='" +
+                                s(friend_pubkey) + "'");
+                        rs.next();
+                        int friend_con_status = rs.getInt("TOX_CONNECTION_real");
+
+                        ResultSet rs2 = statement.executeQuery(
+                                "select TOX_CONNECTION_real from FriendList where tox_public_key_string='" + s(relay_) +
+                                "'");
+                        rs2.next();
+                        int relay_con_status = rs2.getInt("TOX_CONNECTION_real");
+
+                        if ((friend_con_status != TOX_CONNECTION_NONE.value) ||
+                            (relay_con_status != TOX_CONNECTION_NONE.value))
+                        {
+                            // if one of them is online, return combined "online" as status
+                            ret = TOX_CONNECTION_TCP.value;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        return ret;
+    }
 
     public static long get_last_rowid(Statement statement)
     {

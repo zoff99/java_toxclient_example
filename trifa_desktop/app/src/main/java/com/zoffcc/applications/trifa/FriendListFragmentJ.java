@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -145,6 +146,25 @@ public class FriendListFragmentJ extends JPanel
         {
             final String text = (String) value;
             lt.setText(pre + text);
+            l.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+            l.setOpaque(true);
+
+            String pk = text.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
+
+            Log.i(TAG, "pk=" + pk);
+
+            l.setText("_");
+            l.setBackground(Color.GRAY);
+            l.setForeground(Color.GRAY);
+
+            l.setText("T");
+            l.setBackground(Color.ORANGE);
+            l.setForeground(Color.BLACK);
+
+            l.setText("U");
+            l.setBackground(Color.GREEN);
+            l.setForeground(Color.BLACK);
+
             return p;
         }
     }

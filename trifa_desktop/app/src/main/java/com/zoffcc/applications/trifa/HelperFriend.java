@@ -372,10 +372,72 @@ public class HelperFriend
                 }
             };
 
-            Log.i(TAG,"invokeLater:001:s");
+            Log.i(TAG, "invokeLater:001:s");
             SwingUtilities.invokeLater(myRunnable);
-            Log.i(TAG,"invokeLater:001:e");
+            Log.i(TAG, "invokeLater:001:e");
 
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    synchronized static void update_friend_in_db_connection_status_real(FriendList f)
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.executeUpdate(
+                    "update FriendList set " + " TOX_CONNECTION_real='" + s(f.TOX_CONNECTION_real) + "'," +
+                    " TOX_CONNECTION_on_off_real='" + s(f.TOX_CONNECTION_on_off_real) + "'" +
+                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    synchronized static void update_friend_in_db_last_online_timestamp_real(FriendList f)
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.executeUpdate(
+                    "update FriendList set " + " last_online_timestamp_real='" + s(f.last_online_timestamp_real) + "'" +
+                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    synchronized static void update_friend_in_db_last_online_timestamp(FriendList f)
+    {
+        // Log.i(TAG, "update_friend_in_db_last_online_timestamp");
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.executeUpdate(
+                    "update FriendList set " + " last_online_timestamp='" + s(f.last_online_timestamp) + "'" +
+                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    synchronized static void update_friend_in_db_connection_status(FriendList f)
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            statement.executeUpdate("update FriendList set " + " TOX_CONNECTION='" + s(f.TOX_CONNECTION) + "'," +
+                                    " TOX_CONNECTION_on_off='" + s(f.TOX_CONNECTION_on_off) + "'" +
+                                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
         }
         catch (Exception e)
         {

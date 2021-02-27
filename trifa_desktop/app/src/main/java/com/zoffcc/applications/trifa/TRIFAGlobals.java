@@ -71,6 +71,8 @@ public class TRIFAGlobals
     static final String TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY = "-1";
 
     static long global_last_activity_for_battery_savings_ts = -1;
+    static long LAST_ONLINE_TIMSTAMP_ONLINE_NOW = Long.MAX_VALUE - 1;
+    static long LAST_ONLINE_TIMSTAMP_ONLINE_OFFLINE = -1;
 
     public static enum TRIFA_FT_DIRECTION
     {
