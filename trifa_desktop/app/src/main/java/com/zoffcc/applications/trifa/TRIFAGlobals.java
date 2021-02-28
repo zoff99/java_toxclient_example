@@ -54,6 +54,9 @@ public class TRIFAGlobals
     static int GLOBAL_VIDEO_BITRATE = NORMAL_GLOBAL_VIDEO_BITRATE; // this works nice: 2500;
     static int GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE; // allowed values: (xx>=6) && (xx<=510)
 
+    static final int VIDEO_CODEC_VP8 = 0;
+    static final int VIDEO_CODEC_H264 = 1;
+
     static int VIDEO_FRAME_RATE_OUTGOING = 0;
     static long last_video_frame_sent = -1;
     static int count_video_frame_sent = 0;

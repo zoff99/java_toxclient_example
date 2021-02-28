@@ -62,16 +62,38 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_H264;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_VP8;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_ENCODER_CURRENT_BITRATE;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_ENCODER_IN_USE_H264;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_ENCODER_IN_USE_VP8;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_NETWORK_ROUND_TRIP_MS;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_PLAY_BUFFER_ENTRIES;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_PLAY_DELAY;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_ACCEPTING_A;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_ACCEPTING_V;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_ERROR;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_FINISHED;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_NONE;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_A;
+import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
+import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
+import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
 import static java.awt.Font.PLAIN;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
@@ -973,6 +995,16 @@ public class MainActivity extends JFrame
 
     public static native int toxav_video_send_frame(long friendnum, int frame_width_px, int frame_height_px);
 
+    public static native int toxav_video_send_frame_h264(long friendnum, int frame_width_px, int frame_height_px, long data_len);
+
+    public static native int toxav_video_send_frame_h264_age(long friendnum, int frame_width_px, int frame_height_px, long data_len, int age_ms);
+
+    public static native int toxav_option_set(long friendnum, long a_TOXAV_OPTIONS_OPTION, long value);
+
+    public static native void set_av_call_status(int status);
+
+    public static native void set_audio_play_volume_percent(int volume_percent);
+
     // buffer is for incoming video (call)
     public static native long set_JNI_video_buffer(java.nio.ByteBuffer buffer, int frame_width_px, int frame_height_px);
 
@@ -1018,12 +1050,22 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_call_cb_method(long friend_number, int audio_enabled, int video_enabled)
     {
+        if (Callstate.state != 0)
+        {
+            // don't accept a new call if we already are in a call
+            return;
+        }
+
         int res1 = toxav_answer(friend_number, GLOBAL_AUDIO_BITRATE, 0);
+        Callstate.state = 1;
+        Callstate.friend_pubkey = tox_friend_get_public_key__wrapper(friend_number);
+        Callstate.accepted_call = 1;
+        set_av_call_status(Callstate.state);
     }
 
     static void android_toxav_callback_video_receive_frame_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride)
     {
-        Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method");
+        // Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method");
         int y_layer_size = (int) Math.max(frame_width_px, Math.abs(ystride)) * (int) frame_height_px;
         int u_layer_size = (int) Math.max((frame_width_px / 2), Math.abs(ustride)) * ((int) frame_height_px / 2);
         int v_layer_size = (int) Math.max((frame_width_px / 2), Math.abs(vstride)) * ((int) frame_height_px / 2);
@@ -1051,11 +1093,50 @@ public class MainActivity extends JFrame
         }
 
         new_video_in_frame(video_buffer_1, frame_width_px1, frame_height_px1);
-        Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:099");
+        // Log.i(TAG, "android_toxav_callback_video_receive_frame_cb_method:099");
     }
 
     static void android_toxav_callback_call_state_cb_method(long friend_number, int a_TOXAV_FRIEND_CALL_STATE)
     {
+        if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) != friend_number)
+        {
+            // not the friend we are in call with now
+            return;
+        }
+
+        Log.i(TAG, "toxav_call_state:INCOMING_CALL:from=" + friend_number + " state=" + a_TOXAV_FRIEND_CALL_STATE);
+        Log.i(TAG, "Callstate.tox_call_state:INCOMING_CALL=" + a_TOXAV_FRIEND_CALL_STATE + " old=" +
+                   Callstate.tox_call_state);
+
+        if (Callstate.state == 1)
+        {
+            int old_value = Callstate.tox_call_state;
+            Callstate.tox_call_state = a_TOXAV_FRIEND_CALL_STATE;
+
+            if ((a_TOXAV_FRIEND_CALL_STATE &
+                 (TOXAV_FRIEND_CALL_STATE_SENDING_A.value + TOXAV_FRIEND_CALL_STATE_SENDING_V.value +
+                  TOXAV_FRIEND_CALL_STATE_ACCEPTING_A.value + TOXAV_FRIEND_CALL_STATE_ACCEPTING_V.value)) > 0)
+            {
+                Log.i(TAG, "toxav_call_state:from=" + friend_number + " call starting");
+                on_call_started_actions();
+            }
+            else if ((a_TOXAV_FRIEND_CALL_STATE & (TOXAV_FRIEND_CALL_STATE_FINISHED.value)) > 0)
+            {
+                Log.i(TAG, "toxav_call_state:from=" + friend_number + " call ending(1)");
+                on_call_ended_actions();
+            }
+            else if ((old_value > TOXAV_FRIEND_CALL_STATE_NONE.value) &&
+                     (a_TOXAV_FRIEND_CALL_STATE == TOXAV_FRIEND_CALL_STATE_NONE.value))
+            {
+                Log.i(TAG, "toxav_call_state:from=" + friend_number + " call ending(2)");
+                on_call_ended_actions();
+            }
+            else if ((a_TOXAV_FRIEND_CALL_STATE & (TOXAV_FRIEND_CALL_STATE_ERROR.value)) > 0)
+            {
+                Log.i(TAG, "toxav_call_state:from=" + friend_number + " call ERROR(3)");
+                on_call_ended_actions();
+            }
+        }
     }
 
     static void android_toxav_callback_bit_rate_status_cb_method(long friend_number, long audio_bit_rate, long video_bit_rate)
@@ -1068,7 +1149,7 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
     {
-        Log.i(TAG, "android_toxav_callback_video_receive_frame_pts_cb_method");
+        // Log.i(TAG, "android_toxav_callback_video_receive_frame_pts_cb_method");
         android_toxav_callback_video_receive_frame_cb_method(friend_number, frame_width_px, frame_height_px, ystride,
                                                              ustride, vstride);
     }
@@ -1089,6 +1170,97 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_call_comm_cb_method(long friend_number, long a_TOXAV_CALL_COMM_INFO, long comm_number)
     {
+        // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:" + a_TOXAV_CALL_COMM_INFO + ":" + comm_number);
+        if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_DECODER_IN_USE_VP8.value)
+        {
+            // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:3:" + a_TOXAV_CALL_COMM_INFO + ":" + comm_number);
+            Callstate.video_in_codec = VIDEO_CODEC_VP8;
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_DECODER_IN_USE_H264.value)
+        {
+            // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:4:" + a_TOXAV_CALL_COMM_INFO + ":" + comm_number);
+            Callstate.video_in_codec = VIDEO_CODEC_H264;
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_ENCODER_IN_USE_VP8.value)
+        {
+            Callstate.video_out_codec = VIDEO_CODEC_VP8;
+            // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:1:" + a_TOXAV_CALL_COMM_INFO + ":" + comm_number);
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_ENCODER_IN_USE_H264.value)
+        {
+            Callstate.video_out_codec = VIDEO_CODEC_H264;
+            // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:2:" + a_TOXAV_CALL_COMM_INFO + ":" + comm_number);
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE.value)
+        {
+            Callstate.video_in_bitrate = comm_number;
+            // Log.i(TAG,
+            //      "android_toxav_callback_call_comm_cb_method:TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE:" + comm_number);
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_ENCODER_CURRENT_BITRATE.value)
+        {
+            Callstate.video_bitrate = comm_number;
+            // Log.i(TAG,
+            //      "android_toxav_callback_call_comm_cb_method:TOXAV_CALL_COMM_ENCODER_CURRENT_BITRATE:" + comm_number);
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_PLAY_BUFFER_ENTRIES.value)
+        {
+            if (comm_number < 0)
+            {
+                Callstate.play_buffer_entries = 0;
+            }
+            else if (comm_number > 9900)
+            {
+                Callstate.play_buffer_entries = 99;
+            }
+            else
+            {
+                Callstate.play_buffer_entries = (int) comm_number;
+                // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:play_buffer_entries=:" + comm_number);
+            }
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_NETWORK_ROUND_TRIP_MS.value)
+        {
+            if (comm_number < 0)
+            {
+                Callstate.round_trip_time = 0;
+            }
+            else if (comm_number > 9900)
+            {
+                Callstate.round_trip_time = 9900;
+            }
+            else
+            {
+                Callstate.round_trip_time = comm_number;
+                // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:round_trip_time=:" + Callstate.round_trip_time);
+            }
+        }
+        else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_PLAY_DELAY.value)
+        {
+            if (comm_number < 0)
+            {
+                Callstate.play_delay = 0;
+            }
+            else if (comm_number > 9900)
+            {
+                Callstate.play_delay = 9900;
+            }
+            else
+            {
+                Callstate.play_delay = comm_number;
+                // Log.i(TAG, "android_toxav_callback_call_comm_cb_method:play_delay=:" + Callstate.play_delay);
+            }
+        }
+
+        try
+        {
+            HelperGeneric.update_bitrates();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "android_toxav_callback_call_comm_cb_method:EE:" + e.getMessage());
+        }
     }
 
     // -------- called by AV native methods --------

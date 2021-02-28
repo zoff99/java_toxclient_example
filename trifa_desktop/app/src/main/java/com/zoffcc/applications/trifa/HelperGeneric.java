@@ -640,6 +640,48 @@ public class HelperGeneric
         return ret;
     }
 
+    public static void update_bitrates()
+    {
+        // these were updated: Callstate.audio_bitrate, Callstate.video_bitrate
+        try
+        {
+            /*
+            CallingActivity.ca.right_top_text_1.setText(
+                    "O:" + Callstate.codec_to_str(Callstate.video_out_codec) + ":" + Callstate.video_bitrate);
+            CallingActivity.ca.right_top_text_1b.setText(
+                    "I:" + Callstate.codec_to_str(Callstate.video_in_codec) + ":" + Callstate.video_in_bitrate);
+            if (native_aec_lib_ready)
+            {
+                CallingActivity.ca.right_top_text_2.setText(
+                        "AO:" + Callstate.audio_bitrate + " " + Callstate.play_delay + "e");
+            }
+            else
+            {
+                CallingActivity.ca.right_top_text_2.setText(
+                        "AO:" + Callstate.audio_bitrate + " " + Callstate.play_delay);
+            }
+           */
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+
+        try
+        {
+            /*
+            CallingActivity.top_text_line.setText(
+                    Callstate.friend_alias_name + " " + Callstate.round_trip_time + "/" + Callstate.play_delay + "/" +
+                    Callstate.play_buffer_entries);
+
+            */
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+    }
+
     public static long get_last_rowid(Statement statement)
     {
         try

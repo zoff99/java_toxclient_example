@@ -19,17 +19,12 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
-import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
-import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
-import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
-import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 
 public class VideoInFrame extends JFrame
 {
@@ -60,29 +55,16 @@ public class VideoInFrame extends JFrame
 
     public static void new_video_in_frame(ByteBuffer vbuf, int w, int h)
     {
-        Log.i(TAG, "new_video_in_frame:001");
-
         if (!video_in_frame.isValid())
         {
-            Log.i(TAG, "new_video_in_frame:004");
             return;
         }
-
-        Log.i(TAG, "new_video_in_frame:005");
 
         try
         {
             vbuf.rewind();
-            Log.i(TAG, "new_video_in_frame:1:vbuf:" + vbuf.limit() + " len=" + vbuf.remaining() + " imageInByte:" +
-                       imageInByte.length);
-
-            if (imageInByte.length != vbuf.remaining())
-            {
-                // imageInByte = new byte[(int) ((float) (w * h) * (float) (1.5))];
-            }
-
-            Log.i(TAG, "new_video_in_frame:2:vbuf:" + vbuf.limit() + " len=" + vbuf.remaining() + " imageInByte:" +
-                       imageInByte.length);
+            // Log.i(TAG, "new_video_in_frame:1:vbuf:" + vbuf.limit() + " len=" + vbuf.remaining() + " imageInByte:" +
+            //            imageInByte.length);
 
             vbuf.slice().get(imageInByte);
 
@@ -108,12 +90,15 @@ public class VideoInFrame extends JFrame
                             }
                         }
                     }
-                    Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
+                    // Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
                     ImageIcon i = new ImageIcon(imageIn);
                     if (i != null)
                     {
-                        video_in_frame.setIcon(i);
-                        video_in_frame.repaint();
+                        if (Callstate.state != 0)
+                        {
+                            video_in_frame.setIcon(i);
+                            video_in_frame.repaint();
+                        }
                     }
                 }
             };
@@ -124,7 +109,7 @@ public class VideoInFrame extends JFrame
             e.printStackTrace();
             Log.i(TAG, "new_video_in_frame:007:EE02:" + e.getMessage());
         }
-        Log.i(TAG, "new_video_in_frame:099");
+        // Log.i(TAG, "new_video_in_frame:099");
     }
 
     public static void setup_video_in_resolution(int w, int h, int num_bytes)
@@ -189,5 +174,40 @@ public class VideoInFrame extends JFrame
         int rColor = (0xff << 24) | (R << 16) | (G << 8) | B;
 
         return rColor;
+    }
+
+    static void on_call_started_actions()
+    {
+    }
+
+    static void on_call_ended_actions()
+    {
+        Callstate.reset_values();
+
+        // TODO: clear videoIn Window contents
+        int w = 10;
+        int h = 10;
+        int num_bytes = (int) ((float) (w * h) * (float) (1.5));
+
+        Log.i(TAG, "w=" + w + " h=" + h + " num_bytes=" + num_bytes);
+        Log.i(TAG, "w=" + w + " h=" + h + " len=" + (int) ((float) (w * h) * (float) (1.5)));
+        BufferedImage imageIn2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        width = w;
+        height = h;
+
+        for (int j = 0; j < h; j++)
+        {
+            for (int i = 0; i < w; i++)
+            {
+                imageIn.setRGB(i, j, Color.LIGHT_GRAY.getRGB());
+            }
+        }
+
+        ImageIcon i = new ImageIcon(imageIn2);
+        if (i != null)
+        {
+            video_in_frame.setIcon(i);
+            video_in_frame.repaint();
+        }
     }
 }

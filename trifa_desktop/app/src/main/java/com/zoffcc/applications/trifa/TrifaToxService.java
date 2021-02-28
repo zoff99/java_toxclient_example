@@ -254,12 +254,11 @@ public class TrifaToxService
                 {
                     try
                     {
-                        tox_iteration_interval_ms = 1;
-                        if (tox_iteration_interval_ms < 1)
+                        if (tox_iteration_interval_ms < 2)
                         {
-                            Log.i(TAG, "tox_iterate:(tox_iteration_interval_ms < 1ms!!):" + tox_iteration_interval_ms +
+                            Log.i(TAG, "tox_iterate:(tox_iteration_interval_ms < 2ms!!):" + tox_iteration_interval_ms +
                                        "ms");
-                            Thread.sleep(1);
+                            Thread.sleep(2);
                         }
                         else
                         {
