@@ -20,17 +20,20 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class VideoInFrame extends JFrame
 {
     private static final String TAG = "trifa.VideoInFrame";
 
     static JPictureBox video_in_frame = null;
+    static JPanel wrapperPanel = null;
     public static int width = 640;
     public static int height = 480;
     static byte[] imageInByte = null;
@@ -40,17 +43,19 @@ public class VideoInFrame extends JFrame
     {
         super("TRIfA - Video in");
 
-        setSize(640 / 2, 480 / 2);
+        setSize(width / 2, height / 2);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
 
-        Log.i(TAG, "001");
         video_in_frame = new JPictureBox();
-        Log.i(TAG, "002");
-        add(video_in_frame);
-        Log.i(TAG, "003");
-        setup_video_in_resolution(640, 480, (int) (640 * 480 * 1.5f));
-        Log.i(TAG, "004");
+        video_in_frame.setSize(width / 2, height / 2);
+        video_in_frame.setBackground(Color.ORANGE);
+
+        wrapperPanel = new JPanel(new SingleComponentAspectRatioKeeperLayout());
+        wrapperPanel.add(video_in_frame);
+        getContentPane().add(wrapperPanel);
+
+        setup_video_in_resolution(width, height, (int) (width * height * 1.5f));
     }
 
     public static void new_video_in_frame(ByteBuffer vbuf, int w, int h)
@@ -122,6 +127,11 @@ public class VideoInFrame extends JFrame
         imageIn = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         width = w;
         height = h;
+
+        video_in_frame.setSize(width, height);
+        video_in_frame.setPreferredSize(new Dimension(width, height));
+        video_in_frame.revalidate();
+        video_in_frame.repaint();
     }
 
     public static int unsignedByteToInt(byte b)
