@@ -128,6 +128,7 @@ public class MainActivity extends JFrame
     static JFrame MainFrame = null;
     static VideoInFrame VideoInFrame1 = null;
     static VideoOutFrame VideoOutFrame1 = null;
+    static AudioFrame AudioFrame1 = null;
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
@@ -271,6 +272,7 @@ public class MainActivity extends JFrame
 
         VideoInFrame1 = new VideoInFrame();
         VideoOutFrame1 = new VideoOutFrame();
+        AudioFrame1 = new AudioFrame();
 
         initComponents();
         setSize(600, 400);
@@ -599,6 +601,10 @@ public class MainActivity extends JFrame
         VideoOutFrame1.setLocationRelativeTo(null);
         final Rectangle bounds2 = VideoInFrame1.getBounds();
         VideoOutFrame1.setLocation(bounds2.x, bounds2.y + bounds2.height);
+
+        AudioFrame1.setLocationRelativeTo(null);
+        final Rectangle bounds3 = VideoOutFrame1.getBounds();
+        AudioFrame1.setLocation(bounds3.x, bounds3.y + bounds3.height);
 
         MessagePanel.show_info_text();
 
