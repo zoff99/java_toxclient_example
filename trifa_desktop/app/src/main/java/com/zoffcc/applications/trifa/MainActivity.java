@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -546,7 +547,46 @@ public class MainActivity extends JFrame
             }
         });
 
-        sendTextField.requestFocus();
+
+        final Thread set_focus_on_textinput = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    while (!sendTextField.isValid())
+                    {
+                        Thread.sleep(10);
+                    }
+
+                    while (!sendTextField.isShowing())
+                    {
+                        Thread.sleep(10);
+                    }
+
+                    Runnable myRunnable = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            sendTextField.requestFocus();
+                            // sendTextField.revalidate();
+                        }
+                    };
+                    SwingUtilities.invokeLater(myRunnable);
+                }
+                catch (Exception e)
+                {
+                }
+            }
+        };
+        set_focus_on_textinput.start();
+
+        VideoInFrame1.setLocationRelativeTo(null);
+        final Rectangle bounds = this.getBounds();
+        VideoInFrame1.setLocation(bounds.x + bounds.width, bounds.y);
+
         this.toFront();
         this.revalidate();
     }
@@ -841,6 +881,7 @@ public class MainActivity extends JFrame
 
             init(app_files_directory, PREF__udp_enabled, PREF__local_discovery_enabled, PREF__orbot_enabled_to_int,
                  ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
+
             tox_service_fg.tox_thread_start_fg();
         }
 

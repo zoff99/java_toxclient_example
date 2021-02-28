@@ -26,6 +26,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
 import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
+import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
@@ -41,10 +42,6 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_status_message;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
-
-// import static com.zoffcc.applications.trifa.TRIFAGlobals.*;
-// import static com.zoffcc.applications.trifa.MainActivity.*;
-
 
 public class TrifaToxService
 {
@@ -73,6 +70,27 @@ public class TrifaToxService
                 Log.i(TAG, "is_tox_started:==============================");
 
                 is_tox_started = true;
+
+                // --------------------------------------------------
+                // --- wait for UI to finish layouting
+                // --------------------------------------------------
+                while ((MainFrame == null) || (!MainFrame.isShowing()))
+                {
+                    try
+                    {
+                        Log.i(TAG, "waiting for UI to finish layout ...");
+                        Thread.sleep(30);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+
+                Log.i(TAG, "waiting for UI to finish layout ... DONE");
+                // --------------------------------------------------
+                // --- wait for UI to finish layouting
+                // --------------------------------------------------
+
 
                 if (!old_is_tox_started)
                 {
