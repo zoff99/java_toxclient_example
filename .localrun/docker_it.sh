@@ -11,13 +11,13 @@ cd $_HOME_
 
 build_for='
 alpine:3.12.0
-ubuntu:18.04
-debian:10
-ubuntu:20.04
-debian:9
 ubuntu:16.04
+ubuntu:18.04
+ubuntu:20.04
 '
 
+# debian:9
+# debian:10
 # archlinux/archlinux:base-20210118.0.13862
 
 
@@ -104,8 +104,8 @@ pkgs_Ubuntu_16_04="
     libvpx-dev
     libopus-dev
     libx264-dev
-    openjdk-11-jdk
-    clang-10
+    openjdk-9-jdk-headless
+    clang-8
     gdb
     nano
 "

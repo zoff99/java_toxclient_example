@@ -233,12 +233,18 @@ set -x
 
 type clang-10
 res=$?
-
 if [ $res == 0 ]; then
     echo "have clang-10"
     clang_="clang-10"
 else
-    clang_="clang"
+    type clang-8
+    res=$?
+    if [ $res == 0 ]; then
+        echo "have clang-8"
+        clang_="clang-8"
+    else
+        clang_="clang"
+    fi
 fi
 
 $clang_ $CFLAGS \
