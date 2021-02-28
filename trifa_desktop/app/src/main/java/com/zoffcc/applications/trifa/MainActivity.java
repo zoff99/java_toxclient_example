@@ -584,6 +584,44 @@ public class MainActivity extends JFrame
         Log.i(TAG, "loaded:c-toxcore:v" + tox_version_major() + "." + tox_version_minor() + "." + tox_version_patch());
         Log.i(TAG, "loaded:jni-c-toxcore:v" + jnictoxcore_version());
 
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            public void run()
+            {
+                try
+                {
+                    System.out.println("Shutting down ...");
+                    try
+                    {
+                        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                    }
+                    catch (Exception e3)
+                    {
+                        e3.printStackTrace();
+                    }
+
+                    tox_service_fg.stop_me = true;
+                    Thread.sleep(500);
+
+                    try
+                    {
+                        sqldb.close();
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.out.println("ERROR in Shutdown");
+                    Thread.currentThread().interrupt();
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
         // create a database connection
         try
         {
