@@ -103,7 +103,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    private static final String Version = "1.0.2";
+    static final String Version = "1.0.3";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -138,6 +138,7 @@ public class MainActivity extends JFrame
     static JButton sendButton;
     static JTextField myToxID = null;
     static Style blueStyle;
+    static Style blueSmallStyle;
     static Style redStyle;
     static Style mainStyle;
     static Style defaultStyle;
@@ -338,6 +339,11 @@ public class MainActivity extends JFrame
         StyleConstants.setFontFamily(blueStyle, "monospaced");
         StyleConstants.setFontSize(blueStyle, 9);
         StyleConstants.setForeground(blueStyle, Color.blue);
+
+        blueSmallStyle = sc.addStyle("ConstantWidthBlue", null);
+        StyleConstants.setFontFamily(blueSmallStyle, "monospaced");
+        StyleConstants.setFontSize(blueSmallStyle, 7);
+        StyleConstants.setForeground(blueSmallStyle, Color.blue);
 
         // Create and add the heading style
         /*
@@ -586,6 +592,8 @@ public class MainActivity extends JFrame
         VideoInFrame1.setLocationRelativeTo(null);
         final Rectangle bounds = this.getBounds();
         VideoInFrame1.setLocation(bounds.x + bounds.width, bounds.y);
+
+        MessagePanel.show_info_text();
 
         this.toFront();
         this.revalidate();

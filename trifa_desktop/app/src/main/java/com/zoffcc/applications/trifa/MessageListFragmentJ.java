@@ -31,12 +31,14 @@ import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_messag
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
 import static com.zoffcc.applications.trifa.MainActivity.MessageTextArea;
 import static com.zoffcc.applications.trifa.MainActivity.add_message_ml;
+import static com.zoffcc.applications.trifa.MainActivity.blueSmallStyle;
 import static com.zoffcc.applications.trifa.MainActivity.mainStyle;
 import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+
 
 public class MessageListFragmentJ extends JPanel
 {
@@ -57,6 +59,33 @@ public class MessageListFragmentJ extends JPanel
     {
         Log.i(TAG, "MessageListFragmentJ:start");
         friendnum = -1;
+    }
+
+    public static void show_info_text()
+    {
+        MessageTextArea.setSelectionStart(0);
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(mainStyle, true);
+        // @formatter:off
+        MessageTextArea.replaceSelection("\n\n\n\n\n\n" +
+                                         "                 Welcome to\n" +
+                                         "                 TRIfA - Desktop\n" +
+                                         "\n" +
+                                         "                 Your Tox Client for the Desktop\n" +
+                                         "                 v" + MainActivity.Version +
+                                         "\n");
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(blueSmallStyle, true);
+
+        MessageTextArea.replaceSelection("\n" +
+                                         "\n" +
+                                         "           https://github.com/zoff99/java_toxclient_example/tree/master/trifa_desktop/app/src/main/java\n" +
+                                         "\n");
+
+
+        // @formatter:on
     }
 
     /* HINT: send a message to a friend */
