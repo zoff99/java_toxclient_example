@@ -33,8 +33,15 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 
 import javax.swing.JFrame;
+
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame;
+import static com.zoffcc.applications.trifa.MainActivity.video_buffer_2;
 
 public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler
 {
@@ -65,6 +72,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         if (webcam != null)
         {
             webcam.setViewSize(WebcamResolution.VGA.getSize());
+            width = webcam.getViewSize().width;
+            height = webcam.getViewSize().height;
             webcam.addWebcamListener(this);
             panel = new WebcamPanel(webcam, false);
             panel.setFPSDisplayed(true);
@@ -155,6 +164,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             {
                 webcam = (Webcam) e.getItem();
                 webcam.setViewSize(WebcamResolution.VGA.getSize());
+                width = webcam.getViewSize().width;
+                height = webcam.getViewSize().height;
                 webcam.addWebcamListener(this);
 
                 Log.i(TAG, "selected " + webcam.getName());
@@ -206,7 +217,54 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     @Override
     public void webcamImageObtained(WebcamEvent we)
     {
-        // Log.i(TAG, "webcam_image:captured");
+        try
+        {
+            // Log.i(TAG, "webcam_image:captured:001");
+            BufferedImage buf = we.getImage();
+            if (buf != null)
+            {
+                // Log.i(TAG, "webcam_image:captured:002");
+                if (Callstate.state != 0)
+                {
+                    // Log.i(TAG, "webcam_image:captured:003");
+                    if ((Callstate.friend_pubkey != null) && (Callstate.friend_pubkey.length() > 0))
+                    {
+                        // Log.i(TAG, "webcam_image:captured:004");
+                        int frame_width_px = buf.getWidth();
+                        int frame_height_px = buf.getHeight();
+
+                        if ((video_buffer_2 == null) || (frame_width_px != width) || (frame_height_px != height))
+                        {
+                            Log.i(TAG, "webcam_image:captured:005:w=" + frame_width_px + " h=" + frame_height_px);
+                            int buffer_size_in_bytes2 = (int) (frame_width_px * frame_height_px * 1.5f);
+                            video_buffer_2 = ByteBuffer.allocateDirect(buffer_size_in_bytes2);
+                            set_JNI_video_buffer2(video_buffer_2, frame_width_px, frame_height_px);
+                        }
+
+                        video_buffer_2.rewind();
+                        byte[] b = rgb2yuv(buf, frame_width_px, frame_height_px);
+                        // Log.i(TAG, "webcam_image:captured:005a:r=" + video_buffer_2.remaining() + " p=" +
+                        //            video_buffer_2.capacity() + " b=" + b.length);
+                        int len = video_buffer_2.remaining();
+                        if (len > b.length)
+                        {
+                            len = b.length;
+                        }
+
+                        video_buffer_2.put(b, 0, len);
+                        int res = toxav_video_send_frame(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                         buf.getWidth(), buf.getHeight());
+                        // Log.i(TAG, "webcam_image:captured:006:fn=" +
+                        //            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) + " res=" + res);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "webcam_image:captured:EE01:" + e.getMessage());
+        }
     }
 
     @Override
@@ -269,5 +327,56 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public void windowDeactivated(WindowEvent windowEvent)
     {
 
+    }
+
+    public static byte[] rgb2yuv(BufferedImage bi, int width1, int height1)
+    {
+        int w = bi.getWidth();
+        int h = bi.getHeight();
+        byte[] ret = new byte[(int) (w * h * 1.5f)];
+
+        try
+        {
+            boolean s = false;
+
+            for (int j = 0; j < h; j++)
+            {
+                for (int i = 0; i < w; i++)
+                {
+                    int color = bi.getRGB(i, j);
+
+                    int alpha = color >> 24 & 0xff;
+                    int R = color >> 16 & 0xff;
+                    int G = color >> 8 & 0xff;
+                    int B = color & 0xff;
+
+                    //~ int y = (int) ((0.257 * red) + (0.504 * green) + (0.098 * blue) + 16);
+                    //~ int v = (int) ((0.439 * red) - (0.368 * green) - (0.071 * blue) + 128);
+                    //~ int u = (int) (-(0.148 * red) - (0.291 * green) + (0.439 * blue) + 128);
+
+                    int Y = (int) (R * .299000 + G * .587000 + B * 0.114000);
+                    int U = (int) (R * -.168736 + G * -.331264 + B * 0.500000 + 128);
+                    int V = (int) (R * .500000 + G * -.418688 + B * -0.081312 + 128);
+
+
+                    int arraySize = height1 * width1;
+                    int yLoc = j * width1 + i;
+                    int uLoc = (j / 2) * (width1 / 2) + i / 2 + arraySize;
+                    int vLoc = (j / 2) * (width1 / 2) + i / 2 + arraySize + arraySize / 4;
+
+                    ret[yLoc] = (byte) Y;
+                    ret[uLoc] = (byte) U;
+                    ret[vLoc] = (byte) V;
+
+                    s = !s;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 }

@@ -71,6 +71,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -103,11 +104,11 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.3";
+    static final String Version = "1.0.4";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
-    final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
+    final static boolean CTOXCORE_NATIVE_LOGGING = true; // set "false" for release builds
     final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
@@ -1149,7 +1150,7 @@ public class MainActivity extends JFrame
             return;
         }
 
-        int res1 = toxav_answer(friend_number, GLOBAL_AUDIO_BITRATE, 0);
+        int res1 = toxav_answer(friend_number, GLOBAL_AUDIO_BITRATE, GLOBAL_VIDEO_BITRATE);
         Callstate.state = 1;
         Callstate.friend_pubkey = tox_friend_get_public_key__wrapper(friend_number);
         Callstate.accepted_call = 1;
