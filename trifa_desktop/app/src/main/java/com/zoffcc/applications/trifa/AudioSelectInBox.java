@@ -73,6 +73,14 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 int audio_send_res = 1;
                 int numBytesRead = 0;
 
+                int frameduration_ms = 40;
+                int sample_count2 = ((SAMPLE_RATE * frameduration_ms) / 1000);
+                int want_numBytesRead = sample_count2 * CHANNELS * 2;
+
+                byte[] data = new byte[want_numBytesRead];
+                ByteBuffer _recBuffer = ByteBuffer.allocateDirect(want_numBytesRead);
+                set_JNI_audio_buffer(_recBuffer);
+
                 while (true)
                 {
                     try
@@ -91,66 +99,61 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                         // Log.i(TAG, "t_audio_rec:001");
                         if (targetDataLine != null)
                         {
-                            // Log.i(TAG, "t_audio_rec:002");
+                            Log.i(TAG, "t_audio_rec:002");
                             if (targetDataLine.isOpen())
                             {
-
-                                // TODO: ----------- do these only once --------------
-                                int wanted_buf_sizeXX = targetDataLine.getBufferSize() / 5;
-                                int frameduration_ms = 40;
-                                int sample_count2 = ((SAMPLE_RATE * frameduration_ms) / 1000);
-                                int want_numBytesRead = sample_count2 * CHANNELS * 2;
-
-                                byte[] data = new byte[want_numBytesRead];
-                                numBytesRead = targetDataLine.read(data, 0, data.length);
-                                sample_count = ((numBytesRead / 2) / CHANNELS);
-
-                                //Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 +
-                                //           " frameduration_ms=" + frameduration_ms + " want_numBytesRead=" +
-                                //           want_numBytesRead + " wanted_buf_size=" + wanted_buf_sizeXX);
-
-                                //Log.i(TAG,
-                                //      "t_audio_rec:read:" + numBytesRead + " isRunning=" + targetDataLine.isRunning());
-
-                                ByteBuffer _recBuffer = ByteBuffer.allocateDirect(numBytesRead);
-                                set_JNI_audio_buffer(_recBuffer);
-                                // TODO: ----------- do these only once --------------
-
-                                _recBuffer.rewind();
-                                _recBuffer.put(data, 0, data.length);
-
-                                audio_send_res = toxav_audio_send_frame(
-                                        tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), sample_count,
-                                        CHANNELS, SAMPLE_RATE);
-
-                                // Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
-
-                                float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
-                                if (sample_count > 0)
+                                Log.i(TAG, "t_audio_rec:003:Callstate.state" + Callstate.state);
+                                if (Callstate.state != 0)
                                 {
-                                    float vu_value = audio_vu(data, sample_count);
-                                    if (vu_value > AUDIO_VU_MIN_VALUE)
+                                    Log.i(TAG, "t_audio_rec:003a");
+
+                                    numBytesRead = targetDataLine.read(data, 0, data.length);
+                                    sample_count = ((numBytesRead / 2) / CHANNELS);
+
+                                    // Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 + " frameduration_ms=" +
+                                    //           frameduration_ms + " want_numBytesRead=" + want_numBytesRead);
+
+                                    // Log.i(TAG, "t_audio_rec:read:" + numBytesRead + " isRunning=" + targetDataLine.isRunning());
+
+                                    _recBuffer.rewind();
+                                    _recBuffer.put(data, 0, data.length);
+
+                                    audio_send_res = toxav_audio_send_frame(
+                                            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), sample_count,
+                                            CHANNELS, SAMPLE_RATE);
+
+                                    Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
+
+                                    float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
+                                    if (sample_count > 0)
                                     {
-                                        global_audio_out_vu = vu_value;
+                                        float vu_value = audio_vu(data, sample_count);
+                                        if (vu_value > AUDIO_VU_MIN_VALUE)
+                                        {
+                                            global_audio_out_vu = vu_value;
+                                        }
+                                        else
+                                        {
+                                            global_audio_out_vu = 0;
+                                        }
                                     }
-                                    else
+
+                                    final float global_audio_out_vu_ = global_audio_out_vu;
+                                    final Thread t_audio_bar_set = new Thread()
                                     {
-                                        global_audio_out_vu = 0;
-                                    }
+                                        @Override
+                                        public void run()
+                                        {
+                                            //Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
+                                            set_audio_in_bar_level((int) global_audio_out_vu_);
+                                        }
+                                    };
+                                    t_audio_bar_set.start();
                                 }
-
-                                final float global_audio_out_vu_ = global_audio_out_vu;
-                                final Thread t_audio_bar_set = new Thread()
+                                else
                                 {
-                                    @Override
-                                    public void run()
-                                    {
-                                        //Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
-                                        set_audio_in_bar_level((int) global_audio_out_vu_);
-                                    }
-                                };
-                                t_audio_bar_set.start();
-                                // Thread.sleep(4);
+                                    Thread.sleep(50);
+                                }
                             }
                             else
                             {

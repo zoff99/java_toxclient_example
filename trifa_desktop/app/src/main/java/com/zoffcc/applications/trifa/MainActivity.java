@@ -108,7 +108,7 @@ public class MainActivity extends JFrame
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
-    final static boolean CTOXCORE_NATIVE_LOGGING = true; // set "false" for release builds
+    final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
     final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
@@ -1153,6 +1153,8 @@ public class MainActivity extends JFrame
         if (Callstate.state != 0)
         {
             // don't accept a new call if we already are in a call
+            Log.i(TAG, "android_toxav_callback_call_cb_method:already in a call:fn calling=" + friend_number +
+                       " fn in call=" + tox_friend_by_public_key__wrapper(Callstate.friend_pubkey));
             return;
         }
 
@@ -1161,6 +1163,7 @@ public class MainActivity extends JFrame
         Callstate.friend_pubkey = tox_friend_get_public_key__wrapper(friend_number);
         Callstate.accepted_call = 1;
         set_av_call_status(Callstate.state);
+        Log.i(TAG, "android_toxav_callback_call_cb_method:Callstate.state=" + Callstate.state);
     }
 
     static void android_toxav_callback_video_receive_frame_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride)
