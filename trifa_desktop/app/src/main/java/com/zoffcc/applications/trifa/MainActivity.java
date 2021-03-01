@@ -62,6 +62,9 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
+import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
+import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
+import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
@@ -104,7 +107,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.4";
+    static final String Version = "1.0.5";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -170,6 +173,7 @@ public class MainActivity extends JFrame
     static ByteBuffer video_buffer_1 = null;
     static ByteBuffer video_buffer_2 = null;
     static int buffer_size_in_bytes = 0;
+    static ByteBuffer _recBuffer = null;
 
     /* escape to prevent SQL injection, very basic and bad! */
     public static String s(String str)
@@ -949,6 +953,16 @@ public class MainActivity extends JFrame
 
     public static native long tox_iterate();
 
+    // ----------- TRIfA internal -----------
+    public static native int jni_iterate_group_audio(int delta_new, int want_ms_output);
+
+    public static native int jni_iterate_videocall_audio(int delta_new, int want_ms_output, int channels, int sample_rate, int send_emtpy_buffer);
+
+    public static native void tox_set_do_not_sync_av(int do_not_sync_av);
+
+    public static native void tox_set_onion_active(int active);
+    // ----------- TRIfA internal -----------
+
     public static native long tox_kill();
 
     public static native void exit();
@@ -1248,10 +1262,89 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_audio_receive_frame_cb_method(long friend_number, long sample_count, int channels, long sampling_rate)
     {
+        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001:1");
+
+        if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) != friend_number)
+        {
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001a:ret01");
+            return;
+        }
+
+        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS) ||
+            (_recBuffer == null) || (sample_count == 0))
+        {
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
+            _recBuffer = ByteBuffer.allocateDirect((int) (10000 * 2 * channels));
+            set_JNI_audio_buffer2(_recBuffer);
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
+        }
+
+        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS))
+        {
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1");
+            AudioSelectOutBox.change_audio_format((int) sampling_rate, channels);
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:2");
+        }
+
+        if (sample_count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            _recBuffer.rewind();
+            int want_bytes = (int) (sample_count * 2 * channels);
+            byte[] audio_out_byte_buffer = new byte[want_bytes];
+            _recBuffer.get(audio_out_byte_buffer, 0, want_bytes);
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:1:" + want_bytes +
+            //            " sample_count=" + sample_count + " channels=" + channels +
+            //            " AudioSelectOutBox.sourceDataLine.getFormat().getChannels()=" +
+            //            AudioSelectOutBox.sourceDataLine.getFormat().getChannels());
+
+
+            int actual_written_bytes = AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
+            //           actual_written_bytes);
+
+            float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
+            if (sample_count > 0)
+            {
+                float vu_value = audio_vu(audio_out_byte_buffer, (int) sample_count);
+                if (vu_value > AUDIO_VU_MIN_VALUE)
+                {
+                    global_audio_out_vu = vu_value;
+                }
+                else
+                {
+                    global_audio_out_vu = 0;
+                }
+            }
+
+            final float global_audio_out_vu_ = global_audio_out_vu;
+            final Thread t_audio_bar_set_play = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    // Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
+                    set_audio_out_bar_level((int) global_audio_out_vu_);
+                }
+            };
+            t_audio_bar_set_play.start();
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:EE01:" + e.getMessage());
+        }
     }
 
     static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
     {
+        if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) != friend_number)
+        {
+            return;
+        }
         // Log.i(TAG, "android_toxav_callback_video_receive_frame_pts_cb_method");
         android_toxav_callback_video_receive_frame_cb_method(friend_number, frame_width_px, frame_height_px, ystride,
                                                              ustride, vstride);
@@ -1265,6 +1358,8 @@ public class MainActivity extends JFrame
 
     static void android_toxav_callback_audio_receive_frame_pts_cb_method(long friend_number, long sample_count, int channels, long sampling_rate, long pts)
     {
+        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001:0");
+        android_toxav_callback_audio_receive_frame_cb_method(friend_number, sample_count, channels, sampling_rate);
     }
 
     static void android_toxav_callback_group_audio_receive_frame_cb_method(long conference_number, long peer_number, long sample_count, int channels, long sampling_rate)

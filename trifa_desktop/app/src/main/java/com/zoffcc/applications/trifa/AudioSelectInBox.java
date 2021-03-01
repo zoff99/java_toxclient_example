@@ -22,12 +22,10 @@ package com.zoffcc.applications.trifa;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineListener;
 import javax.sound.sampled.Mixer;
@@ -45,7 +43,7 @@ import static java.awt.Font.PLAIN;
 public class AudioSelectInBox extends JComboBox implements ItemListener, LineListener
 {
     private static final String TAG = "trifa.AudioSelectInBox";
-    private static final float AUDIO_VU_MIN_VALUE = -20;
+    public static final float AUDIO_VU_MIN_VALUE = -20;
 
     static TargetDataLine targetDataLine = null;
     static AudioFormat audioformat = null;
@@ -58,8 +56,6 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
     {
         super();
         setFont(new java.awt.Font("monospaced", PLAIN, 7));
-        //audioformat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS,
-        //                              CHANNELS * 2, SAMPLE_RATE, false);
 
         audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
         reload_device_list(this);
@@ -69,6 +65,8 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             @Override
             public void run()
             {
+                this.setName("t_va_rec");
+
                 int sample_count = 0;
                 int audio_send_res = 1;
                 int numBytesRead = 0;
@@ -81,21 +79,37 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 ByteBuffer _recBuffer = ByteBuffer.allocateDirect(want_numBytesRead);
                 set_JNI_audio_buffer(_recBuffer);
 
+                try
+                {
+                    Log.i(TAG, "t_audio_rec:sleep11");
+                    Thread.sleep(100);
+                }
+                catch (Exception e)
+                {
+                    Log.i(TAG, "t_audio_rec:EE000");
+                }
+
+                while ((audio_in_select == null) || (!audio_in_select.isShowing()))
+                {
+                    try
+                    {
+                        Log.i(TAG, "t_audio_rec:sleep");
+                        Thread.sleep(20);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.i(TAG, "t_audio_rec:EE00");
+                    }
+                }
+
+                Log.i(TAG, "Priority of thread is CUR: " + Thread.currentThread().getPriority());
+                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
+
                 while (true)
                 {
                     try
                     {
-                        while (!audio_in_select.isShowing())
-                        {
-                            try
-                            {
-                                Thread.sleep(20);
-                            }
-                            catch (Exception e)
-                            {
-                            }
-                        }
-
                         // Log.i(TAG, "t_audio_rec:001");
                         if (targetDataLine != null)
                         {
@@ -109,10 +123,12 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                     numBytesRead = targetDataLine.read(data, 0, data.length);
                                     sample_count = ((numBytesRead / 2) / CHANNELS);
 
-                                    // Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 + " frameduration_ms=" +
-                                    //           frameduration_ms + " want_numBytesRead=" + want_numBytesRead);
+                                    // Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 +
+                                    //           " frameduration_ms=" + frameduration_ms + " want_numBytesRead=" +
+                                    //           want_numBytesRead);
 
-                                    // Log.i(TAG, "t_audio_rec:read:" + numBytesRead + " isRunning=" + targetDataLine.isRunning());
+                                    // Log.i(TAG, "t_audio_rec:read:" + numBytesRead + " isRunning=" +
+                                    //           targetDataLine.isRunning());
 
                                     _recBuffer.rewind();
                                     _recBuffer.put(data, 0, data.length);
@@ -161,7 +177,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                         }
                         else
                         {
-                            // Log.i(TAG, "t_audio_rec:null");
+                            Thread.sleep(50);
                         }
                     }
                     catch (Exception e)
@@ -198,6 +214,8 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                     }
                 }
 
+                a.addItem("-----------------------------------");
+
                 for (int cnt = 0; cnt < mixerInfo.length; cnt++)
                 {
                     Mixer currentMixer = AudioSystem.getMixer(mixerInfo[cnt]);
@@ -228,18 +246,37 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             {
                 Log.i(TAG, "select audio in:" + "sel:" + cnt);
 
-                try
+                if (targetDataLine != null)
                 {
-                    targetDataLine.stop();
-                    targetDataLine.flush();
-                    targetDataLine.close();
-                    Log.i(TAG, "select audio in:" + "close old line");
-                }
-                catch (Exception e2)
-                {
-                    e2.printStackTrace();
-                }
+                    try
+                    {
+                        targetDataLine.flush();
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
 
+                    try
+                    {
+                        targetDataLine.stop();
+                    }
+
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+
+                    try
+                    {
+                        targetDataLine.close();
+                        Log.i(TAG, "select audio in:" + "close old line");
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+                }
 
                 DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioformat);
                 try
@@ -273,9 +310,9 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                         Log.i(TAG, "isRunning:**false**");
                     }
 
-                    // targetDataLine = (TargetDataLine) currentMixer.getLine(dataLineInfo);
                     targetDataLine.addLineListener(this);
                     targetDataLine.open(audioformat);
+                    targetDataLine.flush();
                     targetDataLine.start();
                     Log.i(TAG, "getBufferSize=" + targetDataLine.getBufferSize());
                 }
@@ -307,15 +344,6 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             Log.i(TAG, "*************************");
             Log.i(TAG, "********  END  **********");
             Log.i(TAG, "*************************");
-        }
-    }
-
-    static void showLineInfoFormats(final Line.Info lineInfo)
-    {
-        if (lineInfo instanceof DataLine.Info)
-        {
-            final DataLine.Info dataLineInfo = (DataLine.Info) lineInfo;
-            Arrays.stream(dataLineInfo.getFormats()).forEach(format -> System.out.println("    " + format.toString()));
         }
     }
 
