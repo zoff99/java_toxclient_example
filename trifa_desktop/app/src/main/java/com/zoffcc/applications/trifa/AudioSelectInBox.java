@@ -99,14 +99,13 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                         // Log.i(TAG, "t_audio_rec:001");
                         if (targetDataLine != null)
                         {
-                            Log.i(TAG, "t_audio_rec:002");
+                            // Log.i(TAG, "t_audio_rec:002");
                             if (targetDataLine.isOpen())
                             {
-                                Log.i(TAG, "t_audio_rec:003:Callstate.state" + Callstate.state);
+                                // Log.i(TAG, "t_audio_rec:003:Callstate.state" + Callstate.state);
                                 if (Callstate.state != 0)
                                 {
-                                    Log.i(TAG, "t_audio_rec:003a");
-
+                                    // Log.i(TAG, "t_audio_rec:003a");
                                     numBytesRead = targetDataLine.read(data, 0, data.length);
                                     sample_count = ((numBytesRead / 2) / CHANNELS);
 
@@ -122,7 +121,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                             tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), sample_count,
                                             CHANNELS, SAMPLE_RATE);
 
-                                    Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
+                                    // Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
 
                                     float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
                                     if (sample_count > 0)
