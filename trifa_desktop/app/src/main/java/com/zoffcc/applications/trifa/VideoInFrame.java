@@ -28,6 +28,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
+
 public class VideoInFrame extends JFrame
 {
     private static final String TAG = "trifa.VideoInFrame";
@@ -219,5 +221,7 @@ public class VideoInFrame extends JFrame
             video_in_frame.setIcon(i);
             video_in_frame.repaint();
         }
+
+        reset_audio_bars();
     }
 }

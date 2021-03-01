@@ -120,78 +120,81 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     @Override
     public void itemStateChanged(ItemEvent e)
     {
-        if (e.getItem() != webcam)
+        if (e.getStateChange() == ItemEvent.SELECTED)
         {
-            Log.i(TAG, "webcam=" + webcam);
-            if (webcam != null)
+            if (e.getItem() != webcam)
             {
-                panel.stop();
-                remove(panel);
-
-                webcam.removeWebcamListener(this);
-                webcam.close();
-
-                webcam = (Webcam) e.getItem();
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
-                webcam.addWebcamListener(this);
-
-                Log.i(TAG, "selected " + webcam.getName());
-
-                panel = new WebcamPanel(webcam, false);
-                panel.setFPSDisplayed(true);
-                panel.setDisplayDebugInfo(true);
-                panel.setImageSizeDisplayed(true);
-                panel.setMirrored(true);
-
-                add(panel, BorderLayout.CENTER);
-                revalidate();
-
-                Thread t = new Thread()
+                Log.i(TAG, "webcam=" + webcam);
+                if (webcam != null)
                 {
+                    panel.stop();
+                    remove(panel);
 
-                    @Override
-                    public void run()
+                    webcam.removeWebcamListener(this);
+                    webcam.close();
+
+                    webcam = (Webcam) e.getItem();
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    webcam.addWebcamListener(this);
+
+                    Log.i(TAG, "selected " + webcam.getName());
+
+                    panel = new WebcamPanel(webcam, false);
+                    panel.setFPSDisplayed(true);
+                    panel.setDisplayDebugInfo(true);
+                    panel.setImageSizeDisplayed(true);
+                    panel.setMirrored(true);
+
+                    add(panel, BorderLayout.CENTER);
+                    revalidate();
+
+                    Thread t = new Thread()
                     {
-                        panel.start();
-                    }
-                };
-                t.setName("trifa_cam2");
-                t.setDaemon(true);
-                t.setUncaughtExceptionHandler(this);
-                t.start();
-            }
-            else if ((e.getItem() != null) && (webcam == null))
-            {
-                webcam = (Webcam) e.getItem();
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
-                width = webcam.getViewSize().width;
-                height = webcam.getViewSize().height;
-                webcam.addWebcamListener(this);
 
-                Log.i(TAG, "selected " + webcam.getName());
-
-                panel = new WebcamPanel(webcam, false);
-                panel.setFPSDisplayed(true);
-                panel.setDisplayDebugInfo(true);
-                panel.setImageSizeDisplayed(true);
-                panel.setMirrored(true);
-
-                add(panel, BorderLayout.CENTER);
-                revalidate();
-
-                Thread t = new Thread()
+                        @Override
+                        public void run()
+                        {
+                            panel.start();
+                        }
+                    };
+                    t.setName("trifa_cam2");
+                    t.setDaemon(true);
+                    t.setUncaughtExceptionHandler(this);
+                    t.start();
+                }
+                else if ((e.getItem() != null) && (webcam == null))
                 {
+                    webcam = (Webcam) e.getItem();
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    width = webcam.getViewSize().width;
+                    height = webcam.getViewSize().height;
+                    webcam.addWebcamListener(this);
 
-                    @Override
-                    public void run()
+                    Log.i(TAG, "selected " + webcam.getName());
+
+                    panel = new WebcamPanel(webcam, false);
+                    panel.setFPSDisplayed(true);
+                    panel.setDisplayDebugInfo(true);
+                    panel.setImageSizeDisplayed(true);
+                    panel.setMirrored(true);
+
+                    add(panel, BorderLayout.CENTER);
+                    revalidate();
+
+                    Thread t = new Thread()
                     {
-                        panel.start();
-                    }
-                };
-                t.setName("trifa_cam2");
-                t.setDaemon(true);
-                t.setUncaughtExceptionHandler(this);
-                t.start();
+
+                        @Override
+                        public void run()
+                        {
+                            panel.start();
+                        }
+                    };
+                    t.setName("trifa_cam2");
+                    t.setDaemon(true);
+                    t.setUncaughtExceptionHandler(this);
+                    t.start();
+                }
             }
         }
     }

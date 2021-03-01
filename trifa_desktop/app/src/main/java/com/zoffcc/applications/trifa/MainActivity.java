@@ -62,6 +62,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 
+import static com.zoffcc.applications.trifa.AudioFrame.set_audio_in_bar_level;
+import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
@@ -610,6 +612,32 @@ public class MainActivity extends JFrame
 
         this.toFront();
         this.revalidate();
+
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                int ii = 0;
+                try
+                {
+                    while (true)
+                    {
+                        ii = (int) (Math.random() * 100);
+                        set_audio_in_bar_level(ii);
+                        ii = (int) (Math.random() * 100);
+                        set_audio_out_bar_level(ii);
+                        Thread.sleep(10);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.i(TAG, "EE01:" + e.getMessage());
+                }
+
+            }
+        };
+        // t.start();
     }
 
     private void initComponents()

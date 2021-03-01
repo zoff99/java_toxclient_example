@@ -83,9 +83,9 @@ public class FriendListFragmentJ extends JPanel
                         return;
                     }
 
-                    System.out.println("ListSelectionListener:e.getFirstIndex()" + e.getFirstIndex());
-                    System.out.println("ListSelectionListener:friends_and_confs_list.getSelectedIndex()" +
-                                       friends_and_confs_list.getSelectedIndex());
+                    //System.out.println("ListSelectionListener:e.getFirstIndex()" + e.getFirstIndex());
+                    //System.out.println("ListSelectionListener:friends_and_confs_list.getSelectedIndex()" +
+                    //                   friends_and_confs_list.getSelectedIndex());
 
                     if (friends_and_confs_list.getSelectedIndex() == -1)
                     {
@@ -101,8 +101,8 @@ public class FriendListFragmentJ extends JPanel
                     {
                         MessagePanel.setCurrentPK(pk);
                         MessagePanel.friendnum = tox_friend_by_public_key__wrapper(pk);
-                        System.out.println(
-                                "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
+                        //System.out.println(
+                        //        "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
 
                         update_all_messages(true);
                     }
@@ -152,7 +152,7 @@ public class FriendListFragmentJ extends JPanel
 
             String pk = text.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
 
-            Log.i(TAG, "pk=" + pk);
+            // Log.i(TAG, "pk=" + pk);
 
             try
             {
@@ -229,7 +229,7 @@ public class FriendListFragmentJ extends JPanel
                             "Notification_silent asc, Last_online_timestamp desc");
                     while (rs.next())
                     {
-                        Log.i(TAG, "add_all_friends_clear:rs=" + rs);
+                        // Log.i(TAG, "add_all_friends_clear:rs=" + rs);
 
                         FriendList temp = new FriendList();
                         temp.tox_public_key_string = rs.getString("tox_public_key_string");
