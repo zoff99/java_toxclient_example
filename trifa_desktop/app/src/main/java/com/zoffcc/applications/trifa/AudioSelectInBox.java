@@ -21,6 +21,7 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;
@@ -36,6 +37,9 @@ import javax.swing.JComboBox;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.audio_in_select;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_in_bar_level;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.set_JNI_audio_buffer;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_audio_send_frame;
 import static java.awt.Font.PLAIN;
 
 public class AudioSelectInBox extends JComboBox implements ItemListener, LineListener
@@ -46,7 +50,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
     static TargetDataLine targetDataLine = null;
     static AudioFormat audioformat = null;
 
-    final float SAMPLE_RATE = 48000.0f;
+    final int SAMPLE_RATE = 48000;
     final int SAMPLE_SIZE_BIT = 16;
     final int CHANNELS = 2;
 
@@ -65,6 +69,10 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             @Override
             public void run()
             {
+                int sample_count = 0;
+                int audio_send_res = 1;
+                int numBytesRead = 0;
+
                 while (true)
                 {
                     try
@@ -86,14 +94,37 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                             // Log.i(TAG, "t_audio_rec:002");
                             if (targetDataLine.isOpen())
                             {
-                                // Log.i(TAG, "t_audio_rec:003");
-                                int numBytesRead;
-                                byte[] data = new byte[targetDataLine.getBufferSize() / 5];
+
+                                // TODO: ----------- do these only once --------------
+                                int wanted_buf_sizeXX = targetDataLine.getBufferSize() / 5;
+                                int frameduration_ms = 40;
+                                int sample_count2 = ((SAMPLE_RATE * frameduration_ms) / 1000);
+                                int want_numBytesRead = sample_count2 * CHANNELS * 2;
+
+                                byte[] data = new byte[want_numBytesRead];
                                 numBytesRead = targetDataLine.read(data, 0, data.length);
+                                sample_count = ((numBytesRead / 2) / CHANNELS);
+
+                                //Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 +
+                                //           " frameduration_ms=" + frameduration_ms + " want_numBytesRead=" +
+                                //           want_numBytesRead + " wanted_buf_size=" + wanted_buf_sizeXX);
+
                                 //Log.i(TAG,
                                 //      "t_audio_rec:read:" + numBytesRead + " isRunning=" + targetDataLine.isRunning());
 
-                                int sample_count = ((numBytesRead / 2) / CHANNELS);
+                                ByteBuffer _recBuffer = ByteBuffer.allocateDirect(numBytesRead);
+                                set_JNI_audio_buffer(_recBuffer);
+                                // TODO: ----------- do these only once --------------
+
+                                _recBuffer.rewind();
+                                _recBuffer.put(data, 0, data.length);
+
+                                audio_send_res = toxav_audio_send_frame(
+                                        tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), sample_count,
+                                        CHANNELS, SAMPLE_RATE);
+
+                                // Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
+
                                 float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
                                 if (sample_count > 0)
                                 {
