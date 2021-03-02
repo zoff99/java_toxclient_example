@@ -31,6 +31,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -107,7 +108,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.5";
+    static final String Version = "1.0.6";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -122,7 +123,7 @@ public class MainActivity extends JFrame
     static TrifaToxService tox_service_fg = null;
     static boolean native_lib_loaded = false;
     static long[] friends = null;
-    static String app_files_directory = "./";
+    static String app_files_directory = ".";
     static String password_hash = "pass";
     static Semaphore semaphore_tox_savedata = new Semaphore(1);
 
@@ -902,7 +903,7 @@ public class MainActivity extends JFrame
             int PREF__ipv6_enabled = 1;
             int PREF__force_udp_only = 0;
 
-            app_files_directory = "./";
+            app_files_directory = "." + File.separator;
 
             init(app_files_directory, PREF__udp_enabled, PREF__local_discovery_enabled, PREF__orbot_enabled_to_int,
                  ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
