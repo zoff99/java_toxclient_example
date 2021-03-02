@@ -35,7 +35,7 @@ export ARCH
 
 
 # ---------- ffmpeg ---------
-if [ 1 == 2 ]; then
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -106,7 +106,7 @@ fi
 
 
 # ---------- opus ---------
-if [ 1 == 2 ]; then
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -135,7 +135,7 @@ fi
 
 
 # ---------- sodium ---------
-if [ 1 == 2 ]; then
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -162,7 +162,7 @@ fi
 
 
 # ---------- vpx ---------
-if [ 1 == 2 ]; then
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -174,9 +174,8 @@ tar -xf "$VPX_FILENAME"
 cd libvpx*/
 
 
-  VPX_TARGET=x86_64-win64-gcc
-  CROSS="$ARCH-w64-mingw32-" ./configure --host="$ARCH-w64-mingw32" \
-                                         --target="$VPX_TARGET" \
+  VPX_TARGET="x86_64-win64-gcc"
+  CROSS="$ARCH-w64-mingw32-" ./configure --target="$VPX_TARGET" \
                                          --prefix="$_INST_" \
                                          --disable-shared \
                                          --size-limit=16384x16384 \
@@ -201,6 +200,8 @@ fi
 
 
 # --- NASM ---
+if [ 1 == 1 ]; then
+
 cd "$_SRC_"
 
     export PATH=$ORIGPATH
@@ -226,10 +227,13 @@ cd "$_SRC_"
     
     export PATH=$NEWPATH
 cd "$_HOME_"
+
+fi
 # --- NASM ---
 
 
 # ---------- x264 ---------
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -247,16 +251,57 @@ cd x264/
                                          --disable-avs \
                                          --disable-cli \
                                          --enable-pic || exit 
-                                         
+  export CC=""
+  export WINDRES=""
 
   make || exit 1
   make install
 
 cd "$_HOME_"
 
+fi
 # ---------- x264 ---------
 
 
+# ---------- c-toxcore ---------
+
+cd "$_SRC_"
+
+git clone https://github.com/zoff99/c-toxcore c-toxcore
+cd c-toxcore/
+git checkout "zoff99/zoxcore_local_fork"
+
+# ------ set c-toxcore git commit hash ------
+git_hash_for_toxcore=$(git rev-parse --verify --short=8 HEAD 2>/dev/null|tr -dc '[A-Fa-f0-9]' 2>/dev/null)
+echo "XX:""$git_hash_for_toxcore"":YY"
+cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
+cd toxcore/ ; sed -i -e 's;^.*TOX_GIT_COMMIT_HASH.*$;#define TOX_GIT_COMMIT_HASH "'$git_hash_for_toxcore'";' tox.h
+cd ../
+cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
+# ------ set c-toxcore git commit hash ------
+
+
+# C_COMPILER=$ARCH-w64-mingw32-gcc
+# CXX_COMPILER=$ARCH-w64-mingw32-g++
+# RC_COMPILER=$ARCH-w64-mingw32-windres
+
+
+autoreconf -fi
+./configure \
+    CFLAGS=" -O2 -g " \
+    --prefix="$_INST_" \
+    --disable-soname-versions \
+    --host="$ARCH-w64-mingw32" \
+    --disable-shared \
+    --disable-testing \
+    --disable-rt || exit 1
+
+    export V=1 VERBOSE=1;make || exit 1
+    make install
+
+cd "$_HOME_"
+
+# ---------- c-toxcore ---------
 
 
 

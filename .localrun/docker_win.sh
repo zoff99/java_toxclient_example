@@ -57,6 +57,7 @@ pkgs_Ubuntu_18_04="
     g++-mingw-w64-x86-64
     gcc-mingw-w64-x86-64
     yasm
+    openjdk-11-jdk-headless
 "
 
 pkgs_Ubuntu_20_04="$pkgs_Ubuntu_18_04"
@@ -102,6 +103,7 @@ cd /workspace/data/jni-c-toxcore/ || exit 1
 ls -al
 
 ../circle_scripts/deps_win.sh || exit 1
+../circle_scripts/java_jni_lib_win.sh || exit 1
 
 
 #------------------------
@@ -115,8 +117,7 @@ ls -al
       -v $_HOME_/"$system_to_build_for"/workspace:/workspace \
       --net=host \
      "$system_to_build_for_orig" \
-     /bin/bash
-     # /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh"
+     /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh"
      if [ $? -ne 0 ]; then
         echo "** ERROR **:$system_to_build_for_orig"
         exit 1
