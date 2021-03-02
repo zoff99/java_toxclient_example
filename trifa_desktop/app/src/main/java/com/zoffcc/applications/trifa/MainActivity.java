@@ -21,6 +21,7 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -54,7 +55,9 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -642,6 +645,21 @@ public class MainActivity extends JFrame
 
         lo = ResourceBundle.getBundle("i18n.ResourceBundle", locale);
         Log.i(TAG, "locale_test:" + lo.getString("locale_test"));
+
+        try
+        {
+            for (int i = 0; i < UIManager.getInstalledLookAndFeels().length; i++)
+            {
+                Log.i(TAG, "look_and_feel:" + i + ":" + UIManager.getInstalledLookAndFeels()[i].getName());
+            }
+
+            // Set System L&F
+            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         TrifaToxService.TOX_SERVICE_STARTED = false;
         bootstrapping = false;
@@ -1697,6 +1715,19 @@ public class MainActivity extends JFrame
     static int bootstrap_single_wrapper(String ip, long port, String key_hex)
     {
         return bootstrap_single(ip, key_hex, port);
+    }
+
+    static void switch_ui_look_and_feel(LookAndFeel lnfName, Component c)
+    {
+        try
+        {
+            UIManager.setLookAndFeel(lnfName);
+            SwingUtilities.updateComponentTreeUI(c);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }
 
