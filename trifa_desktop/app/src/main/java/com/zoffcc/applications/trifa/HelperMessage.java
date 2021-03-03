@@ -24,9 +24,9 @@ import java.sql.Statement;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
-import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class HelperMessage
 {
@@ -207,6 +207,8 @@ public class HelperMessage
                 m.text = rs.getString("text");
                 m.tox_friendpubkey = rs.getString("tox_friendpubkey");
                 m.direction = rs.getInt("direction");
+                m.rcvd_timestamp = rs.getLong("rcvd_timestamp");
+                m.sent_timestamp = rs.getLong("sent_timestamp");
                 // Log.i(TAG, "m=" + m);
                 // TODO: read all fields
             }

@@ -110,8 +110,8 @@ public class MessageListFragmentJ extends JPanel
             {
                 // send typed message to friend
 
-                msg = sendTextField.getText().toString().substring(0, (int) Math.min(tox_max_message_length(),
-                                                                                     sendTextField.getText().toString().length()));
+                msg = sendTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
+                                                                          sendTextField.getText().length()));
 
                 Message m = new Message();
                 m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friendnum);
