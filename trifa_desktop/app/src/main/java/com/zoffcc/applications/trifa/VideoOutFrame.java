@@ -134,6 +134,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             panel.setDisplayDebugInfo(true);
             panel.setImageSizeDisplayed(true);
             panel.setMirrored(true);
+
             add(picker, BorderLayout.NORTH);
             add(panel, BorderLayout.CENTER);
         }

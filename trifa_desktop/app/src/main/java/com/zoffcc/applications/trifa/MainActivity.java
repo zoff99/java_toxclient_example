@@ -264,6 +264,15 @@ public class MainActivity extends JFrame
 
                     try
                     {
+                        Thread.sleep(700);
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+
+                    try
+                    {
                         sqldb.close();
                     }
                     catch (Exception e2)
@@ -673,7 +682,15 @@ public class MainActivity extends JFrame
                     }
 
                     tox_service_fg.stop_me = true;
-                    Thread.sleep(500);
+
+                    try
+                    {
+                        Thread.sleep(700);
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
 
                     try
                     {
