@@ -29,6 +29,9 @@ import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
@@ -36,12 +39,27 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_call_control;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame;
 import static com.zoffcc.applications.trifa.MainActivity.video_buffer_2;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_INCOMING;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_OUTGOING;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.count_video_frame_received;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.count_video_frame_sent;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_received;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_sent;
+import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 
 public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler
 {
@@ -49,6 +67,9 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
     private static WebcamPicker picker = null;
     private static WebcamPanel panel = null;
+    static JButton VideoCallStartButton = null;
+    static JButton VideoCallStopButton = null;
+    static JPanel ButtonPanel = null;
     private static Webcam webcam = null;
 
     public static int width = 640;
@@ -68,6 +89,36 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         picker.addItemListener(this);
 
         webcam = picker.getSelectedWebcam();
+
+        ButtonPanel = new JPanel();
+        ButtonPanel.setLayout(new GridLayout());
+        add(ButtonPanel, BorderLayout.SOUTH);
+
+        VideoCallStartButton = new JButton("start Video Call");
+        ButtonPanel.add(VideoCallStartButton);
+
+        VideoCallStopButton = new JButton("stop Video Call");
+        ButtonPanel.add(VideoCallStopButton);
+
+        VideoCallStartButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG, "VideoCallStartButton pressed");
+                do_start_video_call();
+            }
+        });
+
+        VideoCallStopButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG, "VideoCallStopButton pressed");
+                do_stop_video_call();
+            }
+        });
 
         if (webcam != null)
         {
@@ -381,5 +432,75 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         }
 
         return ret;
+    }
+
+    static void do_start_video_call()
+    {
+        if (current_pk != null)
+        {
+            try
+            {
+                Log.i(TAG, "CALL:start:(2.0):Callstate.state=" + Callstate.state);
+
+                if (Callstate.state == 0)
+                {
+                    Callstate.state = 1;
+                    Callstate.accepted_call = 1; // we started the call, so it's already accepted on our side
+                    Callstate.call_first_video_frame_received = -1;
+                    Callstate.call_start_timestamp = -1;
+                    Callstate.friend_pubkey = tox_friend_get_public_key__wrapper(friendnum);
+                    Callstate.camera_opened = false;
+                    Callstate.audio_speaker = true;
+                    Callstate.other_audio_enabled = 1;
+                    Callstate.other_video_enabled = 1;
+                    Callstate.my_audio_enabled = 1;
+                    Callstate.my_video_enabled = 1;
+                    MainActivity.set_av_call_status(Callstate.state);
+
+                    Callstate.audio_bitrate = GLOBAL_AUDIO_BITRATE;
+                    Callstate.video_bitrate = GLOBAL_VIDEO_BITRATE;
+                    VIDEO_FRAME_RATE_OUTGOING = 0;
+                    last_video_frame_sent = -1;
+                    VIDEO_FRAME_RATE_INCOMING = 0;
+                    last_video_frame_received = -1;
+                    count_video_frame_received = 0;
+                    count_video_frame_sent = 0;
+
+                    int res2 = MainActivity.toxav_call(friendnum, GLOBAL_AUDIO_BITRATE, GLOBAL_VIDEO_BITRATE);
+                    if (res2 != 1)
+                    {
+                        Log.i(TAG, "toxav_call:video_call:RES=" + res2);
+                    }
+                    Log.i(TAG, "CALL_OUT:002");
+                }
+                Callstate.call_init_timestamp = System.currentTimeMillis();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "CALL:start:(2):EE:" + e.getMessage());
+            }
+        }
+    }
+
+    static void do_stop_video_call()
+    {
+        if (!Callstate.friend_pubkey.equals("-1"))
+        {
+            if (Callstate.state != 0)
+            {
+                try
+                {
+                    toxav_call_control(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                       ToxVars.TOXAV_CALL_CONTROL.TOXAV_CALL_CONTROL_CANCEL.value);
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+                Log.i(TAG, "decline_button_pressed:on_call_ended_actions");
+                on_call_ended_actions();
+            }
+        }
     }
 }
