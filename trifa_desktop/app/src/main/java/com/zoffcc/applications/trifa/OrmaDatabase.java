@@ -30,9 +30,9 @@ public class OrmaDatabase
         if (str != null && str.length() > 0)
         {
             str = str.
-                    replace("\\", "\\\\"). // \ -> \\
-                    replace("%", "\\%"). // % -> \%
-                    replace("_", "\\_"). // _ -> \_
+                    // replace("\\", "\\\\"). // \ -> \\
+                    // replace("%", "\\%"). // % -> \%
+                    // replace("_", "\\_"). // _ -> \_
                     replace("'", "''"). // ' -> ''
                     replace("\\x1a", "\\Z");
             data = str;
