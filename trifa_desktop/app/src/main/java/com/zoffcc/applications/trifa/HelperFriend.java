@@ -20,15 +20,16 @@
 package com.zoffcc.applications.trifa;
 
 import java.nio.ByteBuffer;
-import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
-import static com.zoffcc.applications.trifa.MainActivity.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperFriend
 {
@@ -40,30 +41,18 @@ public class HelperFriend
 
         try
         {
-            Statement statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery("select * from FriendList where tox_public_key_string='" +
-                                                  s(tox_friend_get_public_key__wrapper(friendnum)) + "'");
-            if (rs.next())
+            String pubkey_temp = tox_friend_get_public_key__wrapper(friendnum);
+            // Log.i(TAG, "main_get_friend:pubkey=" + pubkey_temp + " fnum=" + friendnum);
+            List<FriendList> fl = orma.selectFromFriendList().
+                    tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    toList();
+
+            // Log.i(TAG, "main_get_friend:fl=" + fl + " size=" + fl.size());
+
+            if (fl.size() > 0)
             {
-                f = new FriendList();
-                f.tox_public_key_string = rs.getString("tox_public_key_string");
-                f.name = rs.getString("name");
-                f.alias_name = rs.getString("alias_name");
-                f.TOX_CONNECTION = rs.getInt("TOX_CONNECTION");
-                f.TOX_CONNECTION_real = rs.getInt("TOX_CONNECTION_real");
-                f.TOX_CONNECTION_on_off = rs.getInt("TOX_CONNECTION_on_off");
-                f.TOX_CONNECTION_on_off_real = rs.getInt("TOX_CONNECTION_on_off_real");
-                f.TOX_USER_STATUS = rs.getInt("TOX_USER_STATUS");
-                f.last_online_timestamp = rs.getLong("last_online_timestamp");
-                f.last_online_timestamp_real = rs.getLong("last_online_timestamp_real");
-                if (rs.getInt("is_relay") == 0)
-                {
-                    f.is_relay = false;
-                }
-                else
-                {
-                    f.is_relay = true;
-                }
+                f = fl.get(0);
+                // Log.i(TAG, "main_get_friend:f=" + f);
             }
             else
             {
@@ -183,27 +172,16 @@ public class HelperFriend
         //            {
         try
         {
-            int count = 0;
-            Statement statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery(
-                    "select count(*) as count from FriendList where tox_public_key_string='" +
-                    s(f.tox_public_key_string) + "'");
-            rs.next();
-            count = rs.getInt("count");
-            Log.i(TAG, "friend to DB: count=" + count);
-
-            if (count == 0)
+            if (orma.selectFromFriendList().tox_public_key_stringEq(f.tox_public_key_string).count() == 0)
             {
                 f.added_timestamp = System.currentTimeMillis();
-                statement.executeUpdate(
-                        "insert into FriendList (" + "tox_public_key_string , is_relay, name" + ")" + " values(" + "'" +
-                        f.tox_public_key_string + "' , '0', '" + f.name + "' " + ")");
-                Log.i(TAG, "friend added to DB: " + f.tox_public_key_string);
+                orma.insertIntoFriendList(f);
+                // Log.i(TAG, "friend added to DB: " + f.tox_public_key_string);
             }
             else
             {
                 // friend already in DB
-                Log.i(TAG, "friend already in DB: " + f.tox_public_key_string);
+                // Log.i(TAG, "friend already in DB: " + f.tox_public_key_string);
             }
         }
         catch (Exception e)

@@ -24,8 +24,8 @@ import java.sql.Statement;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
-import static com.zoffcc.applications.trifa.MainActivity.b;
-import static com.zoffcc.applications.trifa.MainActivity.s;
+import static com.zoffcc.applications.trifa.OrmaDatabase.b;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class HelperMessage

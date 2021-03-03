@@ -22,7 +22,7 @@ package com.zoffcc.applications.trifa;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static com.zoffcc.applications.trifa.MainActivity.s;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class HelperRelay

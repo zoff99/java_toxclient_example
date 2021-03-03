@@ -36,8 +36,6 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -77,6 +75,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
+import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
@@ -100,6 +99,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXA
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_A;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
@@ -178,52 +178,6 @@ public class MainActivity extends JFrame
     static ByteBuffer video_buffer_2 = null;
     static int buffer_size_in_bytes = 0;
     static ByteBuffer _recBuffer = null;
-
-    /* escape to prevent SQL injection, very basic and bad! */
-    public static String s(String str)
-    {
-        // TODO: bad!! use prepared statements
-        String data = "";
-
-        if (str == null || str.length() == 0)
-        {
-            return "";
-        }
-
-        if (str != null && str.length() > 0)
-        {
-            str = str.
-                    replace("\\", "\\\\"). // \ -> \\
-                    replace("%", "\\%"). // % -> \%
-                    replace("_", "\\_"). // _ -> \_
-                    replace("'", "''"). // ' -> ''
-                    replace("\\x1a", "\\Z");
-            data = str;
-        }
-        return data;
-    }
-
-    public static String s(int i)
-    {
-        return "" + i;
-    }
-
-    public static String s(long l)
-    {
-        return "" + l;
-    }
-
-    public static int b(boolean in)
-    {
-        if (in)
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
-    }
 
     static class send_message_result
     {
@@ -661,6 +615,8 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
+        orma = new OrmaDatabase();
+
         TrifaToxService.TOX_SERVICE_STARTED = false;
         bootstrapping = false;
         Log.i(TAG, "java.library.path:" + System.getProperty("java.library.path"));
@@ -717,197 +673,15 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
-        Statement statement = null;
-
-        try
-        {
-            statement = sqldb.createStatement();
-            statement.setQueryTimeout(10);  // set timeout to 30 sec.
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        // @formatter:off
-        try
-        {
-            statement.executeUpdate(
-                    "create table TRIFADatabaseGlobalsNew (" +
-                    "key string NOT NULL PRIMARY KEY," +
-                    "value string" +
-                    ")");
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "CREATE TABLE `BootstrapNodeEntryDB` \n" +
-                    "(\n" +
-                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                    "`num` INTEGER NOT NULL,\n" +
-                    "`udp_node` BOOLEAN NOT NULL,\n" +
-                    "`ip` TEXT NOT NULL,\n" +
-                    "`port` INTEGER NOT NULL,\n" +
-                    "`key_hex` TEXT NOT NULL\n" +
-                    ")");
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "create table FriendList (" +
-                    "tox_public_key_string string NOT NULL PRIMARY KEY , " +
-                    "name string," +
-                    "alias_name string," +
-                    "status_message string," +
-                    "TOX_CONNECTION integer DEFAULT '0' CHECK (TOX_CONNECTION IN ('0', '1', '2'))," +
-                    "TOX_CONNECTION_real integer DEFAULT '0' CHECK (TOX_CONNECTION_real IN ('0', '1', '2'))," +
-                    "TOX_CONNECTION_on_off integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off IN ('0', '1'))," +
-                    "TOX_CONNECTION_on_off_real integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off_real IN ('0', '1'))," +
-                    "TOX_USER_STATUS integer DEFAULT '0' CHECK (TOX_USER_STATUS IN ('0', '1', '2'))," +
-                    "avatar_pathname string," +
-                    "avatar_filename string," +
-                    "avatar_update integer DEFAULT '0' CHECK (avatar_update IN ('0', '1'))," +
-                    "avatar_update_timestamp integer DEFAULT '-1'," +
-                    "notification_silent integer DEFAULT '0' CHECK (notification_silent IN ('0', '1'))," +
-                    "sort integer DEFAULT '0'," +
-                    "last_online_timestamp integer DEFAULT '-1'," +
-                    "last_online_timestamp_real integer DEFAULT '-1'," +
-                    "added_timestamp integer DEFAULT '-1'," +
-                    "is_relay integer DEFAULT '0' CHECK (is_relay IN ('0', '1'))  )");
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate("create table Message("+
-                                    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "+
-                                    "message_id integer DEFAULT '-1', "+
-                                    "tox_friendpubkey string NOT NULL, "+
-                                    "direction INTEGER NOT NULL DEFAULT '0' CHECK (direction IN ('0', '1')), "+
-                                    "TOX_MESSAGE_TYPE INTEGER NOT NULL DEFAULT '0' CHECK (TOX_MESSAGE_TYPE IN ('0', '1')), "+
-                                    "TRIFA_MESSAGE_TYPE integer DEFAULT '0', "+
-                                    "state integer DEFAULT '1', "+
-                                    "ft_accepted integer DEFAULT '0' CHECK (ft_accepted IN ('0', '1')), "+
-                                    "ft_outgoing_started integer DEFAULT '0' CHECK (ft_outgoing_started IN ('0', '1')), "+
-                                    "filedb_id integer DEFAULT '-1', "+
-                                    "filetransfer_id integer DEFAULT '-1', "+
-                                    "sent_timestamp integer DEFAULT '0', "+
-                                    "sent_timestamp_ms integer DEFAULT '0', "+
-                                    "rcvd_timestamp integer DEFAULT '0', "+
-                                    "rcvd_timestamp_ms integer DEFAULT '0', "+
-                                    "read integer DEFAULT '0' CHECK (read IN ('0', '1')), "+
-                                    "send_retries integer DEFAULT '0', "+
-                                    "is_new DEFAULT '0' CHECK (is_new IN ('0', '1')), "+
-                                    "text string, "+
-                                    "filename_fullpath string, "+
-                                    "msg_id_hash string, "+
-                                    "raw_msgv2_bytes string, "+
-                                    "msg_version integer DEFAULT '0' CHECK (msg_version IN ('0', '1')), "+
-                                    "resend_count integer DEFAULT '2' CHECK (resend_count IN ('0', '1', '2')) "+
-               ")"
-            );
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "create table RelayListDB (" +
-                    "tox_public_key_string string NOT NULL PRIMARY KEY , " +
-                    "TOX_CONNECTION integer DEFAULT '0' CHECK (TOX_CONNECTION IN ('0', '1', '2')), " +
-                    "TOX_CONNECTION_on_off integer DEFAULT '0' CHECK (TOX_CONNECTION_on_off IN ('0', '1')), " +
-                    "own_relay integer DEFAULT '0' CHECK (own_relay IN ('0', '1')), " +
-                    "last_online_timestamp integer DEFAULT '-1', " +
-                    "tox_public_key_string_of_owner string " +
-                    ")"
-            );
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "create table ConferenceDB" +
-                    "(" +
-                    "    conference_identifier string NOT NULL PRIMARY KEY ," +
-                    "    who_invited__tox_public_key_string string," +
-                    "    name string," +
-                    "    peer_count integer DEFAULT '-1'," +
-                    "    own_peer_number integer DEFAULT '-1'," +
-                    "    kind integer DEFAULT '0'," +
-                    "    tox_conference_number integer DEFAULT '-1'," +
-                    "    conference_active integer DEFAULT '0' CHECK (conference_active IN ('0', '1'))," +
-                    "    notification_silent integer DEFAULT '0' CHECK (notification_silent IN ('0', '1'))" +
-                    ")"
-            );
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "CREATE TABLE ConferencePeerCacheDB\n" +
-                    "(\n" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                    "conference_identifier TEXT NOT NULL, \n" +
-                    "peer_pubkey TEXT NOT NULL, \n" +
-                    "peer_name TEXT NOT NULL, \n" +
-                    "last_update_timestamp INTEGER NOT NULL DEFAULT '-1'\n" +
-                    ")"
-            );
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-
-        try
-        {
-            statement.executeUpdate(
-                    "CREATE TABLE `ConferenceMessage`\n" +
-                    "(\n" +
-                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
-                    "`conference_identifier` TEXT NOT NULL DEFAULT -1,\n" +
-                    "`tox_peerpubkey` TEXT NOT NULL,\n" +
-                    "`tox_peername` TEXT ,\n" +
-                    "`direction` INTEGER NOT NULL,\n" +
-                    "`TOX_MESSAGE_TYPE` INTEGER NOT NULL,\n" +
-                    "`TRIFA_MESSAGE_TYPE` INTEGER NOT NULL DEFAULT 0,\n" +
-                    "`sent_timestamp` INTEGER ,\n" +
-                    "`rcvd_timestamp` INTEGER ,\n" +
-                    "`read` BOOLEAN NOT NULL,\n" +
-                    "`is_new` BOOLEAN NOT NULL,\n" +
-                    "`text` TEXT \n" +
-                    ")\n"
-            );
-        }
-        catch (SQLException e)
-        {
-            System.err.println(e.getMessage());
-        }
-        // @formatter:on
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
+        create_db();
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
+        // --------------- CREATE THE DATABASE ---------------
 
         tox_service_fg = new TrifaToxService();
 
@@ -1285,24 +1059,24 @@ public class MainActivity extends JFrame
 
         if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) != friend_number)
         {
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001a:ret01");
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001a:ret01");
             return;
         }
 
         if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS) ||
             (_recBuffer == null) || (sample_count == 0))
         {
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
             _recBuffer = ByteBuffer.allocateDirect((int) (10000 * 2 * channels));
             set_JNI_audio_buffer2(_recBuffer);
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
         }
 
         if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS))
         {
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1");
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1");
             AudioSelectOutBox.change_audio_format((int) sampling_rate, channels);
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:2");
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:2");
         }
 
         if (sample_count == 0)
@@ -1354,7 +1128,7 @@ public class MainActivity extends JFrame
         }
         catch (Exception e)
         {
-            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:EE01:" + e.getMessage());
+            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:EE01:" + e.getMessage());
         }
     }
 
@@ -1573,7 +1347,7 @@ public class MainActivity extends JFrame
     static void android_tox_callback_friend_connection_status_cb_method(long friend_number, int a_TOX_CONNECTION)
     {
         FriendList f = main_get_friend(friend_number);
-        //Log.i(TAG,
+        // Log.i(TAG,
         //      "friend_connection_status:friend:" + friend_number + " connection status:" + a_TOX_CONNECTION + " f=" +
         //      f);
 

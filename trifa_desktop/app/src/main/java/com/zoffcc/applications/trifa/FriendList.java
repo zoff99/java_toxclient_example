@@ -19,9 +19,21 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.OrmaDatabase.b;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
+
 @Table
 public class FriendList
 {
+    private static final String TAG = "DB.FriendList";
+
     // pubkey is always saved as UPPER CASE hex string!! -----------------
     @PrimaryKey
     String tox_public_key_string = "";
@@ -132,5 +144,153 @@ public class FriendList
         {
             return "*Exception*";
         }
+    }
+
+    String sql_start = "";
+    String sql_where = "where 1=1 "; // where
+    String sql_orderby = ""; // order by
+    String sql_limit = ""; // limit
+
+    public FriendList tox_public_key_stringEq(String tox_public_key_string)
+    {
+        this.sql_where = this.sql_where + " and tox_public_key_string='" + s(tox_public_key_string) + "' ";
+        return this;
+    }
+
+    public List<FriendList> toList()
+    {
+        List<FriendList> fl = null;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+            while (rs.next())
+            {
+                FriendList f = new FriendList();
+                f.tox_public_key_string = rs.getString("tox_public_key_string");
+                f.name = rs.getString("name");
+                f.status_message = rs.getString("status_message");
+                f.TOX_CONNECTION = rs.getInt("TOX_CONNECTION");
+                f.TOX_CONNECTION_real = rs.getInt("TOX_CONNECTION_real");
+                f.TOX_CONNECTION_on_off = rs.getInt("TOX_CONNECTION_on_off");
+                f.TOX_CONNECTION_on_off_real = rs.getInt("TOX_CONNECTION_on_off_real");
+                f.TOX_USER_STATUS = rs.getInt("TOX_USER_STATUS");
+                f.avatar_filename = rs.getString("avatar_filename");
+                f.avatar_pathname = rs.getString("avatar_pathname");
+                f.avatar_update = rs.getBoolean("avatar_update");
+                f.notification_silent = rs.getBoolean("notification_silent");
+                f.sort = rs.getInt("sort");
+                f.last_online_timestamp = rs.getLong("last_online_timestamp");
+                f.last_online_timestamp_real = rs.getLong("last_online_timestamp_real");
+                f.alias_name = rs.getString("alias_name");
+                f.is_relay = rs.getBoolean("is_relay");
+                f.avatar_update_timestamp = rs.getLong("avatar_update_timestamp");
+                f.added_timestamp = rs.getLong("added_timestamp");
+
+                if (fl == null)
+                {
+                    fl = new ArrayList<FriendList>();
+                }
+                fl.add(f);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return fl;
+    }
+
+    public long insert()
+    {
+        long ret = -1;
+
+        try
+        {
+            // @formatter:off
+            Statement statement = sqldb.createStatement();
+            final String sql_str="insert into FriendList" +
+                                "(" +
+                                 "tox_public_key_string,"	+
+                                 "name,"+
+                                 "alias_name,"+
+                                 "status_message,"	+
+                                 "TOX_CONNECTION,"	+
+                                 "TOX_CONNECTION_real,"+
+                                 "TOX_CONNECTION_on_off,"+
+                                 "TOX_CONNECTION_on_off_real,"+
+                                 "TOX_USER_STATUS,"	+
+                                 "avatar_pathname,"+
+                                 "avatar_filename,"+
+                                 "avatar_update,"+
+                                 "avatar_update_timestamp,"+
+                                 "notification_silent,"	+
+                                 "sort,"+
+                                 "last_online_timestamp,"+
+                                 "last_online_timestamp_real,"+
+                                 "added_timestamp,"+
+                                 "is_relay"	+
+                                 ")" +
+                                 "values" +
+                                 "(" +
+                                 "'"+s(""+this.tox_public_key_string)+"'," +
+                                 "'"+s(""+this.name)+"'," +
+                                 "'"+s(""+this.alias_name)+"'," +
+                                 "'"+s(""+this.status_message)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION_real)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION_on_off)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION_on_off_real)+"'," +
+                                 "'"+s(""+this.TOX_USER_STATUS)+"'," +
+                                 "'"+s(""+this.avatar_pathname)+"'," +
+                                 "'"+s(""+this.avatar_filename)+"'," +
+                                 "'"+b(this.avatar_update)+"'," +
+                                 "'"+s(""+this.avatar_update_timestamp)+"'," +
+                                 "'"+b(this.notification_silent)+"'," +
+                                 "'"+s(""+this.sort)+"'," +
+                                 "'"+s(""+this.last_online_timestamp)+"'," +
+                                 "'"+s(""+this.last_online_timestamp_real)+"'," +
+                                 "'"+s(""+this.added_timestamp)+"'," +
+                                 "'"+b(this.is_relay)+"'" +
+                                  ")";
+
+            statement.execute(sql_str);
+            ret = get_last_rowid(statement);
+            // @formatter:on
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM FriendList";
+            ResultSet rs = statement.executeQuery(
+                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 }

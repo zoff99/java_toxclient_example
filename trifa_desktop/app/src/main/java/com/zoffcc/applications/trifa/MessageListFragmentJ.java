@@ -33,7 +33,7 @@ import static com.zoffcc.applications.trifa.MainActivity.MessageTextArea;
 import static com.zoffcc.applications.trifa.MainActivity.add_message_ml;
 import static com.zoffcc.applications.trifa.MainActivity.blueSmallStyle;
 import static com.zoffcc.applications.trifa.MainActivity.mainStyle;
-import static com.zoffcc.applications.trifa.MainActivity.s;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;

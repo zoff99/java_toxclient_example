@@ -52,6 +52,7 @@ public class TrifaToxService
     static boolean is_tox_started = false;
     static boolean global_toxid_text_set = false;
     static boolean TOX_SERVICE_STARTED = false;
+    static OrmaDatabase orma = null;
 
     void tox_thread_start_fg()
     {
