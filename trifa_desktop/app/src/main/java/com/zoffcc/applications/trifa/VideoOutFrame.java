@@ -60,6 +60,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.count_video_frame_sent;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_received;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_sent;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
+import static java.awt.Font.PLAIN;
 
 public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler
 {
@@ -95,9 +96,11 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         add(ButtonPanel, BorderLayout.SOUTH);
 
         VideoCallStartButton = new JButton("start Video Call");
+        VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
         ButtonPanel.add(VideoCallStartButton);
 
         VideoCallStopButton = new JButton("stop Video Call");
+        VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
         ButtonPanel.add(VideoCallStopButton);
 
         VideoCallStartButton.addActionListener(new ActionListener()

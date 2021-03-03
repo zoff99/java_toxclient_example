@@ -146,6 +146,8 @@ public class MainActivity extends JFrame
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
     static JButton sendButton;
+    static JButton FriendAddButton;
+    static JTextField FriendAddToxID = null;
     static JTextField myToxID = null;
     static Style blueStyle;
     static Style blueSmallStyle;
@@ -153,6 +155,7 @@ public class MainActivity extends JFrame
     static Style mainStyle;
     static Style defaultStyle;
     static JTextArea ownProfileShort;
+    static JPanel FriendAddPanel;
 
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
@@ -331,8 +334,36 @@ public class MainActivity extends JFrame
         MessageTextInputPanel = new JPanel();
         sendTextField = new JTextArea();
         sendButton = new JButton("send");
+        sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
         leftPanel = new JPanel();
         ownProfileShort = new JTextArea();
+        FriendAddPanel = new JPanel();
+        FriendAddPanel.setLayout(new BoxLayout(FriendAddPanel, BoxLayout.Y_AXIS));
+        FriendAddPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
+
+        FriendAddToxID = new JTextField("");
+        FriendAddPanel.add(FriendAddToxID);
+        FriendAddButton = new JButton("add Friend");
+        FriendAddButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        FriendAddPanel.add(FriendAddButton);
+
+        FriendAddButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG, "FriendAddButton pressed");
+                String toxid = FriendAddToxID.getText().
+                        replace(" ", "").
+                        replace("\r", "").
+                        replace("\n", "");
+
+                String friend_tox_id = toxid.toUpperCase().replace(" ", "").replaceFirst("tox:", "").replaceFirst(
+                        "TOX:", "").replaceFirst("Tox:", "");
+                FriendAddToxID.setText("");
+                HelperFriend.add_friend_real(friend_tox_id);
+            }
+        });
 
         myToxID = new JTextField();
         myToxID.setVisible(true);
@@ -349,6 +380,7 @@ public class MainActivity extends JFrame
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.add(ownProfileShort);
         leftPanel.add(FriendPanel);
+        leftPanel.add(FriendAddPanel);
         leftPanel.setVisible(true);
 
         ownProfileShort.setFont(new java.awt.Font("monospaced", PLAIN, 9));
