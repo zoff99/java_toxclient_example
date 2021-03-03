@@ -103,6 +103,9 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
         ButtonPanel.add(VideoCallStopButton);
 
+        VideoCallStartButton.setVisible(true);
+        VideoCallStopButton.setVisible(true);
+
         VideoCallStartButton.addActionListener(new ActionListener()
         {
             @Override
