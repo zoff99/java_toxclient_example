@@ -21,7 +21,7 @@ export PKG_CONFIG_PATH=$_INST_/lib/pkgconfig
 # ----------- config ------------
 ORIGPATH=$PATH
 export ORIGPATH
-NEWPATH=/usr/x86_64-w64-mingw32/bin:$PATH
+NEWPATH=$PATH # /usr/x86_64-w64-mingw32/bin:$PATH
 export NEWPATH
 export PATH=$NEWPATH
 
@@ -31,8 +31,6 @@ export MAKEFLAGS
 WGET_OPTIONS="--timeout=10"
 export WGET_OPTIONS
 
-ARCH="x86_64"
-export ARCH
 # ----------- config ------------
 
 echo "--------------"
@@ -66,8 +64,8 @@ echo "JAVADIR2:""$JAVADIR2"
 
 export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all "
 
-x86_64-w64-mingw32-gcc-win32 $CFLAGS \
--Wall -D_JNI_IMPLEMENTATION_ -Wl,-kill-at \
+gcc $CFLAGS \
+-Wall \
 -DJAVA_LINUX \
 $C_FLAGS $CXX_FLAGS $LD_FLAGS \
 -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 \
@@ -88,19 +86,16 @@ $_INST_/lib/libtoxav.a \
 $_INST_/lib/libtoxcore.a \
 $_INST_/lib/libtoxencryptsave.a \
 $_INST_/lib/libsodium.a \
--Wl,-Bstatic -lws2_32 \
--l:libiphlpapi.a \
--Wl,-Bstatic -lbcrypt \
--shared \
 -lpthread \
 -lm \
--o jni-c-toxcore.dll || exit 1
+-shared \
+-Wl,-soname,libjni-c-toxcore.so -o libjni-c-toxcore.so || exit 1
 
 
-ls -al jni-c-toxcore.dll || exit 1
+ls -al libjni-c-toxcore.so || exit 1
 pwd
-file jni-c-toxcore.dll
-cp -av jni-c-toxcore.dll /workspace/data/java_ref_client/app/src/main/java/ || exit 1
+file libjni-c-toxcore.so
+cp -a libjni-c-toxcore.so /workspace/data/java_ref_client/app/src/main/java/ || exit 1
 
 # -------------- now compile the JNI lib ----------------------
 
@@ -112,6 +107,6 @@ javac com/zoffcc/applications/trifa/MainActivity.java
 javac com/zoffcc/applications/trifa/TrifaToxService.java
 # --------- package java example ---------
 cd /workspace/data/java_ref_client/app/src/main/java/
-tar -cvf /artefacts/install_win.tar com *.dll *.sh || tar -cvf ~/work/artefacts/install_win.tar com *.dll *.sh
+tar -cvf /artefacts/install_linux.tar com *.sh *.so || tar -cvf ~/work/artefacts/install_linux.tar com *.sh *.so
 
 
