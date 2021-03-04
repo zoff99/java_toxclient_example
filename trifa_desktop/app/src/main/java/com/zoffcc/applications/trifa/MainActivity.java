@@ -19,6 +19,8 @@
 
 package com.zoffcc.applications.trifa;
 
+import com.formdev.flatlaf.FlatLightLaf;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -43,8 +45,10 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
 
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -53,6 +57,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -613,11 +618,20 @@ public class MainActivity extends JFrame
 
         this.toFront();
         this.revalidate();
+
+        addKeyBinding(getRootPane(), "F11", new FullscreenToggleAction(this));
     }
 
     private void initComponents()
     {
         setLayout(new FlowLayout());
+    }
+
+    public static final void addKeyBinding(JComponent c, String key, final Action action)
+    {
+        c.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(key), key);
+        c.getActionMap().put(key, action);
+        c.setFocusable(true);
     }
 
     public static void main(String[] args)
@@ -654,6 +668,15 @@ public class MainActivity extends JFrame
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+
+        try
+        {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        }
+        catch (Exception ex)
+        {
+            System.err.println("Failed to initialize LaF");
         }
 
         orma = new OrmaDatabase();

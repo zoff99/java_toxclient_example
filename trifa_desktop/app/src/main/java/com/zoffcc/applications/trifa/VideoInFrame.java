@@ -29,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
+import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
 
 public class VideoInFrame extends JFrame
 {
@@ -58,6 +59,8 @@ public class VideoInFrame extends JFrame
         getContentPane().add(wrapperPanel);
 
         setup_video_in_resolution(width, height, (int) (width * height * 1.5f));
+
+        addKeyBinding(getRootPane(), "F11", new FullscreenToggleAction(this));
     }
 
     public static void new_video_in_frame(ByteBuffer vbuf, int w, int h)

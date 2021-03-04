@@ -148,7 +148,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         }
 
         setVisible(true);
-        revalidate();
 
         if (webcam != null)
         {
@@ -166,6 +165,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             t.setUncaughtExceptionHandler(this);
             t.start();
         }
+
+        ButtonPanel.setVisible(true);
+        ButtonPanel.revalidate();
+        revalidate();
     }
 
     @Override
