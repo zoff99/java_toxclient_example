@@ -72,3 +72,10 @@ jobs:
         name: macscreen
         path: |
           /Users/runner/screen*.png
+
+    - name: upload artefacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: trifa
+        path: /Users/runner/work/artefacts/*
+
