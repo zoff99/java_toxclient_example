@@ -22,8 +22,8 @@ NEWPATH=$PATH # /usr/x86_64-w64-mingw32/bin:$PATH
 export NEWPATH
 export PATH=$NEWPATH
 
-MAKEFLAGS=j$(nproc)
-export MAKEFLAGS
+# MAKEFLAGS=j$(nproc)
+# export MAKEFLAGS
 
 WGET_OPTIONS="--timeout=10"
 export WGET_OPTIONS
@@ -216,17 +216,19 @@ cd "$_SRC_"
     ./autogen.sh
     ./configure --prefix=/
 
-    make || exit 1
+    set -x
+    sudo make || exit 1
 
     # seems man pages are not always built. but who needs those
     touch nasm.1
     touch ndisasm.1
-    sudo make install
+    sudo make install || exit 1
 
     type -a nasm
 
     nasm --version || exit 1
-    
+    set +x
+
     export PATH=$NEWPATH
 cd "$_HOME_"
 
