@@ -26,6 +26,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -35,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -141,6 +144,7 @@ public class MainActivity extends JFrame
     static VideoInFrame VideoInFrame1 = null;
     static VideoOutFrame VideoOutFrame1 = null;
     static AudioFrame AudioFrame1 = null;
+    static Font emojiFont = null;
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
@@ -243,6 +247,20 @@ public class MainActivity extends JFrame
         VideoInFrame1 = new VideoInFrame();
         VideoOutFrame1 = new VideoOutFrame();
         AudioFrame1 = new AudioFrame();
+
+        try
+        {
+            //GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            // ge.registerFont(
+            emojiFont = Font.createFont(Font.TRUETYPE_FONT, new File("assets" + File.separator + "NotoColorEmoji.ttf"));
+            // );
+        }
+        catch (IOException | FontFormatException e)
+        {
+            //Handle exception
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         initComponents();
         setSize(600, 400);
@@ -414,6 +432,7 @@ public class MainActivity extends JFrame
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
 
         MessageTextInputPanel.add(sendTextField);
+        sendTextField.setFont(emojiFont);
         sendTextField.setEditable(true);
 
         sendTextField.addKeyListener(new KeyAdapter()
