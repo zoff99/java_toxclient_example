@@ -214,7 +214,7 @@ cd "$_SRC_"
     git checkout nasm-2.13.03
 
     ./autogen.sh
-    ./configure --prefix=/
+    ./configure --prefix="$_INST_"
 
     set -x
     sudo make || exit 1
@@ -224,12 +224,13 @@ cd "$_SRC_"
     touch ndisasm.1
     sudo make install || exit 1
 
+    export PATH=$NEWPATH:"$_INST_""/bin"
+
     type -a nasm
 
     nasm --version || exit 1
     set +x
 
-    export PATH=$NEWPATH
 cd "$_HOME_"
 
 fi
