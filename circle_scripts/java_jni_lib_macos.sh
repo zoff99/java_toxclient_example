@@ -106,7 +106,7 @@ ls -al libjni-c-toxcore.jnilib || exit 1
 otool -L libjni-c-toxcore.jnilib
 pwd
 file libjni-c-toxcore.jnilib
-cp -a libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/app/src/main/java/ || exit 1
+cp -a libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1
 
 # -------------- now compile the JNI lib ----------------------
 
@@ -116,13 +116,13 @@ $JAVA_HOME/bin/java -version
 $JAVA_HOME/bin/javac -version
 
 # --------- compile java example ---------
-cd /Users/runner/work/java_toxclient_example/java_toxclient_example/app/src/main/java/
+cd /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/
 $JAVA_HOME/bin/javac com/zoffcc/applications/trifa/ToxVars.java
 $JAVA_HOME/bin/javac com/zoffcc/applications/trifa/TRIFAGlobals.java
 $JAVA_HOME/bin/javac com/zoffcc/applications/trifa/MainActivity.java
 $JAVA_HOME/bin/javac com/zoffcc/applications/trifa/TrifaToxService.java
 # --------- package java example ---------
-cd /Users/runner/work/java_toxclient_example/java_toxclient_example/app/src/main/java/
+cd /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/
 mkdir -p /Users/runner/work/artefacts/
 tar -cvf /Users/runner/work/artefacts/install_macos.tar com *.sh *.jnilib
 # --------- run test java application ---------
