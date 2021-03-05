@@ -100,7 +100,6 @@ export LDFLAGS=" "
               --disable-bsfs \
               --disable-videotoolbox \
               --disable-audiotoolbox \
-              --disable-perl \
               --disable-appkit \
               --disable-coreimage \
               --disable-avfoundation \
