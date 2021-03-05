@@ -67,6 +67,8 @@ export LDFLAGS=" "
               --disable-programs \
               --disable-protocols \
               --disable-doc \
+              --disable-htmlpages \
+              --disable-podpages \
               --disable-sdl2 \
               --disable-avfilter \
               --disable-avresample \
@@ -96,6 +98,13 @@ export LDFLAGS=" "
               --disable-demuxers \
               --disable-parsers \
               --disable-bsfs \
+              --disable-videotoolbox \
+              --disable-audiotoolbox \
+              --disable-perl \
+              --disable-appkit \
+              --disable-coreimage \
+              --disable-avfoundation \
+              --disable-securetransport \
               --enable-parser=h264 \
               --enable-decoder=h264 || exit 1
 
