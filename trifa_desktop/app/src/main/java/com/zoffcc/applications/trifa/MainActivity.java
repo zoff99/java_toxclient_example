@@ -25,8 +25,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -46,11 +46,15 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -142,7 +146,6 @@ public class MainActivity extends JFrame
     static VideoInFrame VideoInFrame1 = null;
     static VideoOutFrame VideoOutFrame1 = null;
     static AudioFrame AudioFrame1 = null;
-    static Font emojiFont = null;
 
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
@@ -246,7 +249,7 @@ public class MainActivity extends JFrame
         VideoOutFrame1 = new VideoOutFrame();
         AudioFrame1 = new AudioFrame();
 
-        initComponents();
+        setLayout(new FlowLayout());
         setSize(600, 400);
 
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -254,45 +257,9 @@ public class MainActivity extends JFrame
         {
             public void windowClosing(WindowEvent e)
             {
-                int selected_answer = JOptionPane.showConfirmDialog(null, lo.getString("exit_app_msg"),
-                                                                    lo.getString("exit_app_title"), YES_NO_OPTION);
-                if (selected_answer == YES_OPTION)
-                {
-                    try
-                    {
-                        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
-                    }
-                    catch (Exception e3)
-                    {
-                        e3.printStackTrace();
-                    }
-
-                    tox_service_fg.stop_me = true;
-
-                    try
-                    {
-                        Thread.sleep(700);
-                    }
-                    catch (Exception e2)
-                    {
-                        e2.printStackTrace();
-                    }
-
-                    try
-                    {
-                        sqldb.close();
-                    }
-                    catch (Exception e2)
-                    {
-                        e2.printStackTrace();
-                    }
-
-                    System.exit(0);
-                }
+                want_exit();
             }
         });
-
-        this.setVisible(true);
 
         splitPane = new JSplitPane();
 
@@ -381,6 +348,8 @@ public class MainActivity extends JFrame
             }
         });
 
+        this.setVisible(true);
+
         myToxID = new JTextField();
         myToxID.setVisible(true);
 
@@ -402,6 +371,7 @@ public class MainActivity extends JFrame
         ownProfileShort.setFont(new java.awt.Font("monospaced", PLAIN, 9));
         ownProfileShort.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
         ownProfileShort.setEditable(false);
+        ownProfileShort.setVisible(true);
 
         MessagePanel.setLayout(new BoxLayout(MessagePanel, BoxLayout.Y_AXIS));
         MessagePanel.add(MessageScrollPane);
@@ -602,7 +572,45 @@ public class MainActivity extends JFrame
                 }
             }
         };
+
+        MessageListFragmentJ.show_info_text();
         set_focus_on_textinput.start();
+
+        // ------------ Main Menu ----------
+        JMenuBar main_menu = new JMenuBar();
+        JMenu m1 = new JMenu("FILE");
+        m1.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+
+        main_menu.add(m1);
+        this.setJMenuBar(main_menu);
+
+        // -------
+        JMenuItem m11 = new JMenuItem(new AbstractAction("Settings")
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                Log.i(TAG, "Settings selected");
+                SettingsActivity SettingsFrame = new SettingsActivity();
+                SettingsFrame.setVisible(true);
+            }
+        });
+        m11.setFont(new java.awt.Font("monospaced", PLAIN, 8));
+        m1.add(m11);
+        // -------
+        // -------
+        JMenuItem m12 = new JMenuItem(new AbstractAction("Exit")
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                Log.i(TAG, "Exit selected");
+                want_exit();
+            }
+        });
+        m12.setFont(new java.awt.Font("monospaced", PLAIN, 8));
+        m1.add(m12);
+        // -------
+
+        // ------------ Main Menu ----------
 
         VideoInFrame1.setLocationRelativeTo(null);
         final Rectangle bounds = this.getBounds();
@@ -616,17 +624,12 @@ public class MainActivity extends JFrame
         final Rectangle bounds3 = VideoOutFrame1.getBounds();
         AudioFrame1.setLocation(bounds3.x, bounds3.y + bounds3.height);
 
-        MessageListFragmentJ.show_info_text();
-
-        this.toFront();
-        this.revalidate();
+        EventQueue.invokeLater(() -> {
+            this.toFront();
+            this.revalidate();
+        });
 
         addKeyBinding(getRootPane(), "F11", new FullscreenToggleAction(this));
-    }
-
-    private void initComponents()
-    {
-        setLayout(new FlowLayout());
     }
 
     public static final void addKeyBinding(JComponent c, String key, final Action action)
@@ -692,6 +695,7 @@ public class MainActivity extends JFrame
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
+            // --- DO NOT optimize this out of here ---
             public void run()
             {
                 try
@@ -733,6 +737,7 @@ public class MainActivity extends JFrame
                     e.printStackTrace();
                 }
             }
+            // --- DO NOT optimize this out of here ---
         });
 
 
@@ -1575,6 +1580,45 @@ public class MainActivity extends JFrame
         catch (Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    void want_exit()
+    {
+        int selected_answer = JOptionPane.showConfirmDialog(null, lo.getString("exit_app_msg"),
+                                                            lo.getString("exit_app_title"), YES_NO_OPTION);
+        if (selected_answer == YES_OPTION)
+        {
+            try
+            {
+                HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+            }
+            catch (Exception e3)
+            {
+                e3.printStackTrace();
+            }
+
+            tox_service_fg.stop_me = true;
+
+            try
+            {
+                Thread.sleep(700);
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+
+            try
+            {
+                sqldb.close();
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+
+            System.exit(0);
         }
     }
 }

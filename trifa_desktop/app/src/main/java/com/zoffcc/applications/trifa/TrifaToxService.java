@@ -187,6 +187,26 @@ public class TrifaToxService
 
                 MainActivity.tox_iterate();
 
+                Log.i(TAG, "myToxID.setText:001");
+                long loop = 0;
+                while ((myToxID == null) || (!myToxID.isShowing()))
+                {
+                    try
+                    {
+                        // Log.i(TAG, "myToxID.setText:sleep");
+                        Thread.sleep(10);
+                        loop++;
+                        if (loop > 1000)
+                        {
+                            break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
                 Runnable myRunnable = new Runnable()
                 {
                     @Override
@@ -208,25 +228,6 @@ public class TrifaToxService
                     }
                 };
 
-                Log.i(TAG, "myToxID.setText:001");
-                long loop = 0;
-                while ((myToxID == null) || (!myToxID.isShowing()))
-                {
-                    try
-                    {
-                        // Log.i(TAG, "myToxID.setText:sleep");
-                        Thread.sleep(10);
-                        loop++;
-                        if (loop > 1000)
-                        {
-                            break;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
                 Log.i(TAG, "invokeLater:008:s");
                 SwingUtilities.invokeLater(myRunnable);
                 Log.i(TAG, "invokeLater:008:e");

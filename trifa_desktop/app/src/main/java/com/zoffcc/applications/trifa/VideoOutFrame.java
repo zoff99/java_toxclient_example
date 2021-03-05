@@ -167,6 +167,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         }
 
         ButtonPanel.setVisible(true);
+        VideoCallStartButton.setVisible(true);
+        VideoCallStopButton.setVisible(true);
         ButtonPanel.revalidate();
         revalidate();
     }
