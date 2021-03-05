@@ -107,17 +107,22 @@ cp -a libjni-c-toxcore.jnilib /workspace/data/java_ref_client/app/src/main/java/
 
 # -------------- now compile the JNI lib ----------------------
 
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
+java -version
+$JAVA_HOME/bin/java -version
+$JAVA_HOME/bin/javac -version
+
 # --------- compile java example ---------
 cd /workspace/data/java_ref_client/app/src/main/java/
-javac com/zoffcc/applications/trifa/ToxVars.java
-javac com/zoffcc/applications/trifa/TRIFAGlobals.java
-javac com/zoffcc/applications/trifa/MainActivity.java
-javac com/zoffcc/applications/trifa/TrifaToxService.java
+$JAVA_HOME/bin/javac com/zoffcc/applications/trifa/ToxVars.java
+$JAVA_HOME/bin/javac com/zoffcc/applications/trifa/TRIFAGlobals.java
+$JAVA_HOME/bin/javac com/zoffcc/applications/trifa/MainActivity.java
+$JAVA_HOME/bin/javac com/zoffcc/applications/trifa/TrifaToxService.java
 # --------- package java example ---------
 cd /workspace/data/java_ref_client/app/src/main/java/
 tar -cvf /artefacts/install_macos.tar com *.sh *.jnilib || tar -cvf ~/work/artefacts/install_macos.tar com *.sh *.jnilib
 # --------- run test java application ---------
-java -Djava.library.path="." com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
+$JAVA_HOME/bin/java -Djava.library.path="." com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
 # --------- run test java application ---------
 sleep 10
 cat ./trifa.log|head -20
