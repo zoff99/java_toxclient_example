@@ -32,7 +32,7 @@ export CXXFLAGS="$CXXFLAGS -fPIC"
 export CFLAGS="$CFLAGS -fPIC"
 # ----------- config ------------
 
-
+type sudo
 
 # ---------- ffmpeg ---------
 if [ 1 == 1 ]; then
@@ -202,7 +202,7 @@ fi
 
 
 # --- NASM ---
-if [ 1 == 2 ]; then
+if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
@@ -221,7 +221,7 @@ cd "$_SRC_"
     # seems man pages are not always built. but who needs those
     touch nasm.1
     touch ndisasm.1
-    make install
+    sudo make install
 
     type -a nasm
 
