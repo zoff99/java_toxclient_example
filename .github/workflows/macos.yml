@@ -25,76 +25,18 @@ jobs:
            pwd
            ls -al /Users/runner/
            _HOME_="/Users/runner/"
-           export _HOME_
-           cd "$_HOME_"
-           export _SRC_=$_HOME_/src/
-           export _INST_=$_HOME_/inst/
-           export CXXFLAGS="$CXXFLAGS -fPIC"
-           export CFLAGS="$CFLAGS -fPIC"
-           mkdir -p $_SRC_
-           mkdir -p $_INST_
-           export LD_LIBRARY_PATH=$_INST_/lib/
-           export PKG_CONFIG_PATH=$_INST_/lib/pkgconfig
            cliclick -m verbose m:12,34
-           cd "$_SRC_"
-           FFMPEG_VERSION=4.1.3
-           FFMPEG_FILENAME="ffmpeg-$FFMPEG_VERSION.tar.xz"
-           rm -f ffmpeg-*.tar.xz
-           wget $WGET_OPTIONS "https://www.ffmpeg.org/releases/$FFMPEG_FILENAME" -O "$FFMPEG_FILENAME"
-           tar -xf "$FFMPEG_FILENAME"
-           cd ffmpeg-4.1.3/
-             ./configure  \
-              --enable-gpl \
-              --prefix="$_INST_" \
-              --disable-asm \
-              --enable-pic \
-              --disable-swscale \
-              --disable-network \
-              --disable-everything \
-              --disable-debug \
-              --disable-shared \
-              --disable-programs \
-              --disable-protocols \
-              --disable-doc \
-              --disable-sdl2 \
-              --disable-avfilter \
-              --disable-avresample \
-              --disable-filters \
-              --disable-iconv \
-              --disable-network \
-              --disable-muxers \
-              --disable-postproc \
-              --disable-swresample \
-              --disable-swscale-alpha \
-              --disable-dct \
-              --disable-dwt \
-              --disable-lsp \
-              --disable-lzo \
-              --disable-mdct \
-              --disable-rdft \
-              --disable-fft \
-              --disable-faan \
-              --disable-vaapi \
-              --disable-vdpau \
-              --disable-zlib \
-              --disable-xlib \
-              --disable-bzlib \
-              --disable-lzma \
-              --disable-encoders \
-              --disable-decoders \
-              --disable-demuxers \
-              --disable-parsers \
-              --disable-bsfs \
-              --enable-parser=h264 \
-              --enable-decoder=h264
-           make -j
            screencapture -T 42 -x -t png /Users/runner/screen01.png &
            screencapture -T 43 -x -t png /Users/runner/screen02.png &
            screencapture -T 43 -x -t png /Users/runner/screen03.png &
            screencapture -T 44 -x -t png /Users/runner/screen04.png &
            screencapture -T 45 -x -t png /Users/runner/screen05.png &
-           screencapture -T 46 -x -t png /Users/runner/screen06.png &
-           screencapture -T 50 -x -t png /Users/runner/screen07.png &
+           screencapture -T 120 -x -t png /Users/runner/screen06.png &
+           screencapture -T 240 -x -t png /Users/runner/screen07.png &
+           export _HOME_
+           cd "$_HOME_"
+           cd "$_SRC_"
+           /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/deps_macos.sh
 
     - name: upload screenshots
       uses: actions/upload-artifact@v2
