@@ -21,8 +21,8 @@ jobs:
       run:  |
             type java
             java -version || exit 0
-            java_home -V
-            java_home -v 15
+            /usr/libexec/java_home -V
+            /usr/libexec/java_home -v 15
             export JAVA_15_HOME=$(/usr/libexec/java_home -v15)
             java -version
 
