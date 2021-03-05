@@ -7,6 +7,16 @@
 **CircleCI:** [![CircleCI](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master.png?style=badge)](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master)
 [![Android CI](https://github.com/zoff99/java_toxclient_example/workflows/MacOS%20CI/badge.svg)](https://github.com/zoff99/java_toxclient_example/actions?query=workflow%3A%22MacOS+CI%22)
 
-## Installation
+## Installation & starting the App [Linux, Windows and MacOS]
+
+- Install JRE 11 or JDK 11.
+- Download [appimage_binary](https://github.com/zoff99/ToxProxy/java_toxclient_example/latest/download/trifa_desktop.zip)
+- Unzip ```trifa_desktop.zip```
+- run:
+  -  Linux :```do_run.sh```
+  -  Windows: ```do_run.bat```
+  -  MacOS :```do_run.sh```
+
+## Trouble Shooting
 ```
 **HINT:** if you get this error **Unsupported major.minor version 55.0** you need to install java 11 runtime to run the client
