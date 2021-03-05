@@ -107,7 +107,7 @@ otool -L libjni-c-toxcore.jnilib
 pwd
 file libjni-c-toxcore.jnilib
 cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1
-cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/trifa_desktop/app/src/main/java/ || exit 1
+cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/trifa_desktop/app/src/main/java/ || exit 1
 
 # -------------- now compile the JNI lib ----------------------
 
