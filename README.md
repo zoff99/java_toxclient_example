@@ -20,5 +20,5 @@
   -  MacOS :```do_run.sh```
 
 ## Trouble Shooting
-```
-**HINT:** if you get this error **Unsupported major.minor version 55.0** you need to install java 11 runtime to run the client
+
+**HINT:** if you get this error ```Unsupported major.minor version 55.0``` you need to install java 11 runtime to run the client
