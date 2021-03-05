@@ -1,5 +1,7 @@
 # TRIfA Desktop
 
+<img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/trifa_desktop_macos10.png" width="90%">
+
 ## Build Status
 
 **CircleCI:** [![CircleCI](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master.png?style=badge)](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master)
