@@ -69,7 +69,7 @@ public class MessageListFragmentJ extends JPanel
         MessageTextArea.setCharacterAttributes(mainStyle, true);
         // @formatter:off
         MessageTextArea.replaceSelection("\n\n\n\n\n\n" +
-                                         "                 \uD83D\uDE19 \uD83D\uDE1A Welcome to\n" +
+                                         "                 Welcome to\n" +
                                          "                 TRIfA - Desktop\n" +
                                          "\n" +
                                          "                 Your Tox Client for the Desktop\n" +
