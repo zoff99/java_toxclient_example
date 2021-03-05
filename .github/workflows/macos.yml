@@ -14,13 +14,17 @@ jobs:
     - name: install cliclick
       run:  brew install cliclick
 
-    - name: install cliclick
+    - name: install deps
       run:  brew install autoconf automake libtool
 
     - name: test java1
       run:  |
             type java
             java -version || exit 0
+            java_home -V
+            java_home -v 15
+            export JAVA_15_HOME=$(/usr/libexec/java_home -v15)
+            java -version
 
     - name: install java
       run:  brew install java
