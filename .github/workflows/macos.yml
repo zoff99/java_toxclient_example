@@ -22,9 +22,11 @@ jobs:
             type java
             java -version || exit 0
             /usr/libexec/java_home -V
-            /usr/libexec/java_home -v 15
-            export JAVA_15_HOME=$(/usr/libexec/java_home -v15)
+            /usr/libexec/java_home -v 11
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
             java -version
+            $JAVA_HOME/bin/java -version
+            $JAVA_HOME/bin/javac -version
 
     - name: install java
       run:  brew install java
