@@ -9,6 +9,8 @@
 
 ## Installation & starting the App [Linux, Windows and MacOS]
 
+<a href="https://github.com/zoff99/ToxProxy/java_toxclient_example/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/on_github.png" width="200"></a>
+
 - Install JRE 11 or JDK 11.
 - Download [trifa_desktop.zip](https://github.com/zoff99/ToxProxy/java_toxclient_example/latest/download/trifa_desktop.zip)
 - Unzip ```trifa_desktop.zip```
