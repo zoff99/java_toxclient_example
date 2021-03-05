@@ -30,6 +30,11 @@ jobs:
             type java
             java -version || exit 1
 
+    - name: test java3
+      run:  |
+            type javac
+            javac -version || exit 1
+
     - name: macos-version1
       run: sw_vers -productVersion
 
@@ -53,6 +58,7 @@ jobs:
            cd "$_HOME_"
            cd "$_SRC_"
            /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/deps_macos.sh
+           /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
 
     - name: upload screenshots
       uses: actions/upload-artifact@v2
