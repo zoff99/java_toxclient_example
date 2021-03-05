@@ -74,8 +74,8 @@ jobs:
           /Users/runner/screen*.png
 
     - name: upload artefacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
-        name: trifa
+        name: libs
         path: /Users/runner/work/artefacts/*
 

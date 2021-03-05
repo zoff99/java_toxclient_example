@@ -25,8 +25,8 @@ NEWPATH=$PATH # /usr/x86_64-w64-mingw32/bin:$PATH
 export NEWPATH
 export PATH=$NEWPATH
 
-MAKEFLAGS=j$(nproc)
-export MAKEFLAGS
+# MAKEFLAGS=j$(nproc)
+# export MAKEFLAGS
 
 WGET_OPTIONS="--timeout=10"
 export WGET_OPTIONS
@@ -106,7 +106,7 @@ ls -al libjni-c-toxcore.jnilib || exit 1
 otool -L libjni-c-toxcore.jnilib
 pwd
 file libjni-c-toxcore.jnilib
-cp -a libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1
+cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1
 
 # -------------- now compile the JNI lib ----------------------
 
