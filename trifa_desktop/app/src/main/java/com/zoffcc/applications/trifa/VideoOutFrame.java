@@ -23,12 +23,14 @@ import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamDiscoveryEvent;
 import com.github.sarxos.webcam.WebcamDiscoveryListener;
 import com.github.sarxos.webcam.WebcamEvent;
+import com.github.sarxos.webcam.WebcamImageTransformer;
 import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,8 +39,11 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -62,7 +67,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_sent;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static java.awt.Font.PLAIN;
 
-public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler
+public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler, WebcamImageTransformer
 {
     private static final String TAG = "trifa.VideoOutFrame";
 
@@ -72,6 +77,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     static JButton VideoCallStopButton = null;
     static JPanel ButtonPanel = null;
     private static Webcam webcam = null;
+    private static BufferedImage IMAGE_FRAME = null;
+    private static final String VIDEO_OVERLAY_ASSET_NAME = "video_overlay.png";
 
     public static int width = 640;
     public static int height = 480;
@@ -83,6 +90,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         setSize(width / 2, height / 2);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
+
+        IMAGE_FRAME = getImage();
 
         Webcam.addDiscoveryListener(this);
 
@@ -131,6 +140,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             webcam.setViewSize(WebcamResolution.VGA.getSize());
             width = webcam.getViewSize().width;
             height = webcam.getViewSize().height;
+            webcam.setImageTransformer(this);
             webcam.addWebcamListener(this);
             panel = new WebcamPanel(webcam, false);
             panel.setFPSDisplayed(true);
@@ -198,6 +208,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
                     webcam = (Webcam) e.getItem();
                     webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    webcam.setImageTransformer(this);
                     webcam.addWebcamListener(this);
 
                     Log.i(TAG, "selected " + webcam.getName());
@@ -231,6 +242,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     webcam.setViewSize(WebcamResolution.VGA.getSize());
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
+                    webcam.setImageTransformer(this);
                     webcam.addWebcamListener(this);
 
                     Log.i(TAG, "selected " + webcam.getName());
@@ -513,6 +525,37 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 Log.i(TAG, "decline_button_pressed:on_call_ended_actions");
                 on_call_ended_actions();
             }
+        }
+    }
+
+    @Override
+    public BufferedImage transform(BufferedImage image)
+    {
+        int w = image.getWidth();
+        int h = image.getHeight();
+
+        BufferedImage modified = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g2 = modified.createGraphics();
+        g2.drawImage(image, null, 0, 0);
+        g2.drawImage(IMAGE_FRAME, null, 0, 0);
+        g2.dispose();
+
+        modified.flush();
+
+        return modified;
+    }
+
+    private static final BufferedImage getImage()
+    {
+        try
+        {
+            String asset_filename = "." + File.separator + "assets" + File.separator + VIDEO_OVERLAY_ASSET_NAME;
+            return ImageIO.read(new File(asset_filename));
+        }
+        catch (IOException e)
+        {
+            return null;
         }
     }
 }
