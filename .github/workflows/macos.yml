@@ -167,11 +167,11 @@ jobs:
              sleep 60
         if: matrix.runs-on == 'windows-latest'
 
-    - name: upload artefacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ matrix.config.artifact }}
-        path: /Users/runner/work/artefacts/*
+      - name: upload artefacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.config.artifact }}
+          path: /Users/runner/work/artefacts/*
 
 
 
