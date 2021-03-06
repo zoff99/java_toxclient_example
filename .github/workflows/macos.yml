@@ -87,8 +87,8 @@ jobs:
         run: echo %PATH%
         shell: cmd
 
-      - name:
-      - run: $JAVA_HOME_11_X64/bin/java.exe -version
+      - name: java version
+        run: $JAVA_HOME_11_X64/bin/java.exe -version
         shell: bash
 
   test:
