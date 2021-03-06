@@ -143,6 +143,13 @@ jobs:
         shell: bash
         run: |
              id;pwd
+             /usr/bin/xvfb-run --auto-servernum /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Djava.library.path="." -classpath ".:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
+        if: matrix.runs-on == 'ubuntu-latest'
+
+      - name: run
+        shell: bash
+        run: |
+             id;pwd
              START /B java.exe -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
              sleep 40
         if: matrix.runs-on == 'windows-latest'
