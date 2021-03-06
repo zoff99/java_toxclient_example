@@ -147,7 +147,7 @@ jobs:
              sleep 10 ;
              ls -al /tmp/
              ps -auxww ;
-             sleep 10 ;
+             sleep 30 ;
              DISPLAY=:99 xwd XAUTHORITY="/tmp/xa" -root -silent | convert xwd:- png:/Users/runner/work/artefacts/screen_linux_002.png || exit 0
         if: matrix.runs-on == 'ubuntu-latest'
 
@@ -156,8 +156,7 @@ jobs:
         run: |
              id;pwd
              sleep 10
-             cat ./trifa.log|head -120
-             cat ./trifa.log | grep 'MyToxID:' || exit 0
+             cat ./trifa.log || exit 0
         if: matrix.runs-on == 'ubuntu-latest'
 
       - name: run
