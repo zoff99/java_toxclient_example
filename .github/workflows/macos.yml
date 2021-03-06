@@ -79,3 +79,77 @@ jobs:
         name: libs
         path: /Users/runner/work/artefacts/*
 
+
+jobs:
+  bigsur-compile:
+    runs-on: macos-11.0
+    steps:
+    - uses: actions/checkout@v2
+    - name: install cliclick
+      run:  brew install cliclick
+
+    - name: install deps
+      run:  brew install autoconf automake libtool
+
+    - name: test java1
+      run:  |
+            type java
+            java -version || exit 0
+            /usr/libexec/java_home -V
+            /usr/libexec/java_home -v 11
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            java -version
+            $JAVA_HOME/bin/java -version
+            $JAVA_HOME/bin/javac -version
+
+    - name: install java
+      run:  brew install java
+
+    - name: test java2
+      run:  |
+            type java
+            java -version || exit 1
+
+    - name: test java3
+      run:  |
+            type javac
+            javac -version || exit 1
+
+    - name: macos-version1
+      run: sw_vers -productVersion
+
+    - name: macos-version2
+      run: system_profiler SPSoftwareDataType
+
+    - name: compile
+      run: |
+           pwd
+           ls -al /Users/runner/
+           _HOME_="/Users/runner/"
+           cliclick -m verbose m:12,34
+           screencapture -T 42 -x -t png /Users/runner/screen01.png &
+           screencapture -T 43 -x -t png /Users/runner/screen02.png &
+           screencapture -T 43 -x -t png /Users/runner/screen03.png &
+           screencapture -T 44 -x -t png /Users/runner/screen04.png &
+           screencapture -T 45 -x -t png /Users/runner/screen05.png &
+           screencapture -T 120 -x -t png /Users/runner/screen06.png &
+           screencapture -T 240 -x -t png /Users/runner/screen07.png &
+           export _HOME_
+           cd "$_HOME_"
+           cd "$_SRC_"
+           /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/deps_macos.sh
+           /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
+
+    - name: upload screenshots
+      uses: actions/upload-artifact@v2
+      with:
+        name: macscreen
+        path: |
+          /Users/runner/screen*.png
+
+    - name: upload artefacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: libs
+        path: /Users/runner/work/artefacts/*
+
