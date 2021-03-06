@@ -103,21 +103,24 @@ jobs:
              ls -al trifa_desktop.zip
              unzip trifa_desktop.zip
 
-    - name: unzip
-      run: |
-           cd 
-           unzip
-      if: matrix.runs-on == 'ubuntu-latest'
+      - name: unzip
+        shell: bash
+        run: |
+             cd 
+             unzip
+        if: matrix.runs-on == 'ubuntu-latest'
 
-    - name: unzip
-      run: |
-           unzip
-      if: matrix.runs-on == 'windows-latest'
+      - name: unzip
+        shell: bash
+        run: |
+             unzip
+        if: matrix.runs-on == 'windows-latest'
 
-    - name: unzip
-      run: |
-           unzip
-      if: matrix.runs-on == 'macos-latest'
+      - name: unzip
+        shell: bash
+        run: |
+             unzip
+        if: matrix.runs-on == 'macos-latest'
 
 
 
