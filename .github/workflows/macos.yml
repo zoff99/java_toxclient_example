@@ -98,28 +98,27 @@ jobs:
       - name: install trifa latest release
         shell: bash
         run: |
-             pwd;id;ls
-             curl https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip -o trifa_desktop.zip
+             id;pwd;ls
+             curl -L https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip -o trifa_desktop.zip
              ls -al trifa_desktop.zip
-             unzip trifa_desktop.zip
+             id;pwd;ls
 
       - name: unzip
         shell: bash
         run: |
-             cd 
-             unzip
+             unzip trifa_desktop.zip
         if: matrix.runs-on == 'ubuntu-latest'
 
       - name: unzip
         shell: bash
         run: |
-             unzip
+             unzip trifa_desktop.zip
         if: matrix.runs-on == 'windows-latest'
 
       - name: unzip
         shell: bash
         run: |
-             unzip
+             unzip trifa_desktop.zip
         if: matrix.runs-on == 'macos-latest'
 
 
