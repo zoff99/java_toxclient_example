@@ -126,7 +126,6 @@ jobs:
 
       - name: run
         uses: GabrielBB/xvfb-action@v1
-        shell: bash
         with:
           run: |
              id;pwd
