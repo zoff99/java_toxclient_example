@@ -91,11 +91,40 @@ jobs:
     strategy:
       matrix:
         runs-on: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
     runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - name: compile
+      - name: install trifa latest release
         shell: bash
         run: |
              pwd;id;ls
+             curl https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip -o trifa_desktop.zip
+             ls -al trifa_desktop.zip
+             unzip trifa_desktop.zip
+
+    - name: unzip
+      run: |
+           cd 
+           unzip
+      if: matrix.runs-on == 'ubuntu-latest'
+
+    - name: unzip
+      run: |
+           unzip
+      if: matrix.runs-on == 'windows-latest'
+
+    - name: unzip
+      run: |
+           unzip
+      if: matrix.runs-on == 'macos-latest'
+
+
+
+
+
+
+
+
+
 
