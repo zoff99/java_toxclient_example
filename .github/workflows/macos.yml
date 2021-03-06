@@ -79,7 +79,6 @@ jobs:
         name: libs
         path: /Users/runner/work/artefacts/*
 
-
   bigsur-compile:
     runs-on: macos-11.0
     steps:
@@ -151,4 +150,11 @@ jobs:
       with:
         name: libs
         path: /Users/runner/work/artefacts/*
+
+  windows-compile:
+    runs-on: windows-latest
+    steps:
+    - name: Display the path
+      run: echo %PATH%
+      shell: cmd
 
