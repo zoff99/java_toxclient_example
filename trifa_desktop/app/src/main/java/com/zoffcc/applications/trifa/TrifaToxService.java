@@ -215,7 +215,9 @@ public class TrifaToxService
                         try
                         {
                             Log.i(TAG, "myToxID.setText:003");
+                            myToxID.setEditable(true);
                             myToxID.setText(my_tox_id_local);
+                            myToxID.setEditable(false);
                             ownProfileShort.setEditable(true);
                             ownProfileShort.setText(global_my_name);
                             ownProfileShort.setEditable(false);

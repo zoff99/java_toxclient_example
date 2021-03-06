@@ -352,6 +352,7 @@ public class MainActivity extends JFrame
 
         myToxID = new JTextField();
         myToxID.setVisible(true);
+        myToxID.setEditable(false);
 
         getContentPane().setLayout(new GridLayout());
         getContentPane().add(splitPane);
