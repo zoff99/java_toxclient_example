@@ -80,7 +80,6 @@ jobs:
         path: /Users/runner/work/artefacts/*
 
 
-jobs:
   bigsur-compile:
     runs-on: macos-11.0
     steps:
