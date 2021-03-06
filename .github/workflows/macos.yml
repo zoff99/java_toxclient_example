@@ -147,9 +147,9 @@ jobs:
         shell: bash
         run: |
              id;pwd
-             sleep 40
+             sleep 60
              cat ./trifa.log|head -20
-             cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8
+             cat ./trifa.log | grep 'MyToxID:'
         if: matrix.runs-on == 'ubuntu-latest'
 
       - name: run
@@ -157,8 +157,8 @@ jobs:
         run: |
              id;pwd
              "$JAVA_HOME_11_X64/bin/java.exe" -version
-             START /B "$JAVA_HOME_11_X64/bin/java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
-             sleep 40
+             "$JAVA_HOME_11_X64/bin/java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
+             sleep 70
         if: matrix.runs-on == 'windows-latest'
 
 
