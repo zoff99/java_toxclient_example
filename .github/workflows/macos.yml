@@ -111,8 +111,7 @@ jobs:
       - name: run
         shell: bash
         run: |
-             install cliclick
-             install cliclick
+             brew install cliclick
              cliclick -m verbose m:12,34
              /usr/libexec/java_home -v 11
              export JAVA_HOME=$(/usr/libexec/java_home -v11)
