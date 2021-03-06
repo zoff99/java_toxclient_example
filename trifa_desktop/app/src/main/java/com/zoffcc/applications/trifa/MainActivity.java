@@ -579,7 +579,7 @@ public class MainActivity extends JFrame
         // ------------ Main Menu ----------
         JMenuBar main_menu = new JMenuBar();
         JMenu m1 = new JMenu("FILE");
-        m1.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        m1.setFont(new java.awt.Font("SansSerif", PLAIN, 7));
 
         main_menu.add(m1);
         this.setJMenuBar(main_menu);
@@ -594,7 +594,7 @@ public class MainActivity extends JFrame
                 SettingsFrame.setVisible(true);
             }
         });
-        m11.setFont(new java.awt.Font("monospaced", PLAIN, 8));
+        m11.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
         m1.add(m11);
         // -------
         // -------
@@ -606,7 +606,7 @@ public class MainActivity extends JFrame
                 want_exit();
             }
         });
-        m12.setFont(new java.awt.Font("monospaced", PLAIN, 8));
+        m12.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
         m1.add(m12);
         // -------
 
@@ -1426,7 +1426,7 @@ public class MainActivity extends JFrame
     static void android_tox_callback_friend_connection_status_cb_method(long friend_number, int a_TOX_CONNECTION)
     {
         FriendList f = main_get_friend(friend_number);
-        // Log.i(TAG,
+        //Log.i(TAG,
         //      "friend_connection_status:friend:" + friend_number + " connection status:" + a_TOX_CONNECTION + " f=" +
         //      f);
 
@@ -1434,6 +1434,26 @@ public class MainActivity extends JFrame
         {
             if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
             {
+                if (a_TOX_CONNECTION == 0)
+                {
+                    Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":went offline");
+                    // TODO: stop any active calls to/from this friend
+                    try
+                    {
+                        Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":stop any calls");
+                        toxav_call_control(friend_number, ToxVars.TOXAV_CALL_CONTROL.TOXAV_CALL_CONTROL_CANCEL.value);
+
+                        if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) == friend_number)
+                        {
+                            on_call_ended_actions();
+                        }
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+                }
+
                 f.TOX_CONNECTION_real = a_TOX_CONNECTION;
                 f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
                 HelperFriend.update_friend_in_db_connection_status_real(f);
@@ -1446,6 +1466,17 @@ public class MainActivity extends JFrame
                 f.TOX_CONNECTION_real = a_TOX_CONNECTION;
                 f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
                 HelperFriend.update_friend_in_db_connection_status_real(f);
+            }
+
+            if (friend_number == tox_friend_by_public_key__wrapper(Callstate.friend_pubkey))
+            {
+                try
+                {
+                    //**//update_calling_friend_connection_status(a_TOX_CONNECTION);
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
     }

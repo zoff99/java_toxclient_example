@@ -19,19 +19,14 @@
 
 package com.zoffcc.applications.trifa;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,22 +35,20 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
-import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
-import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
-import static java.awt.Font.PLAIN;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class FriendListFragmentJ extends JPanel
 {
 
     private static final String TAG = "trifa.FriendListFrgnt";
 
-    private JList<String> friends_and_confs_list;
-    static DefaultListModel<String> friends_and_confs_list_model;
+    private final JList<CombinedFriendsAndConferences> friends_and_confs_list;
+    static DefaultListModel<CombinedFriendsAndConferences> friends_and_confs_list_model;
     JScrollPane FriendScrollPane;
 
     static Boolean in_update_data = false;
@@ -65,11 +58,12 @@ public class FriendListFragmentJ extends JPanel
     {
         friends_and_confs_list_model = new DefaultListModel<>();
 
-        friends_and_confs_list = new JList<>(friends_and_confs_list_model);
+        friends_and_confs_list = new JList<>();
+        friends_and_confs_list.setModel(friends_and_confs_list_model);
         friends_and_confs_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         friends_and_confs_list.setSelectedIndex(0);
+        friends_and_confs_list.setCellRenderer(new Renderer_FriendsAndConfsList());
 
-        friends_and_confs_list.setCellRenderer(new friends_and_confs_CellRenderer());
 
         friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
         {
@@ -93,7 +87,7 @@ public class FriendListFragmentJ extends JPanel
                     }
 
                     String pk = friends_and_confs_list_model.elementAt(
-                            friends_and_confs_list.getSelectedIndex()).substring(0, TOX_PUBLIC_KEY_SIZE * 2);
+                            friends_and_confs_list.getSelectedIndex()).friend_item.tox_public_key_string;
 
                     // friends_and_confs_list.clearSelection();
 
@@ -122,87 +116,6 @@ public class FriendListFragmentJ extends JPanel
         FriendScrollPane.setViewportView(friends_and_confs_list);
 
         add_all_friends_clear(1);
-    }
-
-    public class friends_and_confs_CellRenderer extends DefaultListCellRenderer
-    {
-        final JPanel p = new JPanel(new BorderLayout());
-        final JPanel IconPanel = new JPanel(new BorderLayout());
-        final JLabel l = new JLabel("_"); //<-- this will be an icon instead of a text
-        final JLabel lt = new JLabel();
-        String pre = "<html><body style='width: 2px;'>";
-
-        friends_and_confs_CellRenderer()
-        {
-            //icon
-            IconPanel.add(l, BorderLayout.NORTH);
-            p.add(IconPanel, BorderLayout.WEST);
-            p.add(lt, BorderLayout.CENTER);
-            lt.setFont(new java.awt.Font("monospaced", PLAIN, 8));
-            //text
-        }
-
-        @Override
-        public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean hasFocus)
-        {
-            final String text = (String) value;
-            lt.setText(pre + text);
-            l.setFont(new java.awt.Font("monospaced", PLAIN, 12));
-            l.setOpaque(true);
-
-            String pk = text.substring(0, TOX_PUBLIC_KEY_SIZE * 2);
-
-            // Log.i(TAG, "pk=" + pk);
-
-            try
-            {
-                Component c = super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
-                if (isSelected)
-                {
-                    p.setBackground(Color.LIGHT_GRAY);
-                }
-                else
-                {
-                    p.setBackground(Color.WHITE);
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-
-            try
-            {
-                final FriendList f = main_get_friend(tox_friend_by_public_key__wrapper(pk));
-
-                if (f.TOX_CONNECTION == 2)
-                {
-                    l.setText("U");
-                    l.setBackground(Color.GREEN);
-                    l.setForeground(Color.BLACK);
-                }
-                else if (f.TOX_CONNECTION == 1)
-                {
-                    l.setText("T");
-                    l.setBackground(Color.ORANGE);
-                    l.setForeground(Color.BLACK);
-                }
-                else
-                {
-                    l.setText("_");
-                    l.setBackground(Color.GRAY);
-                    l.setForeground(Color.GRAY);
-                }
-            }
-            catch (Exception e)
-            {
-                l.setText("_");
-                l.setBackground(Color.GRAY);
-                l.setForeground(Color.GRAY);
-            }
-
-            return p;
-        }
     }
 
     synchronized static void add_all_friends_clear(final int delay)
@@ -250,16 +163,7 @@ public class FriendListFragmentJ extends JPanel
                                 cfac.is_friend = true;
                                 cfac.friend_item = n;
 
-                                if ((cfac.friend_item.name == null) || (cfac.friend_item.name.length() < 1))
-                                {
-                                    friends_and_confs_list_model.addElement(
-                                            "" + cfac.friend_item.tox_public_key_string + ":");
-                                }
-                                else
-                                {
-                                    friends_and_confs_list_model.addElement(
-                                            cfac.friend_item.tox_public_key_string + ":\n" + cfac.friend_item.name);
-                                }
+                                friends_and_confs_list_model.addElement(cfac);
                                 // Log.i(TAG, "add_all_friends_clear:add:" + n);
                             }
                         }
@@ -296,16 +200,9 @@ public class FriendListFragmentJ extends JPanel
 
             try
             {
-                FriendList f2 = null;
-                Statement statement = sqldb.createStatement();
-                ResultSet rs = statement.executeQuery(
-                        "select * from FriendList where tox_public_key_string == '" + s(f.tox_public_key_string) + "'");
-                if (rs.next())
-                {
-                    f2 = new FriendList();
-                    f2.tox_public_key_string = rs.getString("tox_public_key_string");
-                    f2.name = rs.getString("name");
-                }
+                final FriendList f2 = orma.selectFromFriendList().
+                        tox_public_key_stringEq(f.tox_public_key_string).
+                        toList().get(0);
 
                 if (f2 != null)
                 {
@@ -315,39 +212,12 @@ public class FriendListFragmentJ extends JPanel
                     cfac.friend_item = n;
 
                     boolean found_friend = false;
-                    Enumeration<String> e = friends_and_confs_list_model.elements();
-                    while (e.hasMoreElements())
-                    {
-                        String full_f_entry_text = e.nextElement();
-                        if (full_f_entry_text.substring(0, TOX_PUBLIC_KEY_SIZE * 2).equals(f.tox_public_key_string))
-                        {
-                            found_friend = true;
-                            if ((f.name == null) || (f.name.length() < 1))
-                            {
-                                friends_and_confs_list_model.set(
-                                        friends_and_confs_list_model.indexOf(full_f_entry_text),
-                                        "" + f.tox_public_key_string + ":\n");
-                            }
-                            else
-                            {
-                                friends_and_confs_list_model.set(
-                                        friends_and_confs_list_model.indexOf(full_f_entry_text),
-                                        f.tox_public_key_string + ":\n" + f.name);
-                            }
-                            break;
-                        }
-                    }
+
+                    found_friend = update_item(cfac, cfac.is_friend);
 
                     if (!found_friend)
                     {
-                        if ((f.name == null) || (f.name.length() < 1))
-                        {
-                            friends_and_confs_list_model.addElement("" + f.tox_public_key_string + ":\n");
-                        }
-                        else
-                        {
-                            friends_and_confs_list_model.addElement(f.tox_public_key_string + ":\n" + f.name);
-                        }
+                        friends_and_confs_list_model.addElement(cfac);
                     }
                 }
             }
@@ -361,4 +231,37 @@ public class FriendListFragmentJ extends JPanel
         }
     }
 
+    private boolean update_item(CombinedFriendsAndConferences new_item_combined, boolean is_friend)
+    {
+        boolean found_item = false;
+
+        Iterator it = friends_and_confs_list_model.elements().asIterator();
+
+        while (it.hasNext())
+        {
+            CombinedFriendsAndConferences f_combined = (CombinedFriendsAndConferences) it.next();
+
+            if (is_friend)
+            {
+                if (f_combined.is_friend)
+                {
+                    FriendList f = f_combined.friend_item;
+                    FriendList new_item = new_item_combined.friend_item;
+                    if (f.tox_public_key_string.compareTo(new_item.tox_public_key_string) == 0)
+                    {
+                        found_item = true;
+                        int pos = this.friends_and_confs_list_model.indexOf(f_combined);
+                        friends_and_confs_list_model.set(pos, new_item_combined);
+                        break;
+                    }
+                }
+            }
+            else // is conference
+            {
+
+            }
+        }
+
+        return found_item;
+    }
 }
