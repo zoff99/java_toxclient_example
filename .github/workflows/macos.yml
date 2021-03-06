@@ -136,11 +136,7 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           working-directory: /home/runner/work/java_toxclient_example/java_toxclient_example
-          run: |
-             /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Djava.library.path="." -classpath ".:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 & ;
-             cat ./trifa.log|head -20 ;
-             cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8 ;
-             sleep 40
+          run: /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Djava.library.path="." -classpath ".:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 & ; cat ./trifa.log|head -20 ; cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8 ; sleep 40
         if: matrix.runs-on == 'ubuntu-latest'
 
       - name: run
