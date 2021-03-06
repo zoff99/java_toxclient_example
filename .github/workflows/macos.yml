@@ -135,7 +135,8 @@ jobs:
              id;pwd
              sudo apt-get update > /dev/null 2>&1
              sudo apt-get install -qq -y --force-yes openjdk-11-jre-headless x11-apps imagemagick > /dev/null 2>&1
-             mkdir -p /Users/runner/work/artefacts
+             sudo mkdir -p /Users/runner/work/artefacts
+             sudo chmod a+rwx /Users/runner/work/artefacts
         if: matrix.runs-on == 'ubuntu-latest'
 
       - name: run
@@ -170,8 +171,8 @@ jobs:
       - name: upload artefacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.config.artifact }}
-          path: /Users/runner/work/artefacts/*
+          name: screenshots
+          path: /Users/runner/work/artefacts/*.png
 
 
 
