@@ -107,20 +107,37 @@ jobs:
         shell: bash
         run: |
              unzip trifa_desktop.zip
-        if: matrix.runs-on == 'ubuntu-latest'
 
-      - name: unzip
+      - name: run
         shell: bash
         run: |
-             unzip trifa_desktop.zip
-        if: matrix.runs-on == 'windows-latest'
-
-      - name: unzip
-        shell: bash
-        run: |
-             unzip trifa_desktop.zip
+             install cliclick
+             install cliclick
+             cliclick -m verbose m:12,34
+             /usr/libexec/java_home -v 11
+             export JAVA_HOME=$(/usr/libexec/java_home -v11)
+             $JAVA_HOME/bin/java  -Djava.library.path="." -classpath ".:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
+             sleep 40
+             cat ./trifa.log|head -20
+             cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8
+             screencapture -T 1 -x -t png /Users/runner/screen_macos.png
         if: matrix.runs-on == 'macos-latest'
 
+      - name: run
+        shell: bash
+        run: |
+             java  -Djava.library.path="." -classpath ".:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
+             sleep 40
+             cat ./trifa.log|head -20
+             cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8
+        if: matrix.runs-on == 'ubuntu-latest'
+
+      - name: run
+        shell: bash
+        run: |
+             START /B java.exe -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
+             sleep 40
+        if: matrix.runs-on == 'windows-latest'
 
 
 
