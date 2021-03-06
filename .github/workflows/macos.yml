@@ -127,7 +127,8 @@ jobs:
       - name: run
         uses: GabrielBB/xvfb-action@v1
         shell: bash
-        run: |
+        with:
+          run: |
              id;pwd
              ps -ef|grep -i x
              sudo apt-get update > /dev/null 2>&1
