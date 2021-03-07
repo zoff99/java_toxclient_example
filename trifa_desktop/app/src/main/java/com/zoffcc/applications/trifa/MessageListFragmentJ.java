@@ -310,9 +310,12 @@ public class MessageListFragmentJ extends JPanel
                                         orderBySent_timestamp_msAsc().
                                         toList();
 
-                                for (Message message : ml)
+                                if (ml != null)
                                 {
-                                    add_message(message);
+                                    for (Message message : ml)
+                                    {
+                                        add_message(message);
+                                    }
                                 }
                             }
                             catch (Exception e)

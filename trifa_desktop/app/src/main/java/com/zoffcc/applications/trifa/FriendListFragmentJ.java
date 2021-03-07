@@ -34,6 +34,7 @@ import javax.swing.event.ListSelectionListener;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ONE_HOUR_IN_MS;
@@ -106,6 +107,11 @@ public class FriendListFragmentJ extends JPanel
                     else // --- conferences ---
                     {
                         set_message_panel(2);
+                        String conf_id = friends_and_confs_list_model.elementAt(
+                                friends_and_confs_list.getSelectedIndex()).conference_item.conference_identifier;
+                        MessagePanelConferences.current_conf_id = conf_id;
+
+                        MessagePanelConferences.update_all_messages(true);
                     }
                 }
                 catch (Exception e2)

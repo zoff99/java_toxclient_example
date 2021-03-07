@@ -70,6 +70,11 @@ public class ConferenceMessageListFragment extends JPanel
         revalidate();
     }
 
+    String get_current_conf_id()
+    {
+        return current_conf_id;
+    }
+
     class DisabledItemSelectionModel extends DefaultListSelectionModel
     {
         @Override
@@ -81,7 +86,7 @@ public class ConferenceMessageListFragment extends JPanel
 
     void update_all_messages(boolean always)
     {
-        Log.i(TAG, "update_all_messages");
+        Log.i(TAG, "update_all_messages:conf");
 
         try
         {
@@ -140,7 +145,7 @@ public class ConferenceMessageListFragment extends JPanel
 
     }
 
-    private void add_message(final ConferenceMessage m)
+    void add_message(final ConferenceMessage m)
     {
         Runnable myRunnable = new Runnable()
         {

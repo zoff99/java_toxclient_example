@@ -77,6 +77,8 @@ import javax.swing.text.StyleContext;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
+import static com.zoffcc.applications.trifa.ConferenceMessageListFragment.current_conf_id;
+import static com.zoffcc.applications.trifa.HelperConference.get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
@@ -90,6 +92,8 @@ import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -603,31 +607,53 @@ public class MainActivity extends JFrame
     static void set_message_panel(int i)
     {
         EventQueue.invokeLater(() -> {
-            if (message_panel_displayed != i)
+
+            Log.i(TAG,"set_message_panel:001:"+i);
+
+            //current_conf_id = "-1";
+            //MessagePanel.setCurrentPK(null);
+            //MessagePanel.friendnum = -1;
+
+            //if (message_panel_displayed != i)
             {
                 if (i == 0)
                 {
+                    current_conf_id = "-1";
+                    MessagePanel.setCurrentPK(null);
+                    MessagePanel.friendnum = -1;
+
                     MessagePanelContainer.removeAll();
                     MessagePanelContainer.add(MessagePanel_Info);
                     MessagePanelContainer.add(MessageTextInputPanel);
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
+                    MessagePanelContainer.repaint();
+                    Log.i(TAG,"set_message_panel:002:"+i);
                 }
                 else if (i == 1)
                 {
+                    current_conf_id = "-1";
+
                     MessagePanelContainer.removeAll();
                     MessagePanelContainer.add(MessagePanel);
                     MessagePanelContainer.add(MessageTextInputPanel);
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
+                    MessagePanelContainer.repaint();
+                    Log.i(TAG,"set_message_panel:002:"+i);
                 }
                 else
                 {
+                    MessagePanel.setCurrentPK(null);
+                    MessagePanel.friendnum = -1;
+
                     MessagePanelContainer.removeAll();
                     MessagePanelContainer.add(MessagePanelConferences);
                     MessagePanelContainer.add(MessageTextInputPanel);
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
+                    MessagePanelContainer.repaint();
+                    Log.i(TAG,"set_message_panel:002:"+i);
                 }
                 message_panel_displayed = i;
             }
@@ -1668,8 +1694,138 @@ public class MainActivity extends JFrame
     {
     }
 
-    static void android_tox_callback_conference_message_cb_method(long conference_number, long peer_number, int a_TOX_MESSAGE_TYPE, String message, long length)
+    static void android_tox_callback_conference_message_cb_method(long conference_number, long peer_number, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
     {
+        if (tox_conference_get_type(conference_number) == TOX_CONFERENCE_TYPE_AV.value)
+        {
+            // we do not yet process messages from AV groups
+            return;
+        }
+
+        // Log.i(TAG, "conference_message_cb:cf_num=" + conference_number + " pnum=" + peer_number + " msg=" + message);
+        int res = tox_conference_peer_number_is_ours(conference_number, peer_number);
+
+        if (res == 1)
+        {
+            // HINT: do not add our own messages, they are already in the DB!
+            return;
+        }
+
+        String message_ = "";
+        String message_id_ = "";
+
+        // Log.i(TAG, "xxxxxxxxxxxxx1:" + message_orig.length() + " " + message_orig.substring(8, 9) + " " +
+        //           message_orig.substring(9) + " " + message_orig.substring(0, 8));
+
+        if ((message_orig.length() > 8) && (message_orig.startsWith(":", 8)))
+        {
+            message_ = message_orig.substring(9);
+            message_id_ = message_orig.substring(0, 8).toLowerCase();
+        }
+        else
+        {
+            message_ = message_orig;
+            message_id_ = "";
+        }
+
+        boolean do_notification = true;
+        boolean do_badge_update = true;
+        String conf_id = "-1";
+        ConferenceDB conf_temp = null;
+
+        try
+        {
+            // TODO: cache me!!
+            //conf_temp = orma.selectFromConferenceDB().
+            //        tox_conference_numberEq(conference_number).
+            //        conference_activeEq(true).toList().get(0);
+
+            conf_temp = orma.selectFromConferenceDB().
+                    tox_conference_numberEq(conference_number).
+                    toList().get(0);
+
+            conf_id = conf_temp.conference_identifier;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            if (conf_temp.notification_silent)
+            {
+                do_notification = false;
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+            do_notification = false;
+        }
+
+        Log.i(TAG, "noti_and_badge:002conf:" + MessagePanelConferences.get_current_conf_id() + ":" + conf_id);
+
+        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        {
+            // Log.i(TAG, "noti_and_badge:003:");
+            // no notifcation and no badge update
+            do_notification = false;
+            do_badge_update = false;
+        }
+
+        ConferenceMessage m = new ConferenceMessage();
+        m.is_new = do_badge_update;
+        // m.tox_friendnum = friend_number;
+        m.tox_peerpubkey = HelperConference.tox_conference_peer_get_public_key__wrapper(conference_number, peer_number);
+        m.direction = 0; // msg received
+        m.TOX_MESSAGE_TYPE = 0;
+        m.read = false;
+        m.tox_peername = null;
+        m.conference_identifier = conf_id;
+        m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+        m.rcvd_timestamp = System.currentTimeMillis();
+        m.sent_timestamp = System.currentTimeMillis();
+        m.text = message_;
+        m.message_id_tox = message_id_;
+        m.was_synced = false;
+
+        // now check if this is "potentially" a double message, we can not be sure a 100% since there is no uniqe key for each message
+        ConferenceMessage cm = get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey(
+                conf_id, m.tox_peerpubkey, m.sent_timestamp, m.message_id_tox, MESSAGE_SYNC_DOUBLE_INTERVAL_SECS, true);
+        if (cm != null)
+        {
+            if (cm.text.equals(message_))
+            {
+                Log.i(TAG, "conference_message_cb:potentially double message");
+                // ok it's a "potentially" double message
+                return;
+            }
+        }
+
+        try
+        {
+            m.tox_peername = HelperConference.tox_conference_peer_get_name__wrapper(m.conference_identifier,
+                                                                                    m.tox_peerpubkey);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        {
+            HelperConference.insert_into_conference_message_db(m, true);
+        }
+        else
+        {
+            HelperConference.insert_into_conference_message_db(m, false);
+        }
+
+        if (do_notification)
+        {
+            // change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.conference_identifier);
+        }
     }
 
     static void android_tox_callback_conference_title_cb_method(long conference_number, long peer_number, String title, long title_length)

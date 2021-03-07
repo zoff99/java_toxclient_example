@@ -201,7 +201,7 @@ public class ConferenceDB
         return this;
     }
 
-    public ConferenceDB kind(int conference_type)
+    public ConferenceDB kind(int kind)
     {
         if (this.sql_set.equals(""))
         {
@@ -211,7 +211,7 @@ public class ConferenceDB
         {
             this.sql_set = this.sql_set + " , ";
         }
-        this.sql_set = this.sql_set + " conference_type='" + s(conference_type) + "' ";
+        this.sql_set = this.sql_set + " kind='" + s(kind) + "' ";
         return this;
     }
 
@@ -271,5 +271,22 @@ public class ConferenceDB
         }
         this.sql_orderby = this.sql_orderby + " Notification_silent ASC ";
         return this;
+    }
+
+    public ConferenceDB tox_conference_numberEq(long conference_number)
+    {
+        this.sql_where = this.sql_where + " and tox_conference_number='" + s(conference_number) + "' ";
+        return this;
+    }
+
+    public ConferenceDB conference_activeEq(boolean b)
+    {
+        this.sql_where = this.sql_where + " and conference_active='" + b(b) + "' ";
+        return this;
+    }
+
+    public ConferenceDB get(int i)
+    {
+        return this.toList().get(0);
     }
 }

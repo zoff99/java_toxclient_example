@@ -24,6 +24,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -90,6 +92,7 @@ public class ConferenceMessage
         ConferenceMessage out = new ConferenceMessage();
         out.id = in.id; // TODO: is this a good idea???
         out.message_id_tox = in.message_id_tox;
+        out.conference_identifier = in.conference_identifier;
         out.tox_peerpubkey = in.tox_peerpubkey;
         out.direction = in.direction;
         out.TOX_MESSAGE_TYPE = in.TOX_MESSAGE_TYPE;
@@ -167,6 +170,7 @@ public class ConferenceMessage
                 ConferenceMessage out = new ConferenceMessage();
 
                 out.id = rs.getLong("id");
+                out.conference_identifier=rs.getString("conference_identifier");
                 out.message_id_tox = rs.getString("message_id_tox");
                 out.tox_peerpubkey = rs.getString("tox_peerpubkey");
                 out.direction = rs.getInt("direction");
@@ -178,7 +182,7 @@ public class ConferenceMessage
                 out.is_new = rs.getBoolean("is_new");
                 out.text = rs.getString("text");
                 out.tox_peername = rs.getString("tox_peername");
-                out.was_synced =rs.getBoolean("was_synced");
+                out.was_synced = rs.getBoolean("was_synced");
 
                 if (list == null)
                 {
@@ -195,4 +199,112 @@ public class ConferenceMessage
         return list;
     }
 
+    public ConferenceMessage tox_peerpubkeyEq(String tox_peerpubkey)
+    {
+        this.sql_where = this.sql_where + " and tox_peerpubkey='" + s(tox_peerpubkey) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage message_id_toxEq(String message_id_tox)
+    {
+        this.sql_where = this.sql_where + " and message_id_tox='" + s(message_id_tox) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage sent_timestampGt(long l)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp>'" + s(l) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage sent_timestampLt(long l)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp<'" + s(l) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    public long insert()
+    {
+        long ret = -1;
+
+        try
+        {
+            // @formatter:off
+            Statement statement = sqldb.createStatement();
+            final String sql_str="insert into ConferenceMessage" +
+                                 "(" +
+                                 "conference_identifier,"+
+                                 "message_id_tox,"+
+                                 "tox_peerpubkey,"+
+                                 "direction,"+
+                                 "TOX_MESSAGE_TYPE,"	+
+                                 "TRIFA_MESSAGE_TYPE,"	+
+                                 "sent_timestamp,"+
+                                 "rcvd_timestamp,"+
+                                 "read,"+
+                                 "is_new,"	+
+                                 "text,"	+
+                                 "tox_peername,"+
+                                 "was_synced"+
+                                 ")" +
+                                 "values" +
+                                 "(" +
+                                 "'"+s(""+this.conference_identifier)+"'," +
+                                 "'"+s(""+this.message_id_tox)+"'," +
+                                 "'"+s(""+this.tox_peerpubkey)+"'," +
+                                 "'"+s(""+this.direction)+"'," +
+                                 "'"+s(""+this.TOX_MESSAGE_TYPE)+"'," +
+                                 "'"+s(""+this.TRIFA_MESSAGE_TYPE)+"'," +
+                                 "'"+s(""+this.sent_timestamp)+"'," +
+                                 "'"+s(""+this.rcvd_timestamp)+"'," +
+                                 "'"+b(this.read)+"'," +
+                                 "'"+b(this.is_new)+"'," +
+                                 "'"+s(""+this.text)+"'," +
+                                 "'"+s(""+this.tox_peername)+"'," +
+                                 "'"+b(this.was_synced)+"'" +
+                                 ")";
+
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql_str);
+            }
+
+            statement.execute(sql_str);
+            ret = get_last_rowid(statement);
+            // @formatter:on
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public ConferenceMessage idEq(long id)
+    {
+        this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
+        return this;
+    }
+
+
+    public ConferenceMessage orderByIdDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " id DESC ";
+        return this;
+    }
 }

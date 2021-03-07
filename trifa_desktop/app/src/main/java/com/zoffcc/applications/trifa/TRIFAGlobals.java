@@ -82,6 +82,7 @@ public class TRIFAGlobals
     public static final Color CHAT_MSG_BG_OTHER_COLOR = new Color(0xffffbb33, true);
     public static final Color SEE_THRU = new Color(0x00111111, true);
 
+    static int MESSAGE_SYNC_DOUBLE_INTERVAL_SECS = 20;
     static int global_self_connection_status = ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE.value;
 
     public static enum TRIFA_FT_DIRECTION

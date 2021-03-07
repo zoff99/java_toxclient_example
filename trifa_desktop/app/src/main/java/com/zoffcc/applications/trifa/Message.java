@@ -171,8 +171,10 @@ public class Message
         try
         {
             Statement statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery(
-                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            // Log.i(TAG, "sql=" + sql);
+            ResultSet rs = statement.executeQuery(sql);
             while (rs.next())
             {
                 Message out = new Message();
@@ -301,7 +303,7 @@ public class Message
         {
             Statement statement = sqldb.createStatement();
             final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            Log.i(TAG, "sql=" + sql);
+            // Log.i(TAG, "sql=" + sql);
             statement.executeUpdate(sql);
         }
         catch (Exception e2)

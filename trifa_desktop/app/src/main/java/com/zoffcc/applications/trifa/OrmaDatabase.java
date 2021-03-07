@@ -202,5 +202,10 @@ public class OrmaDatabase
         ret.sql_start = "SELECT * FROM ConferenceMessage";
         return ret;
     }
+
+    public long insertIntoConferenceMessage(ConferenceMessage m)
+    {
+        return m.insert();
+    }
 }
 

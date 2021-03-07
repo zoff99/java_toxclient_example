@@ -24,6 +24,7 @@ import java.sql.Statement;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
@@ -301,6 +302,50 @@ public class HelperMessage
         {
             // e.printStackTrace();
             Log.i(TAG, "update_message_view:EE:" + e.getMessage());
+        }
+    }
+
+    public static void add_single_conference_message_from_messge_id(final long message_id, final boolean force)
+    {
+        try
+        {
+            if (!MessagePanelConferences.get_current_conf_id().equals("-1"))
+            {
+                Thread t = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (message_id != -1)
+                        {
+                            try
+                            {
+                                ConferenceMessage m = orma.selectFromConferenceMessage().idEq(
+                                        message_id).orderByIdDesc().toList().get(0);
+
+                                if (m.id != -1)
+                                {
+                                    if ((force) || (MainActivity.update_all_messages_global_timestamp +
+                                                    MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
+                                                    System.currentTimeMillis()))
+                                    {
+                                        MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
+                                        MessagePanelConferences.add_message(m);
+                                    }
+                                }
+                            }
+                            catch (Exception e2)
+                            {
+                            }
+                        }
+                    }
+                };
+                t.start();
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
         }
     }
 }

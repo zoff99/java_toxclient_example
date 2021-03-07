@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS "ConferenceDB" (
 	PRIMARY KEY("conference_identifier")
 );
 CREATE TABLE IF NOT EXISTS "ConferenceMessage" (
+    "message_id_tox" TEXT,
 	"conference_identifier"	TEXT NOT NULL DEFAULT -1,
 	"tox_peerpubkey"	TEXT NOT NULL,
 	"tox_peername"	TEXT,
@@ -29,9 +30,10 @@ CREATE TABLE IF NOT EXISTS "ConferenceMessage" (
 	"TRIFA_MESSAGE_TYPE"	INTEGER NOT NULL DEFAULT 0,
 	"sent_timestamp"	INTEGER,
 	"rcvd_timestamp"	INTEGER,
-	"read"	BOOLEAN NOT NULL,
-	"is_new"	BOOLEAN NOT NULL,
+	"read"	BOOLEAN NOT NULL DEFAULT 0,
+	"is_new"	BOOLEAN NOT NULL DEFAULT 1,
 	"text"	TEXT,
+	"was_synced" BOOLEAN NOT NULL DEFAULT 0,
 	"id"	INTEGER,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );

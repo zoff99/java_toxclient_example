@@ -25,12 +25,15 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import static com.zoffcc.applications.trifa.HelperConference.new_or_updated_conference;
 import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online;
 import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.bytes_to_hex;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.hex_to_bytes;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
@@ -43,6 +46,10 @@ import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chatlist;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chatlist_size;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_id;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_type;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
@@ -51,6 +58,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_status_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_util_friend_resend_message_v2;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ADD_BOTS_ON_STARTUP;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ECHOBOT_TOXID;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -270,6 +278,13 @@ public class TrifaToxService
                     }
                 }
 
+                try
+                {
+                    load_and_add_all_conferences();
+                }
+                catch (Exception e)
+                {
+                }
 
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
@@ -568,4 +583,46 @@ public class TrifaToxService
     // --------------- JNI ---------------
     // --------------- JNI ---------------
     // --------------- JNI ---------------
+
+    void load_and_add_all_conferences()
+    {
+        long num_conferences = tox_conference_get_chatlist_size();
+        Log.i(TAG, "load conferences at startup: num=" + num_conferences);
+
+        long[] conference_numbers = tox_conference_get_chatlist();
+        ByteBuffer cookie_buf3 = ByteBuffer.allocateDirect(CONFERENCE_ID_LENGTH * 2);
+
+        int conf_ = 0;
+        for (conf_ = 0; conf_ < num_conferences; conf_++)
+
+        {
+            cookie_buf3.clear();
+            if (tox_conference_get_id(conference_numbers[conf_], cookie_buf3) == 0)
+            {
+                byte[] cookie_buffer = new byte[CONFERENCE_ID_LENGTH];
+                cookie_buf3.get(cookie_buffer, 0, CONFERENCE_ID_LENGTH);
+                String conference_identifier = bytes_to_hex(cookie_buffer);
+                // Log.i(TAG, "load conference num=" + conference_numbers[conf_] + " cookie=" + conference_identifier +
+                //           " offset=" + cookie_buf3.arrayOffset());
+
+                final ConferenceDB conf2 = orma.selectFromConferenceDB().toList().get(0);
+                //Log.i(TAG,
+                //      "conference 0 in db:" + conf2.conference_identifier + " " + conf2.tox_conference_number + " " +
+                //      conf2.name);
+
+                new_or_updated_conference(conference_numbers[conf_], tox_friend_get_public_key__wrapper(0),
+                                          conference_identifier, tox_conference_get_type(
+                                conference_numbers[conf_])); // rejoin a saved conference
+
+                //if (tox_conference_get_type(conference_numbers[conf_]) == TOX_CONFERENCE_TYPE_AV.value)
+                //{
+                //    // TODO: this returns error. check it
+                //    long result = toxav_groupchat_disable_av(conference_numbers[conf_]);
+                //    Log.i(TAG, "load conference num=" + conference_numbers[conf_] + " toxav_groupchat_disable_av res=" +
+                //               result);
+                //}
+
+            }
+        }
+    }
 }
