@@ -106,37 +106,6 @@ public class MessageListFragmentJ extends JPanel
         }
     }
 
-    public static void show_info_text()
-    {
-        /*
-
-        MessageTextArea.setSelectionStart(0);
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(mainStyle, true);
-        // @formatter:off
-        MessageTextArea.replaceSelection("\n\n\n\n\n\n" +
-                                         "                 Welcome to\n" +
-                                         "                 TRIfA - Desktop\n" +
-                                         "\n" +
-                                         "                 Your Tox Client for the Desktop\n" +
-                                         "                 v" + MainActivity.Version +
-                                         "\n");
-
-        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-        MessageTextArea.setCharacterAttributes(blueSmallStyle, true);
-
-        MessageTextArea.replaceSelection("\n" +
-                                         "\n" +
-                                         "           https://github.com/zoff99/java_toxclient_example/tree/master/trifa_desktop/app/src/main/java\n" +
-                                         "\n");
-
-
-        // @formatter:on
-
-        */
-    }
-
     /* HINT: send a message to a friend */
     synchronized public static void send_message_onclick()
     {

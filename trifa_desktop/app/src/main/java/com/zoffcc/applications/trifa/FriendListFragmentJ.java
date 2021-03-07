@@ -37,6 +37,7 @@ import javax.swing.event.ListSelectionListener;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -92,6 +93,9 @@ public class FriendListFragmentJ extends JPanel
 
                     if (pk.length() == (TOX_PUBLIC_KEY_SIZE * 2))
                     {
+
+                        set_message_panel(1);
+
                         MessagePanel.setCurrentPK(pk);
                         MessagePanel.friendnum = tox_friend_by_public_key__wrapper(pk);
                         //System.out.println(

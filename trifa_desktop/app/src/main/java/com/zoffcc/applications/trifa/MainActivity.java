@@ -153,6 +153,7 @@ public class MainActivity extends JFrame
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
+    static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
@@ -192,6 +193,7 @@ public class MainActivity extends JFrame
     static ByteBuffer video_buffer_2 = null;
     static int buffer_size_in_bytes = 0;
     static ByteBuffer _recBuffer = null;
+    static int message_panel_displayed = -1;
 
     static class send_message_result
     {
@@ -227,8 +229,6 @@ public class MainActivity extends JFrame
 
         FriendPanel = new FriendListFragmentJ();
         MessagePanelContainer = new JPanel();
-        MessagePanel = new MessageListFragmentJ();
-        MessagePanel.setCurrentPK(null);
 
         // ------------------
         // ------------------
@@ -272,6 +272,10 @@ public class MainActivity extends JFrame
         // ------------------
         // ------------------
         // ------------------
+
+        MessagePanel_Info = new MessageListFragmentJInfo();
+        MessagePanel = new MessageListFragmentJ();
+        MessagePanel.setCurrentPK(null);
 
         MessageTextInputPanel = new JPanel();
 
@@ -340,11 +344,10 @@ public class MainActivity extends JFrame
         ownProfileShort.setVisible(true);
 
         MessagePanelContainer.setLayout(new BoxLayout(MessagePanelContainer, BoxLayout.Y_AXIS));
-        MessagePanelContainer.add(MessagePanel);
-        MessagePanelContainer.add(MessageTextInputPanel);
         myToxID.setFont(new java.awt.Font("monospaced", PLAIN, 9));
         myToxID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
-        MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
+
+        set_message_panel(0);
 
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
@@ -533,7 +536,6 @@ public class MainActivity extends JFrame
             }
         };
 
-        MessageListFragmentJ.show_info_text();
         set_focus_on_textinput.start();
 
         // ------------ Main Menu ----------
@@ -590,6 +592,32 @@ public class MainActivity extends JFrame
         });
 
         addKeyBinding(getRootPane(), "F11", new FullscreenToggleAction(this));
+    }
+
+    static void set_message_panel(int i)
+    {
+        EventQueue.invokeLater(() -> {
+            if (message_panel_displayed != i)
+            {
+                if (i == 0)
+                {
+                    MessagePanelContainer.removeAll();
+                    MessagePanelContainer.add(MessagePanel_Info);
+                    MessagePanelContainer.add(MessageTextInputPanel);
+                    MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
+                    MessagePanelContainer.revalidate();
+                }
+                else if (i == 1)
+                {
+                    MessagePanelContainer.removeAll();
+                    MessagePanelContainer.add(MessagePanel);
+                    MessagePanelContainer.add(MessageTextInputPanel);
+                    MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
+                    MessagePanelContainer.revalidate();
+                }
+                message_panel_displayed = i;
+            }
+        });
     }
 
     public static final void addKeyBinding(JComponent c, String key, final Action action)
