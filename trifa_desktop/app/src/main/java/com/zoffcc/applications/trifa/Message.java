@@ -19,12 +19,22 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.OrmaDatabase.b;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 
 @Table
 public class Message
 {
+    private static final String TAG = "DB.Message";
+
     @PrimaryKey(autoincrement = true, auto = true)
     long id; // uniqe message id!!
 
@@ -146,5 +156,263 @@ public class Message
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
                ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx";
+    }
+
+    String sql_start = "";
+    String sql_set = "";
+    String sql_where = "where 1=1 "; // where
+    String sql_orderby = ""; // order by
+    String sql_limit = ""; // limit
+
+    public List<Message> toList()
+    {
+        List<Message> list = null;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+            while (rs.next())
+            {
+                Message out = new Message();
+
+                out.id = rs.getLong("id");
+                out.message_id = rs.getLong("message_id");
+                out.tox_friendpubkey = rs.getString("tox_friendpubkey");
+                out.direction = rs.getInt("direction");
+                out.TOX_MESSAGE_TYPE = rs.getInt("TOX_MESSAGE_TYPE");
+                out.TRIFA_MESSAGE_TYPE = rs.getInt("TRIFA_MESSAGE_TYPE");
+                out.state = rs.getInt("state");
+                out.ft_accepted = rs.getBoolean("ft_accepted");
+                out.ft_outgoing_started = rs.getBoolean("ft_outgoing_started");
+                out.filedb_id = rs.getLong("filedb_id");
+                out.filetransfer_id = rs.getLong("filetransfer_id");
+                out.sent_timestamp = rs.getLong("sent_timestamp");
+                out.sent_timestamp_ms = rs.getLong("sent_timestamp_ms");
+                out.rcvd_timestamp = rs.getLong("rcvd_timestamp");
+                out.rcvd_timestamp_ms = rs.getLong("rcvd_timestamp_ms");
+                out.read = rs.getBoolean("read");
+                out.send_retries = rs.getInt("send_retries");
+                out.is_new = rs.getBoolean("is_new");
+                out.text = rs.getString("text");
+                out.filename_fullpath = rs.getString("filename_fullpath");
+                out.msg_id_hash = rs.getString("msg_id_hash");
+                out.msg_version = rs.getInt("msg_version");
+                out.raw_msgv2_bytes = rs.getString("raw_msgv2_bytes");
+                out.resend_count = rs.getInt("resend_count");
+
+                if (list == null)
+                {
+                    list = new ArrayList<Message>();
+                }
+                list.add(out);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+
+    public Message tox_friendpubkeyEq(String tox_friendpubkey)
+    {
+        this.sql_where = this.sql_where + " and tox_friendpubkey='" + s(tox_friendpubkey) + "' ";
+        return this;
+    }
+
+    public Message orderBySent_timestampAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " sent_timestamp ASC ";
+        return this;
+    }
+
+    public Message orderBySent_timestamp_msAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " sent_timestamp_ms ASC ";
+        return this;
+    }
+
+    public Message directionEq(int i)
+    {
+        this.sql_where = this.sql_where + " and direction='" + s(i) + "' ";
+        return this;
+    }
+
+    public Message TRIFA_MESSAGE_TYPEEq(int value)
+    {
+        this.sql_where = this.sql_where + " and TRIFA_MESSAGE_TYPE='" + s(value) + "' ";
+        return this;
+    }
+
+    public Message resend_countEq(int i)
+    {
+        this.sql_where = this.sql_where + " and resend_count='" + s(i) + "' ";
+        return this;
+    }
+
+    public Message readEq(boolean b)
+    {
+        this.sql_where = this.sql_where + " and read='" + b(b) + "' ";
+        return this;
+    }
+
+    public Message idEq(long id)
+    {
+        this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
+        return this;
+    }
+
+    public Message message_id(long message_id)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " message_id='" + s(message_id) + "' ";
+        return this;
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            Log.i(TAG, "sql=" + sql);
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public Message text(String text)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " text='" + s(text) + "' ";
+        return this;
+    }
+
+    public Message sent_timestamp(long sent_timestamp)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " sent_timestamp='" + s(sent_timestamp) + "' ";
+        return this;
+    }
+
+    public Message msg_version(int msg_version)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " msg_version='" + s(msg_version) + "' ";
+        return this;
+    }
+
+    public Message filename_fullpath(String filename_fullpath)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " filename_fullpath='" + s(filename_fullpath) + "' ";
+        return this;
+    }
+
+    public Message raw_msgv2_bytes(String raw_msgv2_bytes)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " raw_msgv2_bytes='" + s(raw_msgv2_bytes) + "' ";
+        return this;
+    }
+
+    public Message msg_id_hash(String msg_id_hash)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " msg_id_hash='" + s(msg_id_hash) + "' ";
+        return this;
+    }
+
+    public Message resend_count(int resend_count)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " resend_count='" + s(resend_count) + "' ";
+        return this;
+    }
+
+    public Message msg_versionEq(int i)
+    {
+        this.sql_where = this.sql_where + " and  msg_version='" + s(msg_version) + "' ";
+        return this;
     }
 }

@@ -25,8 +25,11 @@ import java.sql.Statement;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperMessage
 {
@@ -219,5 +222,85 @@ public class HelperMessage
         }
 
         return m;
+    }
+
+    static void update_message_in_db_messageid(final Message m)
+    {
+        try
+        {
+            orma.updateMessage().
+                    idEq(m.id).
+                    message_id(m.message_id).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    synchronized static void update_message_in_db_no_read_recvedts(final Message m)
+    {
+        final Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    orma.updateMessage().
+                            idEq(m.id).
+                            text(m.text).
+                            sent_timestamp(m.sent_timestamp).
+                            msg_version(m.msg_version).
+                            filename_fullpath(m.filename_fullpath).
+                            raw_msgv2_bytes(m.raw_msgv2_bytes).
+                            msg_id_hash(m.msg_id_hash).
+                            execute();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
+    }
+
+    static void update_message_in_db_resend_count(final Message m)
+    {
+        try
+        {
+            orma.updateMessage().
+                    idEq(m.id).
+                    resend_count(m.resend_count).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void update_single_message(Message m, boolean force)
+    {
+        try
+        {
+            if ((current_pk != null) && (current_pk.equals(m.tox_friendpubkey)))
+            {
+                if ((force) ||
+                    (MainActivity.update_all_messages_global_timestamp + MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
+                     System.currentTimeMillis()))
+                {
+                    MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
+                    modify_message(m);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+            Log.i(TAG, "update_message_view:EE:" + e.getMessage());
+        }
     }
 }

@@ -662,4 +662,19 @@ public class HelperFriend
         };
         t.start();
     }
+
+    static int is_friend_online(long friendnum)
+    {
+        try
+        {
+            return (orma.selectFromFriendList().
+                    tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    toList().get(0).TOX_CONNECTION);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

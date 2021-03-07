@@ -80,12 +80,27 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         if (m.msg_version == 1)
         {
-            m_date_time.setText(unicode_ARROW_LEFT + long_date_time_format(m.sent_timestamp) + " : " +
-                                unicode_Mobile_Phone_With_Arrow + long_date_time_format(m.rcvd_timestamp));
+            if (m.direction == 0)
+            {
+                m_date_time.setText(unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
+                                    unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
+            }
+            else
+            {
+                m_date_time.setText(unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
+                                    unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
+            }
         }
         else
         {
-            m_date_time.setText(long_date_time_format(m.rcvd_timestamp));
+            if (m.direction == 0)
+            {
+                m_date_time.setText(long_date_time_format(m.rcvd_timestamp));
+            }
+            else
+            {
+                m_date_time.setText(long_date_time_format(m.sent_timestamp));
+            }
         }
 
         m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 6));
@@ -102,13 +117,6 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         date_line.add(m_date_time);
         add(m_text);
         add(date_line);
-
-        //m_text.setEditable(true);
-        //m_text.setFocusable(true);
-        //m_text.setEnabled(true);
-        // m_text.setHighlighter(null);
-
-        revalidate();
 
         return this;
     }

@@ -80,6 +80,8 @@ public class TRIFAGlobals
     public static final Color CHAT_MSG_BG_SELF_COLOR = new Color(0xff33b5e5, true);
     public static final Color CHAT_MSG_BG_OTHER_COLOR = new Color(0xffffbb33, true);
 
+    static int global_self_connection_status = ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE.value;
+
     public static enum TRIFA_FT_DIRECTION
     {
         TRIFA_FT_DIRECTION_INCOMING(0), TRIFA_FT_DIRECTION_OUTGOING(1);

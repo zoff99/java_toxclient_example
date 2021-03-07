@@ -20,8 +20,8 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.EventQueue;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -37,10 +37,9 @@ import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_messag
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
-import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
-import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 
 public class MessageListFragmentJ extends JPanel
@@ -203,7 +202,7 @@ public class MessageListFragmentJ extends JPanel
 
                         long row_id = insert_into_message_db(m, true);
                         m.id = row_id;
-                        Log.i(TAG, "MESSAGEV2_SEND:row_id=" + row_id);
+                        // Log.i(TAG, "MESSAGEV2_SEND:row_id=" + row_id);
                         // Log.i(TAG, "MESSAGEV2_SEND:MSGv2HASH:3=" + m.msg_id_hash);
                         // Log.i(TAG, "MESSAGEV2_SEND:MSGv2HASH:3raw=" + m.raw_msgv2_bytes);
 
@@ -229,7 +228,7 @@ public class MessageListFragmentJ extends JPanel
                     {
                         // sending was NOT ok
 
-                        Log.i(TAG, "tox_friend_send_message_wrapper:store pending message" + m);
+                        // Log.i(TAG, "tox_friend_send_message_wrapper:store pending message" + m);
 
                         m.message_id = -1;
                         long row_id = insert_into_message_db(m, true);
@@ -303,6 +302,18 @@ public class MessageListFragmentJ extends JPanel
 
         try
         {
+            // reset "new" flags for messages -------
+            //orma.updateMessage().tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(current_friendnum)).is_new(
+            //        false).execute();
+            // reset "new" flags for messages -------
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
             if (always)
             {
                 // Log.i(TAG, "data_values:005a");
@@ -324,27 +335,15 @@ public class MessageListFragmentJ extends JPanel
                         {
                             try
                             {
-                                Statement statement = sqldb.createStatement();
-                                final String sql = "select * from Message where tox_friendpubkey='" +
-                                                   s(tox_friend_get_public_key__wrapper(friendnum)) +
-                                                   "' order by Sent_timestamp asc, Sent_timestamp_ms asc";
-                                // Log.i(TAG, "sql=" + sql);
-                                ResultSet rs = statement.executeQuery(sql);
+                                List<Message> ml = orma.selectFromMessage().
+                                        tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                                        orderBySent_timestampAsc().
+                                        orderBySent_timestamp_msAsc().
+                                        toList();
 
-                                while (rs.next())
+                                for (Message message : ml)
                                 {
-                                    Message m = new Message();
-                                    m.text = rs.getString("text");
-                                    m.tox_friendpubkey = rs.getString("tox_friendpubkey");
-                                    m.direction = rs.getInt("direction");
-                                    m.rcvd_timestamp = rs.getLong("rcvd_timestamp");
-                                    m.rcvd_timestamp_ms = rs.getLong("rcvd_timestamp_ms");
-                                    m.sent_timestamp = rs.getLong("sent_timestamp");
-                                    m.sent_timestamp_ms = rs.getLong("sent_timestamp_ms");
-                                    m.state = rs.getInt("state");
-                                    // Log.i(TAG, "XXXX->m=" + m);
-                                    add_message(m);
-                                    // TODO: read all fields
+                                    add_message(message);
                                 }
                             }
                             catch (Exception e)
@@ -377,6 +376,39 @@ public class MessageListFragmentJ extends JPanel
     {
         messagelistitems_model.addElement(new_item);
         MessagePanel.revalidate();
+    }
+
+    synchronized static void modify_message(final Message m)
+    {
+        Runnable myRunnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Iterator it = messagelistitems_model.elements().asIterator();
+
+                    while (it.hasNext())
+                    {
+                        Message msg = (Message) it.next();
+                        if (msg != null)
+                        {
+                            if (msg.id == m.id)
+                            {
+                                int pos = messagelistitems_model.indexOf(msg);
+                                Log.i(TAG, "msg_update:m=" + m);
+                                messagelistitems_model.set(pos, m);
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        };
     }
 
     public void setCurrentPK(String current_pk_)

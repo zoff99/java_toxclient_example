@@ -33,7 +33,7 @@ public class OrmaDatabase
                     // replace("\\", "\\\\"). // \ -> \\
                     // replace("%", "\\%"). // % -> \%
                     // replace("_", "\\_"). // _ -> \_
-                    replace("'", "''"). // ' -> ''
+                            replace("'", "''"). // ' -> ''
                     replace("\\x1a", "\\Z");
             data = str;
         }
@@ -60,16 +60,6 @@ public class OrmaDatabase
         {
             return 0;
         }
-    }
-
-    /**
-     * Starts building a query: {@code SELECT * FROM FriendList ...}.
-     */
-    public FriendList selectFromFriendList()
-    {
-        FriendList ret = new FriendList();
-        ret.sql_start = "SELECT * FROM FriendList";
-        return ret;
     }
 
     public static String readSQLFileAsString(String filePath) throws java.io.IOException
@@ -133,9 +123,39 @@ public class OrmaDatabase
         }
     }
 
+    /**
+     * Starts building a query: {@code SELECT * FROM FriendList ...}.
+     */
+    public FriendList selectFromFriendList()
+    {
+        FriendList ret = new FriendList();
+        ret.sql_start = "SELECT * FROM FriendList";
+        return ret;
+    }
+
     public long insertIntoFriendList(FriendList f)
     {
         return f.insert();
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM Message ...}.
+     */
+    public Message selectFromMessage()
+    {
+        Message ret = new Message();
+        ret.sql_start = "SELECT * FROM Message";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE Message ...}.
+     */
+    public Message updateMessage()
+    {
+        Message ret = new Message();
+        ret.sql_start = "UPDATE Message";
+        return ret;
     }
 }
 

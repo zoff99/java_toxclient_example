@@ -189,11 +189,11 @@ public class HelperGeneric
 
         //** workaround **//
         byte[] tmp_buf_ = new byte[raw_message_length_buf.remaining()];
-        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" +
-                   raw_message_length_buf.remaining());
+        //Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" +
+        //           raw_message_length_buf.remaining());
         raw_message_length_buf.slice().get(tmp_buf_);
         int raw_message_length_int = tmp_buf_[0] & 0xFF + (tmp_buf_[1] & 0xFF) * 256;
-        Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_int=" + raw_message_length_int);
+        //Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_int=" + raw_message_length_int);
 
         //int raw_message_length_int = raw_message_length_buf.
         //        array()[raw_message_length_buf.arrayOffset()] & 0xFF + (raw_message_length_buf.
@@ -287,12 +287,12 @@ public class HelperGeneric
 
             if (!do_badge_update)
             {
-                Log.i(TAG, "noti_and_badge:004a:");
+                // Log.i(TAG, "noti_and_badge:004a:");
                 m.is_new = false;
             }
             else
             {
-                Log.i(TAG, "noti_and_badge:004b:");
+                // Log.i(TAG, "noti_and_badge:004b:");
                 m.is_new = true;
             }
 
@@ -311,12 +311,12 @@ public class HelperGeneric
 
             if (get_current_friendnum() == friend_number)
             {
-                Log.i(TAG, "insert_into_message_db:true:fn=" + friend_number);
+                // Log.i(TAG, "insert_into_message_db:true:fn=" + friend_number);
                 HelperMessage.insert_into_message_db(m, true);
             }
             else
             {
-                Log.i(TAG, "insert_into_message_db:false");
+                // Log.i(TAG, "insert_into_message_db:false");
                 HelperMessage.insert_into_message_db(m, false);
             }
 
@@ -395,12 +395,12 @@ public class HelperGeneric
 
             if (!do_badge_update)
             {
-                Log.i(TAG, "noti_and_badge:004a:");
+                // Log.i(TAG, "noti_and_badge:004a:");
                 m.is_new = false;
             }
             else
             {
-                Log.i(TAG, "noti_and_badge:004b:");
+                // Log.i(TAG, "noti_and_badge:004b:");
                 m.is_new = true;
             }
 
@@ -692,7 +692,7 @@ public class HelperGeneric
             {
                 ret = rs.getLong("lastrowid");
             }
-            Log.i(TAG, "get_last_rowid:ret=" + ret);
+            // Log.i(TAG, "get_last_rowid:ret=" + ret);
             return ret;
         }
         catch (Exception e)
@@ -701,5 +701,18 @@ public class HelperGeneric
             Log.i(TAG, "get_last_rowid:EE1:" + e.getMessage());
             return -1;
         }
+    }
+
+    public static byte[] hex_to_bytes(String s)
+    {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2)
+        {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+        }
+
+        return data;
     }
 }

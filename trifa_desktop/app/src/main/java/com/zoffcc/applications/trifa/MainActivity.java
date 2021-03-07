@@ -92,6 +92,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_connection_status;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_H264;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_VP8;
@@ -428,11 +429,11 @@ public class MainActivity extends JFrame
                             try
                             {
                                 tox_self_set_typing(friendnum, global_typing);
-                                Log.i(TAG, "typing:fn#" + friendnum + ":activated");
+                                // Log.i(TAG, "typing:fn#" + friendnum + ":activated");
                             }
                             catch (Exception e)
                             {
-                                Log.i(TAG, "typing:fn#" + friendnum + ":EE1" + e.getMessage());
+                                // Log.i(TAG, "typing:fn#" + friendnum + ":EE1" + e.getMessage());
                             }
                         }
                     };
@@ -478,11 +479,11 @@ public class MainActivity extends JFrame
                                             try
                                             {
                                                 tox_self_set_typing(friendnum, global_typing);
-                                                Log.i(TAG, "typing:fn#" + friendnum + ":DEactivated");
+                                                // Log.i(TAG, "typing:fn#" + friendnum + ":DEactivated");
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.i(TAG, "typing:fn#" + friendnum + ":EE2" + e.getMessage());
+                                                // Log.i(TAG, "typing:fn#" + friendnum + ":EE2" + e.getMessage());
                                             }
                                         }
                                     };
@@ -1322,6 +1323,19 @@ public class MainActivity extends JFrame
     static void android_tox_callback_self_connection_status_cb_method(int a_TOX_CONNECTION)
     {
         Log.i(TAG, "self_connection_status:status:" + a_TOX_CONNECTION);
+        global_self_connection_status = a_TOX_CONNECTION;
+
+        if (bootstrapping)
+        {
+            Log.i(TAG, "self_connection_status:bootstrapping=true");
+
+            // we just went online
+            if (a_TOX_CONNECTION != 0)
+            {
+                Log.i(TAG, "self_connection_status:bootstrapping set to false");
+                bootstrapping = false;
+            }
+        }
 
         Runnable myRunnable = new Runnable()
         {
