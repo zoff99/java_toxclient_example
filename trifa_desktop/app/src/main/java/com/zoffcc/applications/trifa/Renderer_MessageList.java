@@ -19,49 +19,39 @@
 
 package com.zoffcc.applications.trifa;
 
-import org.swingk.multiline.MultilineLabel;
-
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
-import static com.zoffcc.applications.trifa.MainActivity.mainStyle;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static java.awt.Font.PLAIN;
 
 public class Renderer_MessageList extends JPanel implements ListCellRenderer
 {
     private static final String TAG = "trifa.Rndr_MessageList";
 
-    final JLabel m_name = new JLabel();
     final JLabel m_date_time = new JLabel();
-    MultilineLabel m_text = null;
+    final JTextArea m_text = new JTextArea();
+    final JPanel date_line = new JPanel();
 
     Renderer_MessageList()
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        // setLayout(new GridBagLayout());
-
-        StyleContext sc = new StyleContext();
-        final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
-
-        Style defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
-        mainStyle = sc.addStyle("MainStyle", defaultStyle);
-        StyleConstants.setFontFamily(mainStyle, "monospaced");
-        StyleConstants.setFontSize(mainStyle, 9);
-
-        m_text = new MultilineLabel(); // new JTextPane(doc);
+        date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
     }
 
     @Override
@@ -69,28 +59,21 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
     {
         Message m = (Message) value;
 
-        /*
-        m_text.setEditable(true);
-        m_text.setSelectionStart(0);
-        m_text.setSelectionEnd(m_text.getText().length());
-        m_text.setCharacterAttributes(mainStyle, true);
-        m_text.replaceSelection(m.text);
-        m_text.setEditable(false);
-        */
-
         m_text.setText(m.text);
-        // m_text.setPreferredWidthLimit(20); // the label's preferred width won't exceed 330 pixels
-        m_text.setLineSpacing(1.0f); // relative spacing between adjacent text lines
-        m_text.setBorder(new LineBorder(Color.RED));
-
+        m_text.setLineWrap(true);
+        m_text.setWrapStyleWord(true);
+        m_text.setOpaque(true);
+        // m_text.setBorder(new LineBorder(Color.RED));
 
         if (m.direction == 0)
         {
-            m_name.setText(get_friend_name_from_pubkey(m.tox_friendpubkey));
+            // m_name.setText(get_friend_name_from_pubkey(m.tox_friendpubkey));
+            m_text.setBackground(CHAT_MSG_BG_OTHER_COLOR);
         }
         else
         {
-            m_name.setText("self");
+            // m_name.setText("self");
+            m_text.setBackground(CHAT_MSG_BG_SELF_COLOR);
         }
 
         final String unicode_PERSONAL_COMPUTER = "\uD83D\uDCBB";
@@ -101,7 +84,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         if (m.msg_version == 1)
         {
-            m_date_time.setText(unicode_ARROW_LEFT + long_date_time_format(m.sent_timestamp) + "\n" +
+            m_date_time.setText(unicode_ARROW_LEFT + long_date_time_format(m.sent_timestamp) + " : " +
                                 unicode_Mobile_Phone_With_Arrow + long_date_time_format(m.rcvd_timestamp));
         }
         else
@@ -109,19 +92,22 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
             m_date_time.setText(long_date_time_format(m.rcvd_timestamp));
         }
 
+        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        m_date_time.setIconTextGap(0);
 
-        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 7));
-        m_name.setFont(new java.awt.Font("monospaced", PLAIN, 7));
-        m_text.setFont(new java.awt.Font("default", PLAIN, 9));
+        m_text.setFont(new java.awt.Font("monospaced", PLAIN, 9));
 
-        m_date_time.setBorder(new LineBorder(Color.GREEN));
-        setBorder(new LineBorder(Color.BLUE));
-        
+        // m_date_time.setBorder(new LineBorder(Color.GREEN));
+        m_date_time.setHorizontalAlignment(SwingConstants.LEFT);
+        // setBorder(new LineBorder(Color.BLUE));
+
+        date_line.setBorder(new EmptyBorder(new Insets(-5, -5, -5, -5)));
+
+        date_line.add(m_date_time);
         add(m_text);
-        add(m_date_time);
-        // add(m_name);
+        add(date_line);
 
-        this.setVisible(true);
+        revalidate();
 
         return this;
     }

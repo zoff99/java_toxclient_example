@@ -33,6 +33,7 @@ import javax.swing.SwingUtilities;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
@@ -73,11 +74,13 @@ public class MessageListFragmentJ extends JPanel
         messagelistitems.setSelectedIndex(0);
         messagelistitems.setCellRenderer(new Renderer_MessageList());
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         MessageScrollPane = new JScrollPane();
         add(MessageScrollPane);
+
         MessageScrollPane.setViewportView(messagelistitems);
+        revalidate();
     }
 
     public static void show_info_text()
@@ -286,6 +289,7 @@ public class MessageListFragmentJ extends JPanel
                     public void run()
                     {
                         messagelistitems_model.clear();
+                        MessagePanel.revalidate();
                         // Log.i(TAG, "data_values:005b");
 
                         if (show_only_files)
@@ -350,6 +354,7 @@ public class MessageListFragmentJ extends JPanel
     public static void add_item(Message new_item)
     {
         messagelistitems_model.addElement(new_item);
+        MessagePanel.revalidate();
     }
 
     public void setCurrentPK(String current_pk_)
