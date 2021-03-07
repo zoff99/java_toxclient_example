@@ -71,6 +71,7 @@ public class TRIFAGlobals
     static final int CAMPREVIEW_NUM_BUFFERS = 3;
 
     static final String TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY = "-1";
+    public static final int CONFERENCE_ID_LENGTH = 32;
 
     static long global_last_activity_for_battery_savings_ts = -1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_NOW = Long.MAX_VALUE - 1;
@@ -79,6 +80,7 @@ public class TRIFAGlobals
 
     public static final Color CHAT_MSG_BG_SELF_COLOR = new Color(0xff33b5e5, true);
     public static final Color CHAT_MSG_BG_OTHER_COLOR = new Color(0xffffbb33, true);
+    public static final Color SEE_THRU = new Color(0x00111111, true);
 
     static int global_self_connection_status = ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE.value;
 

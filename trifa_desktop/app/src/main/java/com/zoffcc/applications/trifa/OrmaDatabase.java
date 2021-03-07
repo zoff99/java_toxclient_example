@@ -52,7 +52,7 @@ public class OrmaDatabase
 
     public static int b(boolean in)
     {
-        if (in)
+        if (in == true)
         {
             return 1;
         }
@@ -155,6 +155,51 @@ public class OrmaDatabase
     {
         Message ret = new Message();
         ret.sql_start = "UPDATE Message";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM ConferenceDB ...}.
+     */
+    public ConferenceDB selectFromConferenceDB()
+    {
+        ConferenceDB ret = new ConferenceDB();
+        ret.sql_start = "SELECT * FROM ConferenceDB";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE ConferenceDB ...}.
+     */
+    public ConferenceDB updateConferenceDB()
+    {
+        ConferenceDB ret = new ConferenceDB();
+        ret.sql_start = "UPDATE ConferenceDB";
+        return ret;
+    }
+
+    public long insertIntoConferenceDB(ConferenceDB conf_new)
+    {
+        return conf_new.insert();
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE ConferenceMessage ...}.
+     */
+    public ConferenceMessage updateConferenceMessage()
+    {
+        ConferenceMessage ret = new ConferenceMessage();
+        ret.sql_start = "UPDATE ConferenceMessage";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM ConferenceMessage ...}.
+     */
+    public ConferenceMessage selectFromConferenceMessage()
+    {
+        ConferenceMessage ret = new ConferenceMessage();
+        ret.sql_start = "SELECT * FROM ConferenceMessage";
         return ret;
     }
 }

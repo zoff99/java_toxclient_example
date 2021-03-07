@@ -217,7 +217,6 @@ public class Message
         return list;
     }
 
-
     public Message tox_friendpubkeyEq(String tox_friendpubkey)
     {
         this.sql_where = this.sql_where + " and tox_friendpubkey='" + s(tox_friendpubkey) + "' ";

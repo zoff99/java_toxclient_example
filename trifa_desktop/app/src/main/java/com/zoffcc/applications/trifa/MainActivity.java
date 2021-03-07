@@ -41,6 +41,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -86,6 +87,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_on
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
@@ -109,6 +111,8 @@ import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXA
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_NONE;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_A;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_AV;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
@@ -127,7 +131,7 @@ public class MainActivity extends JFrame
     // --------- global config ---------
     // --------- global config ---------
     final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
-    final static boolean ORMA_TRACE = false; // set "false" for release builds
+    final static boolean ORMA_TRACE = true; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
     final static boolean DEBUG_SCREENSHOT = false; // set "false" for release builds
@@ -153,6 +157,7 @@ public class MainActivity extends JFrame
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
+    static ConferenceMessageListFragment MessagePanelConferences;
     static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
     static JPanel MessageTextInputPanel;
@@ -276,6 +281,7 @@ public class MainActivity extends JFrame
         MessagePanel_Info = new MessageListFragmentJInfo();
         MessagePanel = new MessageListFragmentJ();
         MessagePanel.setCurrentPK(null);
+        MessagePanelConferences = new ConferenceMessageListFragment();
 
         MessageTextInputPanel = new JPanel();
 
@@ -615,6 +621,14 @@ public class MainActivity extends JFrame
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                 }
+                else
+                {
+                    MessagePanelContainer.removeAll();
+                    MessagePanelContainer.add(MessagePanelConferences);
+                    MessagePanelContainer.add(MessageTextInputPanel);
+                    MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
+                    MessagePanelContainer.revalidate();
+                }
                 message_panel_displayed = i;
             }
         });
@@ -944,15 +958,25 @@ public class MainActivity extends JFrame
     // --------------- Conference -------------
     // --------------- Conference -------------
 
-    public static native long tox_conference_join(long friend_number, java.nio.ByteBuffer cookie_buffer, long cookie_length);
-
-    public static native String tox_conference_peer_get_public_key(long conference_number, long peer_number);
+    public static native long tox_conference_join(long friend_number, ByteBuffer cookie_buffer, long cookie_length);
 
     public static native long tox_conference_peer_count(long conference_number);
 
     public static native long tox_conference_peer_get_name_size(long conference_number, long peer_number);
 
     public static native String tox_conference_peer_get_name(long conference_number, long peer_number);
+
+    public static native String tox_conference_peer_get_public_key(long conference_number, long peer_number);
+
+    public static native long tox_conference_offline_peer_count(long conference_number);
+
+    public static native long tox_conference_offline_peer_get_name_size(long conference_number, long offline_peer_number);
+
+    public static native String tox_conference_offline_peer_get_name(long conference_number, long offline_peer_number);
+
+    public static native String tox_conference_offline_peer_get_public_key(long conference_number, long offline_peer_number);
+
+    public static native long tox_conference_offline_peer_get_last_active(long conference_number, long offline_peer_number);
 
     public static native int tox_conference_peer_number_is_ours(long conference_number, long peer_number);
 
@@ -965,6 +989,17 @@ public class MainActivity extends JFrame
     public static native int tox_conference_send_message(long conference_number, int a_TOX_MESSAGE_TYPE, String message);
 
     public static native int tox_conference_delete(long conference_number);
+
+    public static native long tox_conference_get_chatlist_size();
+
+    public static native long[] tox_conference_get_chatlist();
+
+    public static native int tox_conference_get_id(long conference_number, ByteBuffer cookie_buffer);
+
+    public static native int tox_conference_new();
+
+    public static native int tox_conference_invite(long friend_number, long conference_number);
+
     // --------------- Conference -------------
     // --------------- Conference -------------
     // --------------- Conference -------------
@@ -1580,6 +1615,53 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_conference_invite_cb_method(long friend_number, int a_TOX_CONFERENCE_TYPE, byte[] cookie_buffer, long cookie_length)
     {
+        Log.i(TAG, "conference_invite_cb:fn=" + friend_number + " type=" + a_TOX_CONFERENCE_TYPE + " cookie_length=" +
+                   cookie_length + " cookie=" + HelperGeneric.bytes_to_hex(cookie_buffer));
+        //try
+        //{
+        //Thread t = new Thread()
+        //{
+        // @Override
+        //public void run()
+        //{
+        ByteBuffer cookie_buf2 = ByteBuffer.allocateDirect((int) cookie_length);
+        cookie_buf2.put(cookie_buffer);
+        Log.i(TAG, "conference_invite_cb:bytebuffer offset=" + 0);
+
+        long conference_num = -1;
+        if (a_TOX_CONFERENCE_TYPE != TOX_CONFERENCE_TYPE_AV.value)
+        {
+            conference_num = tox_conference_join(friend_number, cookie_buf2, cookie_length);
+        }
+        else
+        {
+            /*
+            conference_num = toxav_join_av_groupchat(friend_number, cookie_buf2, cookie_length);
+            HelperGeneric.update_savedata_file_wrapper();
+            long result = toxav_groupchat_disable_av(conference_num);
+            Log.i(TAG, "conference_invite_cb:toxav_groupchat_disable_av result=" + result);
+            */
+        }
+
+        cache_confid_confnum.clear();
+
+        Log.i(TAG, "conference_invite_cb:tox_conference_join res=" + conference_num);
+        // strip first 3 bytes of cookie to get the conference_id.
+        // this is aweful and hardcoded
+        String conference_identifier = HelperGeneric.bytes_to_hex(
+                Arrays.copyOfRange(cookie_buffer, 3, (int) (3 + CONFERENCE_ID_LENGTH)));
+        Log.i(TAG, "conference_invite_cb:conferenc ID=" + conference_identifier);
+
+        // invite also my ToxProxy -------------
+        if (a_TOX_CONFERENCE_TYPE == TOX_CONFERENCE_TYPE_TEXT.value)
+        {
+        }
+        // invite also my ToxProxy -------------
+
+
+        HelperConference.add_conference_wrapper(friend_number, conference_num, conference_identifier,
+                                                a_TOX_CONFERENCE_TYPE, true);
+        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
     }
 
     static void android_tox_callback_conference_connected_cb_method(long conference_number)

@@ -715,4 +715,24 @@ public class HelperGeneric
 
         return data;
     }
-}
+
+    public static String bytes_to_hex(byte[] in)
+    {
+        try
+        {
+            final StringBuilder builder = new StringBuilder();
+
+            for (byte b : in)
+            {
+                builder.append(String.format("%02x", b));
+            }
+
+            return builder.toString();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return "*ERROR*";
+    }}

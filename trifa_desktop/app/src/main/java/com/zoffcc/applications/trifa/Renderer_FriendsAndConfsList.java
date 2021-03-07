@@ -27,38 +27,38 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static java.awt.Font.PLAIN;
 
 public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRenderer
 {
     private static final String TAG = "trifa.Rndr_FriendsAndConfsList";
 
-    final JLabel l = new JLabel("_"); //<-- this will be an icon instead of a text
-    final JLabel lt = new JLabel();
+    final JLabel type = new JLabel("_");
+    final JLabel status = new JLabel("_");
+    final JLabel name = new JLabel();
 
     Renderer_FriendsAndConfsList()
     {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-        add(l);
-        add(lt);
-        lt.setBorder(new EmptyBorder(0, 3, 0, 0));
-        lt.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
+        add(type);
+        add(status);
+        add(name);
+        name.setBorder(new EmptyBorder(0, 3, 0, 0));
+        name.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
 
-        l.setFont(new java.awt.Font("monospaced", PLAIN, 12));
-        l.setOpaque(true);
+        type.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+        type.setOpaque(true);
+
+        status.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+        status.setOpaque(true);
     }
 
     @Override
     public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean hasFocus)
     {
-        FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
-
-        lt.setText(f.name);
-
         try
         {
             if (isSelected)
@@ -75,32 +75,57 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             e.printStackTrace();
         }
 
-        try
+        if (((CombinedFriendsAndConferences) value).is_friend)
         {
-            if (f.TOX_CONNECTION == 2)
+            FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
+
+            name.setText(f.name);
+
+            try
             {
-                l.setText("U");
-                l.setBackground(Color.GREEN);
-                l.setForeground(Color.BLACK);
+                if (f.TOX_CONNECTION == 2)
+                {
+                    status.setText("U");
+                    status.setBackground(Color.GREEN);
+                    status.setForeground(Color.BLACK);
+                }
+                else if (f.TOX_CONNECTION == 1)
+                {
+                    status.setText("T");
+                    status.setBackground(Color.ORANGE);
+                    status.setForeground(Color.BLACK);
+                }
+                else
+                {
+                    status.setText("_");
+                    status.setBackground(Color.GRAY);
+                    status.setForeground(Color.GRAY);
+                }
             }
-            else if (f.TOX_CONNECTION == 1)
+            catch (Exception e)
             {
-                l.setText("T");
-                l.setBackground(Color.ORANGE);
-                l.setForeground(Color.BLACK);
+                status.setText("_");
+                status.setBackground(Color.GRAY);
+                status.setForeground(Color.GRAY);
             }
-            else
-            {
-                l.setText("_");
-                l.setBackground(Color.GRAY);
-                l.setForeground(Color.GRAY);
-            }
+
+            type.setText(" ");
+            type.setBackground(SEE_THRU);
+            type.setForeground(Color.BLACK);
         }
-        catch (Exception e)
+        else // --- conference ---
         {
-            l.setText("_");
-            l.setBackground(Color.GRAY);
-            l.setForeground(Color.GRAY);
+            ConferenceDB c = ((CombinedFriendsAndConferences) value).conference_item;
+
+            name.setText(c.name + " " + c.conference_identifier.substring(0, 5));
+
+            status.setText(" ");
+            status.setBackground(SEE_THRU);
+            status.setForeground(Color.BLACK);
+
+            type.setText("G");
+            type.setBackground(Color.GREEN);
+            type.setForeground(Color.BLACK);
         }
 
         return this;

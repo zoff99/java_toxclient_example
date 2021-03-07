@@ -153,18 +153,6 @@ public class TrifaToxService
 
                 HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
 
-                MainActivity.friends = MainActivity.tox_self_get_friend_list();
-                Log.i(TAG, "loading_friend:number_of_friends=" + MainActivity.friends.length);
-
-                int fc = 0;
-                boolean exists_in_db = false;
-
-                for (fc = 0; fc < MainActivity.friends.length; fc++)
-                {
-
-                }
-
-
                 // --------------- bootstrap ---------------
                 // --------------- bootstrap ---------------
                 // --------------- bootstrap ---------------
@@ -312,8 +300,6 @@ public class TrifaToxService
                     {
                         e.printStackTrace();
                     }
-
-
 
                     // --- send pending 1-on-1 text messages here --------------
                     // --- send pending 1-on-1 text messages here --------------
@@ -489,11 +475,6 @@ public class TrifaToxService
                     // --- send pending 1-on-1 text messages here --------------
                     // --- send pending 1-on-1 text messages here --------------
                     // --- send pending 1-on-1 text messages here --------------
-
-
-
-
-
 
                     // Log.i(TAG, "tox_iterate:--START--");
                     long s_time = System.currentTimeMillis();

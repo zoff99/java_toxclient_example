@@ -19,11 +19,22 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.OrmaDatabase.b;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
 
 @Table
 public class ConferenceDB
 {
+    private static final String TAG = "DB.ConferenceDB";
+
     // conference id is always saved as lower case hex string!! -----------------
     @PrimaryKey
     String conference_identifier = "";
@@ -78,5 +89,187 @@ public class ConferenceDB
                ", conference_identifier=" + conference_identifier + ", who_invited__tox_public_key_string=" +
                who_invited__tox_public_key_string + ", name=" + name + ", kind=" + kind + ", peer_count=" + peer_count +
                ", own_peer_number=" + own_peer_number + ", notification_silent=" + notification_silent;
+    }
+
+    String sql_start = "";
+    String sql_set = "";
+    String sql_where = "where 1=1 "; // where
+    String sql_orderby = ""; // order by
+    String sql_limit = ""; // limit
+
+    public List<ConferenceDB> toList()
+    {
+        List<ConferenceDB> list = null;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+            while (rs.next())
+            {
+                ConferenceDB out = new ConferenceDB();
+
+                out.conference_identifier = rs.getString("conference_identifier");
+                out.name = rs.getString("name");
+                out.peer_count = rs.getLong("peer_count");
+                out.own_peer_number = rs.getLong("own_peer_number");
+                out.kind = rs.getInt("kind");
+                out.who_invited__tox_public_key_string = rs.getString("who_invited__tox_public_key_string");
+                out.tox_conference_number = rs.getLong("tox_conference_number");
+                out.conference_active = rs.getBoolean("conference_active");
+                out.notification_silent = rs.getBoolean("notification_silent");
+
+                if (list == null)
+                {
+                    list = new ArrayList<ConferenceDB>();
+                }
+                list.add(out);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public long insert()
+    {
+        long ret = -1;
+
+        try
+        {
+            // @formatter:off
+            Statement statement = sqldb.createStatement();
+            final String sql_str="insert into ConferenceDB" +
+                                 "(" +
+                                 "conference_identifier,"	+
+                                 "name,"+
+                                 "peer_count,"+
+                                 "own_peer_number,"	+
+                                 "kind,"	+
+                                 "who_invited__tox_public_key_string,"+
+                                 "tox_conference_number,"+
+                                 "conference_active,"+
+                                 "notification_silent"	+
+                                 ")" +
+                                 "values" +
+                                 "(" +
+                                 "'"+s(""+this.conference_identifier)+"'," +
+                                 "'"+s(""+this.name)+"'," +
+                                 "'"+s(""+this.peer_count)+"'," +
+                                 "'"+s(""+this.own_peer_number)+"'," +
+                                 "'"+s(""+this.kind)+"'," +
+                                 "'"+s(""+this.who_invited__tox_public_key_string)+"'," +
+                                 "'"+s(""+this.tox_conference_number)+"'," +
+                                 "'"+b(this.conference_active)+"'," +
+                                 "'"+b(this.notification_silent)+"'" +
+                                 ")";
+
+            statement.execute(sql_str);
+            ret = get_last_rowid(statement);
+            // @formatter:on
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public ConferenceDB conference_identifierEq(String conference_identifier)
+    {
+        this.sql_where = this.sql_where + " and conference_identifier='" + s(conference_identifier) + "' ";
+        return this;
+    }
+
+    public ConferenceDB conference_active(boolean b)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " conference_active='" + b(b) + "' ";
+        return this;
+    }
+
+    public ConferenceDB kind(int conference_type)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " conference_type='" + s(conference_type) + "' ";
+        return this;
+    }
+
+    public ConferenceDB tox_conference_number(long conference_number)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " tox_conference_number='" + s(conference_number) + "' ";
+        return this;
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            Log.i(TAG, "sql=" + sql);
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public ConferenceDB orderByConference_activeDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " Conference_active DESC ";
+        return this;
+    }
+
+    public ConferenceDB orderByNotification_silentAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " Notification_silent ASC ";
+        return this;
     }
 }

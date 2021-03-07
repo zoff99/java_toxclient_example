@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -164,8 +165,14 @@ public class FriendList
         try
         {
             Statement statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery(
-                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
             while (rs.next())
             {
                 FriendList f = new FriendList();
@@ -257,6 +264,11 @@ public class FriendList
                                  "'"+b(this.is_relay)+"'" +
                                   ")";
 
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql_str);
+            }
+
             statement.execute(sql_str);
             ret = get_last_rowid(statement);
             // @formatter:on
@@ -278,8 +290,14 @@ public class FriendList
         {
             Statement statement = sqldb.createStatement();
             this.sql_start = "SELECT count(*) as count FROM FriendList";
-            ResultSet rs = statement.executeQuery(
-                    this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
 
             if (rs.next())
             {
@@ -292,5 +310,65 @@ public class FriendList
         }
 
         return ret;
+    }
+
+    public FriendList is_relayNotEq(boolean b)
+    {
+        this.sql_where = this.sql_where + " and is_relay<>'" + b(b) + "' ";
+        return this;
+    }
+
+    public FriendList added_timestampGt(long l)
+    {
+        this.sql_where = this.sql_where + " and added_timestamp>'" + s(l) + "' ";
+        return this;
+    }
+
+    public FriendList orderByTOX_CONNECTION_on_offDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " TOX_CONNECTION_on_off DESC ";
+        return this;
+    }
+
+    public FriendList orderByNotification_silentAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " Notification_silent ASC ";
+        return this;
+    }
+
+    public FriendList orderByLast_online_timestampDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " Last_online_timestamp DESC ";
+        return this;
+    }
+
+    public FriendList added_timestampLe(long l)
+    {
+        this.sql_where = this.sql_where + " and added_timestamp <= '" + s(l) + "' ";
+        return this;
     }
 }
