@@ -433,6 +433,51 @@ public class HelperFriend
         }
     }
 
+    static String get_friend_name_from_pubkey(String friend_pubkey)
+    // get_friend_alias_name_wrapper_pubkey(String friend_pubkey)
+    {
+        String ret = "Unknown";
+        String friend_alias_name = "";
+        String friend_name = "";
+
+        try
+        {
+            friend_alias_name = orma.selectFromFriendList().
+                    tox_public_key_stringEq(friend_pubkey).
+                    toList().get(0).alias_name;
+        }
+        catch (Exception e)
+        {
+            friend_alias_name = "";
+            e.printStackTrace();
+        }
+
+        if ((friend_alias_name == null) || (friend_alias_name.equals("")))
+        {
+            try
+            {
+                friend_name = orma.selectFromFriendList().
+                        tox_public_key_stringEq(friend_pubkey).
+                        toList().get(0).name;
+            }
+            catch (Exception e)
+            {
+                friend_name = "";
+                e.printStackTrace();
+            }
+
+            if ((friend_name != null) && (!friend_name.equals("")))
+            {
+                ret = friend_name;
+            }
+        }
+        else
+        {
+            ret = friend_alias_name;
+        }
+
+        return ret;
+    }
 
     static void send_friend_msg_receipt_v2_wrapper(final long friend_number, final int msg_type, final ByteBuffer msg_id_buffer)
     {

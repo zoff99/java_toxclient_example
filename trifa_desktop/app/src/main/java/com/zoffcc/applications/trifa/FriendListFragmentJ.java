@@ -44,7 +44,6 @@ import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class FriendListFragmentJ extends JPanel
 {
-
     private static final String TAG = "trifa.FriendListFrgnt";
 
     private final JList<CombinedFriendsAndConferences> friends_and_confs_list;

@@ -45,7 +45,6 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
 
 public class TrifaToxService
 {
-    static int ONGOING_NOTIFICATION_ID = 1030;
     static final String TAG = "trifa.ToxService";
     static Thread ToxServiceThread = null;
     static boolean stop_me = false;

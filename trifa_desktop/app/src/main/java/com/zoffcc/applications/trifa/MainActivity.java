@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.DisplayMode;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -57,11 +58,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -86,6 +85,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
+import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
@@ -129,6 +129,7 @@ public class MainActivity extends JFrame
     final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
+    final static boolean DEBUG_SCREENSHOT = false; // set "false" for release builds
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -151,8 +152,7 @@ public class MainActivity extends JFrame
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
-    static JScrollPane MessageScrollPane;
-    static JTextPane MessageTextArea;
+    static JPanel MessagePanelContainer = null;
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
     static JButton sendButton;
@@ -201,45 +201,6 @@ public class MainActivity extends JFrame
         long error_num;
     }
 
-    public static void add_message_ml(String datetime, String username, String message, boolean self)
-    {
-        try
-        {
-            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(blueStyle, true);
-            MessageTextArea.replaceSelection(datetime);
-
-            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(mainStyle, true);
-            MessageTextArea.replaceSelection("|");
-
-            if (self)
-            {
-                MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-                MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-                MessageTextArea.setCharacterAttributes(redStyle, true);
-                MessageTextArea.replaceSelection("self");
-            }
-            else
-            {
-                MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-                MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-                MessageTextArea.setCharacterAttributes(blueStyle, true);
-                MessageTextArea.replaceSelection("user");
-            }
-
-            MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
-            MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-            MessageTextArea.setCharacterAttributes(mainStyle, true);
-            MessageTextArea.replaceSelection("|" + message + "\n");
-        }
-        catch (Exception e)
-        {
-        }
-    }
-
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
@@ -264,10 +225,9 @@ public class MainActivity extends JFrame
         splitPane = new JSplitPane();
 
         FriendPanel = new FriendListFragmentJ();
+        MessagePanelContainer = new JPanel();
         MessagePanel = new MessageListFragmentJ();
         MessagePanel.setCurrentPK(null);
-
-        MessageScrollPane = new JScrollPane();
 
         // ------------------
         // ------------------
@@ -311,8 +271,6 @@ public class MainActivity extends JFrame
         // ------------------
         // ------------------
         // ------------------
-
-        MessageTextArea = new JTextPane(doc);
 
         MessageTextInputPanel = new JPanel();
         sendTextField = new JTextArea();
@@ -361,7 +319,7 @@ public class MainActivity extends JFrame
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(80);
         splitPane.setLeftComponent(leftPanel);
-        splitPane.setRightComponent(MessagePanel);
+        splitPane.setRightComponent(MessagePanelContainer);
 
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.add(ownProfileShort);
@@ -374,14 +332,12 @@ public class MainActivity extends JFrame
         ownProfileShort.setEditable(false);
         ownProfileShort.setVisible(true);
 
-        MessagePanel.setLayout(new BoxLayout(MessagePanel, BoxLayout.Y_AXIS));
-        MessagePanel.add(MessageScrollPane);
-        MessageScrollPane.setViewportView(MessageTextArea);
-        // MessageTextArea.setEditable(false);
-        MessagePanel.add(MessageTextInputPanel);
+        MessagePanelContainer.setLayout(new BoxLayout(MessagePanelContainer, BoxLayout.Y_AXIS));
+        MessagePanelContainer.add(MessagePanel);
+        MessagePanelContainer.add(MessageTextInputPanel);
         myToxID.setFont(new java.awt.Font("monospaced", PLAIN, 9));
         myToxID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
-        MessagePanel.add(myToxID, BorderLayout.SOUTH);
+        MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
 
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
@@ -661,6 +617,8 @@ public class MainActivity extends JFrame
         lo = ResourceBundle.getBundle("i18n.ResourceBundle", locale);
         Log.i(TAG, "locale_test:" + lo.getString("locale_test"));
 
+        Log.i(TAG, "running_on:" + OperatingSystem.getCurrent().toString());
+
         try
         {
             for (int i = 0; i < UIManager.getInstalledLookAndFeels().length; i++)
@@ -787,6 +745,22 @@ public class MainActivity extends JFrame
 
         String my_tox_id_temp = get_my_toxid();
         Log.i(TAG, "MyToxID:" + my_tox_id_temp);
+
+        if (DEBUG_SCREENSHOT)
+        {
+            final Thread t_screengrab = new Thread(() -> {
+                try
+                {
+                    Thread.sleep(20 * 1000);
+                    take_screen_shot();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            });
+            t_screengrab.start();
+        }
     }
 
     static
@@ -1653,5 +1627,25 @@ public class MainActivity extends JFrame
             System.exit(0);
         }
     }
+
+    public static void take_screen_shot()
+    {
+        try
+        {
+            System.out.println("taking screenshot...");
+            Log.i(TAG, "taking screenshot...");
+
+            DisplayMode dm = getDisplayInfo().get(0);
+            Screenshot.capture(dm.getWidth(), dm.getHeight()).
+                    store("png", new File("screen001.png"));
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+
 }
 

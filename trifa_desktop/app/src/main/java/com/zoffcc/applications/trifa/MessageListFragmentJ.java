@@ -22,17 +22,17 @@ package com.zoffcc.applications.trifa;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
-import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
-import static com.zoffcc.applications.trifa.MainActivity.MessageTextArea;
-import static com.zoffcc.applications.trifa.MainActivity.add_message_ml;
-import static com.zoffcc.applications.trifa.MainActivity.blueSmallStyle;
-import static com.zoffcc.applications.trifa.MainActivity.mainStyle;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
@@ -55,15 +55,35 @@ public class MessageListFragmentJ extends JPanel
     static boolean is_at_bottom = true;
     static boolean show_only_files = false;
 
+    private static JList<Message> messagelistitems;
+    static DefaultListModel<Message> messagelistitems_model;
+    static JScrollPane MessageScrollPane = null;
+
     public MessageListFragmentJ()
     {
         Log.i(TAG, "MessageListFragmentJ:start");
         friendnum = -1;
         current_pk = null;
+
+        messagelistitems_model = new DefaultListModel<>();
+
+        messagelistitems = new JList<>();
+        messagelistitems.setModel(messagelistitems_model);
+        messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        messagelistitems.setSelectedIndex(0);
+        messagelistitems.setCellRenderer(new Renderer_MessageList());
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        MessageScrollPane = new JScrollPane();
+        add(MessageScrollPane);
+        MessageScrollPane.setViewportView(messagelistitems);
     }
 
     public static void show_info_text()
     {
+        /*
+
         MessageTextArea.setSelectionStart(0);
         MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
         MessageTextArea.setCharacterAttributes(mainStyle, true);
@@ -87,6 +107,8 @@ public class MessageListFragmentJ extends JPanel
 
 
         // @formatter:on
+
+        */
     }
 
     /* HINT: send a message to a friend */
@@ -263,10 +285,7 @@ public class MessageListFragmentJ extends JPanel
                     @Override
                     public void run()
                     {
-                        MessageTextArea.setSelectionStart(0);
-                        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
-                        MessageTextArea.setCharacterAttributes(mainStyle, true);
-                        MessageTextArea.replaceSelection("");
+                        messagelistitems_model.clear();
                         // Log.i(TAG, "data_values:005b");
 
                         if (show_only_files)
@@ -275,7 +294,6 @@ public class MessageListFragmentJ extends JPanel
                         }
                         else
                         {
-
                             try
                             {
                                 Statement statement = sqldb.createStatement();
@@ -331,16 +349,7 @@ public class MessageListFragmentJ extends JPanel
 
     public static void add_item(Message new_item)
     {
-        if (new_item.direction == 1)
-        {
-            add_message_ml(long_date_time_format(new_item.sent_timestamp), new_item.tox_friendpubkey, new_item.text,
-                           true);
-        }
-        else
-        {
-            add_message_ml(long_date_time_format(new_item.rcvd_timestamp), new_item.tox_friendpubkey, new_item.text,
-                           false);
-        }
+        messagelistitems_model.addElement(new_item);
     }
 
     public void setCurrentPK(String current_pk_)
