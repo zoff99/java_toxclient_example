@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.EventQueue;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -76,10 +77,22 @@ public class MessageListFragmentJ extends JPanel
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        MessageScrollPane = new JScrollPane();
+        MessageScrollPane = new JScrollPane(messagelistitems);
         add(MessageScrollPane);
 
-        MessageScrollPane.setViewportView(messagelistitems);
+        /*
+        MessageScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener()
+        {
+            public void adjustmentValueChanged(AdjustmentEvent e)
+            {
+                Log.i(TAG, "scroll2:" + e.getAdjustable().getMaximum() + " : " + e.getAdjustable().getValue() + " : " +
+                           e.getAdjustable().getVisibleAmount() + " : " + e.getAdjustmentType() + " : " +
+                           e.getValueIsAdjusting());
+                e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+            }
+        });
+         */
+
         revalidate();
     }
 
@@ -257,7 +270,13 @@ public class MessageListFragmentJ extends JPanel
                     add_item(m);
                     if (is_at_bottom)
                     {
-                        //**// listingsView.scrollToPosition(adapter.getItemCount() - 1);
+                        // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
+                        // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
+
+                        EventQueue.invokeLater(() -> {
+                            MessageScrollPane.getVerticalScrollBar().setValue(
+                                    MessageScrollPane.getVerticalScrollBar().getMaximum());
+                        });
                     }
                 }
                 catch (Exception e)

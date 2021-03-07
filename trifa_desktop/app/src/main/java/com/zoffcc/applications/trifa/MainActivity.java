@@ -273,16 +273,22 @@ public class MainActivity extends JFrame
         // ------------------
 
         MessageTextInputPanel = new JPanel();
+
         sendTextField = new JTextArea();
+        sendTextField.setFont(new java.awt.Font("default", PLAIN, 9));
+
         sendButton = new JButton("send");
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+
         leftPanel = new JPanel();
         ownProfileShort = new JTextArea();
+
         FriendAddPanel = new JPanel();
         FriendAddPanel.setLayout(new BoxLayout(FriendAddPanel, BoxLayout.Y_AXIS));
         FriendAddPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 
         FriendAddToxID = new JTextField("");
+        FriendAddToxID.setFont(new java.awt.Font("monospaced", PLAIN, 7));
         FriendAddPanel.add(FriendAddToxID);
         FriendAddButton = new JButton("add Friend");
         FriendAddButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));

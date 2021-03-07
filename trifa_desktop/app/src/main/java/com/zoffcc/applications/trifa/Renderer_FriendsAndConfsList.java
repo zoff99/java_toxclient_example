@@ -57,13 +57,6 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
     {
         FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
 
-        String pk = f.tox_public_key_string;
-
-        Log.i(TAG, "pk=" + pk);
-        Log.i(TAG, "alias_name=" + f.alias_name);
-        Log.i(TAG, "name=" + f.name);
-        Log.i(TAG, "TOX_CONNECTION=" + f.TOX_CONNECTION);
-
         lt.setText(f.name);
 
         try
