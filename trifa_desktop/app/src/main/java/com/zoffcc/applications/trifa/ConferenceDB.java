@@ -289,4 +289,18 @@ public class ConferenceDB
     {
         return this.toList().get(0);
     }
+
+    public ConferenceDB name(String name)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " name='" + s(name) + "' ";
+        return this;
+    }
 }

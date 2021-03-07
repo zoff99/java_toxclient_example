@@ -367,4 +367,89 @@ public class HelperConference
         }
     }
 
+    static String get_conference_title_from_confid(String conference_id)
+    {
+        try
+        {
+            // try in the database
+            String name = orma.selectFromConferenceDB().
+                    conference_identifierEq(conference_id).get(0).name;
+
+            if ((name == null) || (name.equals("-1")))
+            {
+                Log.i(TAG, "get_conference_title_from_confid:EE:1");
+            }
+            else
+            {
+                return name;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "get_conference_title_from_confid:EE:2:" + e.getMessage());
+        }
+
+        try
+        {
+            String name = MainActivity.tox_conference_get_title(orma.selectFromConferenceDB().
+                    conference_activeEq(true).
+                    conference_identifierEq(conference_id).get(0).tox_conference_number);
+
+            if ((name == null) || (name.equals("-1")))
+            {
+                Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:1");
+                name = "Unknown Conference";
+            }
+
+            try
+            {
+                // remember it in the Database
+                orma.updateConferenceDB().
+                        conference_identifierEq(conference_id).
+                        name(name).execute();
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+                Log.i(TAG, "get_conference_title_from_confid:EE:3:" + e2.getMessage());
+            }
+
+            return name;
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "get_conference_title_from_confid:EE:4:" + e2.getMessage());
+        }
+
+        Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:2");
+        return "Unknown Conference";
+    }
+
+    static void update_single_conference_in_friendlist_view(final ConferenceDB conf)
+    {
+        if (conf != null)
+        {
+            CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
+            cc.is_friend = false;
+            cc.conference_item = conf;
+            MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
+        }
+    }
+
+    static boolean is_conference_active(String conference_identifier)
+    {
+        try
+        {
+            return (orma.selectFromConferenceDB().
+                    conference_identifierEq(conference_identifier).
+                    toList().get(0).conference_active);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

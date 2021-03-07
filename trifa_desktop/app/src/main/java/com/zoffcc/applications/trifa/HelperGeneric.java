@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Color;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -735,4 +736,66 @@ public class HelperGeneric
         }
 
         return "*ERROR*";
-    }}
+    }
+
+    static int hash_to_bucket(String hash_value, int number_of_buckets)
+    {
+        try
+        {
+            int ret = 0;
+            int value = (Integer.parseInt(hash_value.substring(hash_value.length() - 1, hash_value.length() - 0), 16) +
+                         (Integer.parseInt(hash_value.substring(hash_value.length() - 2, hash_value.length() - 1), 16) *
+                          16) +
+                         (Integer.parseInt(hash_value.substring(hash_value.length() - 3, hash_value.length() - 2), 16) *
+                          (16 * 2)) +
+                         (Integer.parseInt(hash_value.substring(hash_value.length() - 4, hash_value.length() - 3), 16) *
+                          (16 * 3)));
+
+            // Log.i(TAG, "hash_to_bucket:value=" + value);
+
+            ret = (value % number_of_buckets);
+
+            // BigInteger bigInt = new BigInteger(1, hash_value.getBytes());
+            // int ret = (int) (bigInt.longValue() % (long) number_of_buckets);
+            // // Log.i(TAG, "hash_to_bucket:" + "ret=" + ret + " hash_as_int=" + bigInt + " hash=" + hash_value);
+            return ret;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "hash_to_bucket:EE:" + e.getMessage());
+            return 0;
+        }
+    }
+
+    public static double getColorDarkBrightness(Color color)
+    {
+        double luminosity = Math.sqrt(Math.pow(color.getRed(), 2) * 0.299 + Math.pow(color.getGreen(), 2) * 0.587 +
+                                      Math.pow(color.getBlue(), 2) * 0.114);
+
+        return luminosity;
+    }
+
+    public static boolean isColorDarkBrightness(Color color)
+    {
+        double luminosity = Math.sqrt(Math.pow(color.getRed(), 2) * 0.299 + Math.pow(color.getGreen(), 2) * 0.587 +
+                                      Math.pow(color.getBlue(), 2) * 0.114);
+
+        if (luminosity > 146)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public static Color darkenColor(Color inColor, float inAmount)
+    {
+        return new Color( (int) Math.max(0, inColor.getRed() - 255 * inAmount),
+                          (int) Math.max(0, inColor.getGreen() - 255 * inAmount),
+                          (int) Math.max(0, inColor.getBlue() - 255 * inAmount),
+                          inColor.getAlpha());
+    }
+}

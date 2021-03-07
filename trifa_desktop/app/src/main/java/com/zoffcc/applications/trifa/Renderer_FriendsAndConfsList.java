@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
+import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static java.awt.Font.PLAIN;
 
@@ -117,7 +118,8 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
         {
             ConferenceDB c = ((CombinedFriendsAndConferences) value).conference_item;
 
-            name.setText(c.name + " " + c.conference_identifier.substring(0, 5));
+            name.setText(get_conference_title_from_confid(c.conference_identifier) + " " +
+                         c.conference_identifier.substring(0, 5));
 
             status.setText(" ");
             status.setBackground(SEE_THRU);

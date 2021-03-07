@@ -77,7 +77,7 @@ import javax.swing.text.StyleContext;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
-import static com.zoffcc.applications.trifa.ConferenceMessageListFragment.current_conf_id;
+import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.current_conf_id;
 import static com.zoffcc.applications.trifa.HelperConference.get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -85,7 +85,6 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
-import static com.zoffcc.applications.trifa.MessageListFragmentJ.send_message_onclick;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
@@ -161,7 +160,7 @@ public class MainActivity extends JFrame
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
-    static ConferenceMessageListFragment MessagePanelConferences;
+    static ConferenceMessageListFragmentJ MessagePanelConferences;
     static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
     static JPanel MessageTextInputPanel;
@@ -285,7 +284,7 @@ public class MainActivity extends JFrame
         MessagePanel_Info = new MessageListFragmentJInfo();
         MessagePanel = new MessageListFragmentJ();
         MessagePanel.setCurrentPK(null);
-        MessagePanelConferences = new ConferenceMessageListFragment();
+        MessagePanelConferences = new ConferenceMessageListFragmentJ();
 
         MessageTextInputPanel = new JPanel();
 
@@ -379,7 +378,14 @@ public class MainActivity extends JFrame
                         return;
                     }
                     Log.i(TAG, "Enter key pressed");
-                    send_message_onclick();
+                    if (message_panel_displayed == 1)
+                    {
+                        MessageListFragmentJ.send_message_onclick();
+                    }
+                    else if (message_panel_displayed == 2)
+                    {
+                        ConferenceMessageListFragmentJ.send_message_onclick();
+                    }
                 }
             }
         });
@@ -393,7 +399,15 @@ public class MainActivity extends JFrame
             public void actionPerformed(ActionEvent evt)
             {
                 Log.i(TAG, "sendButton pressed");
-                send_message_onclick();
+
+                if (message_panel_displayed == 1)
+                {
+                    MessageListFragmentJ.send_message_onclick();
+                }
+                else if (message_panel_displayed == 2)
+                {
+                    ConferenceMessageListFragmentJ.send_message_onclick();
+                }
             }
         });
 
@@ -608,7 +622,7 @@ public class MainActivity extends JFrame
     {
         EventQueue.invokeLater(() -> {
 
-            Log.i(TAG,"set_message_panel:001:"+i);
+            Log.i(TAG, "set_message_panel:001:" + i);
 
             //current_conf_id = "-1";
             //MessagePanel.setCurrentPK(null);
@@ -628,7 +642,7 @@ public class MainActivity extends JFrame
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG,"set_message_panel:002:"+i);
+                    Log.i(TAG, "set_message_panel:002:" + i);
                 }
                 else if (i == 1)
                 {
@@ -640,7 +654,7 @@ public class MainActivity extends JFrame
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG,"set_message_panel:002:"+i);
+                    Log.i(TAG, "set_message_panel:002:" + i);
                 }
                 else
                 {
@@ -653,7 +667,7 @@ public class MainActivity extends JFrame
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG,"set_message_panel:002:"+i);
+                    Log.i(TAG, "set_message_panel:002:" + i);
                 }
                 message_panel_displayed = i;
             }
@@ -1692,6 +1706,9 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_conference_connected_cb_method(long conference_number)
     {
+        // invite also my ToxProxy -------------
+        Log.i(TAG, "conference_connected_cb:cf_num=" + conference_number);
+        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
     }
 
     static void android_tox_callback_conference_message_cb_method(long conference_number, long peer_number, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
@@ -1830,6 +1847,55 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_conference_title_cb_method(long conference_number, long peer_number, String title, long title_length)
     {
+        // Log.i(TAG, "conference_title_cb:" + "confnum=" + conference_number + " peernum=" + peer_number + " new_title=" +
+        //           title + " title_length=" + title_length);
+
+        try
+        {
+            ConferenceDB conf_temp2 = null;
+
+            try
+            {
+                try
+                {
+                    // TODO: cache me!!
+                    conf_temp2 = orma.selectFromConferenceDB().tox_conference_numberEq(conference_number).
+                            conference_activeEq(true).
+                            get(0);
+
+                    if (conf_temp2 != null)
+                    {
+                        // update it in the Database
+                        orma.updateConferenceDB().
+                                conference_identifierEq(conf_temp2.conference_identifier).
+                                name(title).execute();
+                    }
+                }
+                catch (Exception e)
+                {
+                    // e.printStackTrace();
+                }
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+                Log.i(TAG, "get_conference_title_from_confid:EE:3:" + e2.getMessage());
+            }
+
+            HelperConference.update_single_conference_in_friendlist_view(conf_temp2);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "android_tox_callback_conference_title_cb_method:EE1:" + e.getMessage());
+        }
+
+        try
+        {
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     static void android_tox_callback_conference_peer_name_cb_method(long conference_number, long peer_number, String name, long name_length)

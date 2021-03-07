@@ -31,12 +31,23 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
+import static com.zoffcc.applications.trifa.HelperConference.insert_into_conference_message_db;
+import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
+import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
+import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
+import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
-public class ConferenceMessageListFragment extends JPanel
+public class ConferenceMessageListFragmentJ extends JPanel
 {
     private static final String TAG = "trifa.CnfMsgListFrgnt";
 
@@ -47,7 +58,7 @@ public class ConferenceMessageListFragment extends JPanel
     static String current_conf_id = "-1";
     static boolean is_at_bottom = true;
 
-    public ConferenceMessageListFragment()
+    public ConferenceMessageListFragmentJ()
     {
         Log.i(TAG, "MessageListFragmentJ:start");
 
@@ -68,6 +79,81 @@ public class ConferenceMessageListFragment extends JPanel
         add(Conf_MessageScrollPane);
 
         revalidate();
+    }
+
+
+    static synchronized public void send_message_onclick()
+    {
+        // Log.i(TAG,"send_message_onclick:---start");
+
+        String msg = "";
+        try
+        {
+            if (is_conference_active(current_conf_id))
+            {
+                // send typed message to friend
+                msg = sendTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
+                                                                          sendTextField.getText().length()));
+
+                try
+                {
+                    ConferenceMessage m = new ConferenceMessage();
+                    m.is_new = false; // own messages are always "not new"
+                    m.tox_peerpubkey = global_my_toxid.substring(0, (TOX_PUBLIC_KEY_SIZE * 2));
+                    m.direction = 1; // msg sent
+                    m.TOX_MESSAGE_TYPE = 0;
+                    m.read = true; // !!!! there is not "read status" with conferences in Tox !!!!
+                    m.tox_peername = null;
+                    m.conference_identifier = current_conf_id;
+                    m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+                    m.sent_timestamp = System.currentTimeMillis();
+                    m.rcvd_timestamp = System.currentTimeMillis(); // since we do not have anything better assume "now"
+                    m.text = msg;
+                    m.was_synced = false;
+
+                    if ((msg != null) && (!msg.equalsIgnoreCase("")))
+                    {
+                        int res = tox_conference_send_message(tox_conference_by_confid__wrapper(current_conf_id), 0,
+                                                              msg);
+                        // Log.i(TAG, "tox_conference_send_message:result=" + res + " m=" + m);
+                        if (PREF__X_battery_saving_mode)
+                        {
+                            Log.i(TAG, "global_last_activity_for_battery_savings_ts:001:*PING*");
+                        }
+                        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+
+                        if (res > -1)
+                        {
+                            // message was sent OK
+                            insert_into_conference_message_db(m, true);
+                            Runnable myRunnable = new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    try
+                                    {
+                                        sendTextField.setText("");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                    }
+                                }
+                            };
+                            SwingUtilities.invokeLater(myRunnable);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     String get_current_conf_id()
