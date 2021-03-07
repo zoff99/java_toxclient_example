@@ -229,9 +229,7 @@ public class TrifaToxService
                     }
                 };
 
-                Log.i(TAG, "invokeLater:008:s");
                 SwingUtilities.invokeLater(myRunnable);
-                Log.i(TAG, "invokeLater:008:e");
                 Log.i(TAG, "myToxID.setText:002");
 
                 if (ADD_BOTS_ON_STARTUP)

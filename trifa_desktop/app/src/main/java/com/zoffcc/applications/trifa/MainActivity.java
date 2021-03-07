@@ -437,9 +437,7 @@ public class MainActivity extends JFrame
                         }
                     };
 
-                    Log.i(TAG, "invokeLater:002:s");
                     SwingUtilities.invokeLater(myRunnable);
-                    Log.i(TAG, "invokeLater:002:e");
 
                     try
                     {
@@ -489,9 +487,7 @@ public class MainActivity extends JFrame
                                         }
                                     };
 
-                                    Log.i(TAG, "invokeLater:003:s");
                                     SwingUtilities.invokeLater(myRunnable);
-                                    Log.i(TAG, "invokeLater:003:e");
                                 }
                             }
                         }

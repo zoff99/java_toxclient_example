@@ -25,6 +25,7 @@ import java.sql.Statement;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -73,6 +74,7 @@ public class MessageListFragmentJ extends JPanel
         messagelistitems.setModel(messagelistitems_model);
         messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         messagelistitems.setSelectedIndex(0);
+        messagelistitems.setSelectionModel(new DisabledItemSelectionModel());
         messagelistitems.setCellRenderer(new Renderer_MessageList());
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -94,6 +96,15 @@ public class MessageListFragmentJ extends JPanel
          */
 
         revalidate();
+    }
+
+    class DisabledItemSelectionModel extends DefaultListSelectionModel
+    {
+        @Override
+        public void setSelectionInterval(int index0, int index1)
+        {
+            super.setSelectionInterval(-1, -1);
+        }
     }
 
     public static void show_info_text()
@@ -210,9 +221,7 @@ public class MessageListFragmentJ extends JPanel
                                 }
                             }
                         };
-                        Log.i(TAG, "invokeLater:004:s");
                         SwingUtilities.invokeLater(myRunnable);
-                        Log.i(TAG, "invokeLater:004:e");
 
                         //**//stop_self_typing_indicator_s();
                     }
@@ -240,9 +249,7 @@ public class MessageListFragmentJ extends JPanel
                                 }
                             }
                         };
-                        Log.i(TAG, "invokeLater:005:s");
                         SwingUtilities.invokeLater(myRunnable);
-                        Log.i(TAG, "invokeLater:005:e");
 
                         //**//stop_self_typing_indicator_s();
                     }
@@ -287,9 +294,7 @@ public class MessageListFragmentJ extends JPanel
             }
         };
 
-        // Log.i(TAG, "invokeLater:006:s");
         SwingUtilities.invokeLater(myRunnable);
-        // Log.i(TAG, "invokeLater:006:e");
     }
 
     static void update_all_messages(boolean always)
@@ -351,9 +356,7 @@ public class MessageListFragmentJ extends JPanel
                     }
 
                 };
-                Log.i(TAG, "invokeLater:007:s");
                 SwingUtilities.invokeLater(myRunnable);
-                Log.i(TAG, "invokeLater:007:e");
             }
             // Log.i(TAG, "data_values:005d");
         }

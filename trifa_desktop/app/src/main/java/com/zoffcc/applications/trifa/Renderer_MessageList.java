@@ -19,7 +19,6 @@
 
 package com.zoffcc.applications.trifa;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -31,9 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
@@ -63,7 +60,6 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         m_text.setLineWrap(true);
         m_text.setWrapStyleWord(true);
         m_text.setOpaque(true);
-        // m_text.setBorder(new LineBorder(Color.RED));
 
         if (m.direction == 0)
         {
@@ -106,6 +102,11 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         date_line.add(m_date_time);
         add(m_text);
         add(date_line);
+
+        //m_text.setEditable(true);
+        //m_text.setFocusable(true);
+        //m_text.setEnabled(true);
+        // m_text.setHighlighter(null);
 
         revalidate();
 
