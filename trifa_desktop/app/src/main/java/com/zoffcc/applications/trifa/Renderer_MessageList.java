@@ -78,28 +78,37 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         final String unicode_MEMO = "\uD83D\uDCDD";
         final String unicode_ARROW_LEFT = "←";
 
+        String is_read = "     ";
+
+        if (m.read)
+        {
+            is_read = "READ ";
+        }
+
         if (m.msg_version == 1)
         {
             if (m.direction == 0)
             {
-                m_date_time.setText(unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
-                                    unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
+                m_date_time.setText(
+                        is_read + unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
+                        unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
             }
             else
             {
-                m_date_time.setText(unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
-                                    unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
+                m_date_time.setText(
+                        is_read + unicode_ARROW_LEFT + " " + long_date_time_format(m.sent_timestamp) + " : " +
+                        unicode_Mobile_Phone_With_Arrow + " " + long_date_time_format(m.rcvd_timestamp));
             }
         }
         else
         {
             if (m.direction == 0)
             {
-                m_date_time.setText(long_date_time_format(m.rcvd_timestamp));
+                m_date_time.setText(is_read + long_date_time_format(m.rcvd_timestamp));
             }
             else
             {
-                m_date_time.setText(long_date_time_format(m.sent_timestamp));
+                m_date_time.setText(is_read + long_date_time_format(m.sent_timestamp));
             }
         }
 

@@ -416,4 +416,52 @@ public class Message
         this.sql_where = this.sql_where + " and  msg_version='" + s(msg_version) + "' ";
         return this;
     }
+
+    public Message message_idEq(long message_id)
+    {
+        this.sql_where = this.sql_where + " and  message_id='" + s(message_id) + "' ";
+        return this;
+    }
+
+    public Message orderByIdDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " id DESC ";
+        return this;
+    }
+
+    public Message read(boolean read)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " read='" + b(read) + "' ";
+        return this;
+    }
+
+    public Message rcvd_timestamp(long rcvd_timestamp)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " rcvd_timestamp='" + s(rcvd_timestamp) + "' ";
+        return this;
+    }
 }

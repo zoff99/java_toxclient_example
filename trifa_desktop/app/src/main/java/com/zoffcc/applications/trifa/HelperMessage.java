@@ -104,7 +104,7 @@ public class HelperMessage
             row_id = get_last_rowid(statement);
             // @formatter:on
 
-            //  Log.i(TAG, "row_id=" + row_id + ":" + sql_str);
+            // Log.i(TAG, "row_id=" + row_id + ":" + sql_str);
         }
         catch (Exception e)
         {
@@ -121,6 +121,7 @@ public class HelperMessage
                 if (rs.next())
                 {
                     msg_id = rs.getLong("id");
+                    // Log.i(TAG, "msg_id=" + msg_id);
                 }
             }
             catch (Exception e)
@@ -158,7 +159,7 @@ public class HelperMessage
 
                         try
                         {
-                            Message m = get_message_from_db(message_id);
+                            Message m = orma.selectFromMessage().idEq(message_id).orderByIdDesc().toList().get(0);
 
                             if (m.id != -1)
                             {
@@ -293,6 +294,8 @@ public class HelperMessage
                     (MainActivity.update_all_messages_global_timestamp + MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
                      System.currentTimeMillis()))
                 {
+                    Log.i(TAG, "update_single_message:friend:008");
+
                     MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
                     modify_message(m);
                 }
@@ -346,6 +349,23 @@ public class HelperMessage
         catch (Exception e)
         {
             // e.printStackTrace();
+        }
+    }
+
+    static void update_message_in_db_read_rcvd_timestamp_rawmsgbytes(final Message m)
+    {
+        try
+        {
+            orma.updateMessage().
+                    idEq(m.id).
+                    read(m.read).
+                    raw_msgv2_bytes(m.raw_msgv2_bytes).
+                    rcvd_timestamp(m.rcvd_timestamp).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 }

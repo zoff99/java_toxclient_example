@@ -1581,6 +1581,48 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_read_receipt_cb_method(long friend_number, long message_id)
     {
+        // Log.i(TAG, "friend_read_receipt:friend:" + friend_number + " message_id:" + message_id);
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:004:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+
+        try
+        {
+            // there can be older messages with same message_id for this friend! so always take the latest one! -------
+            final Message m = orma.selectFromMessage().
+                    message_idEq(message_id).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    directionEq(1).
+                    orderByIdDesc().
+                    toList().get(0);
+            // there can be older messages with same message_id for this friend! so always take the latest one! -------
+
+            // Log.i(TAG, "friend_read_receipt:m=" + m);
+            // Log.i(TAG, "friend_read_receipt:m:message_id=" + m.message_id + " text=" + m.text + " friendpubkey=" + m.tox_friendpubkey + " read=" + m.read + " direction=" + m.direction);
+
+            try
+            {
+                m.rcvd_timestamp = System.currentTimeMillis();
+                m.read = true;
+
+                HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
+                // TODO this updates all messages. should be done nicer and faster!
+                // update_message_view();
+                HelperMessage.update_single_message(m, true);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "friend_read_receipt:EE:" + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     static void android_tox_callback_friend_request_cb_method(String friend_public_key, String friend_request_message, long length)

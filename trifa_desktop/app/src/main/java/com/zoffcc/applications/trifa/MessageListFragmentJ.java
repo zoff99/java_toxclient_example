@@ -352,35 +352,30 @@ public class MessageListFragmentJ extends JPanel
 
     synchronized static void modify_message(final Message m)
     {
-        Runnable myRunnable = new Runnable()
+        try
         {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    Iterator it = messagelistitems_model.elements().asIterator();
+            Iterator it = messagelistitems_model.elements().asIterator();
 
-                    while (it.hasNext())
+            while (it.hasNext())
+            {
+                Message msg = (Message) it.next();
+                if (msg != null)
+                {
+                    if (msg.id == m.id)
                     {
-                        Message msg = (Message) it.next();
-                        if (msg != null)
-                        {
-                            if (msg.id == m.id)
-                            {
-                                int pos = messagelistitems_model.indexOf(msg);
-                                Log.i(TAG, "msg_update:m=" + m);
-                                messagelistitems_model.set(pos, m);
-                            }
-                        }
+                        int pos = messagelistitems_model.indexOf(msg);
+
+                        EventQueue.invokeLater(() -> {
+                            messagelistitems_model.set(pos, m);
+                        });
                     }
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
             }
-        };
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void setCurrentPK(String current_pk_)
