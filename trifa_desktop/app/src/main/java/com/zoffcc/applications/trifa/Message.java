@@ -464,4 +464,10 @@ public class Message
         this.sql_set = this.sql_set + " rcvd_timestamp='" + s(rcvd_timestamp) + "' ";
         return this;
     }
+
+    public Message msg_id_hashEq(String msg_id_hash)
+    {
+        this.sql_where = this.sql_where + " and  msg_id_hash='" + s(msg_id_hash) + "' ";
+        return this;
+    }
 }

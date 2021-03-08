@@ -116,6 +116,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXA
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_AV;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
@@ -1660,6 +1661,65 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_read_receipt_message_v2_cb_method(final long friend_number, long ts_sec, byte[] msg_id)
     {
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:003:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+        msg_id_buffer.put(msg_id, 0, (int) TOX_HASH_LENGTH);
+
+        Log.i(TAG, "receipt_message_v2_cb:MSGv2HASH:2=" + msg_id.length);
+
+        ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+
+        final String message_id_hash_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
+                                                                              msg_id_buffer_compat.arrayOffset(),
+                                                                              msg_id_buffer_compat.limit());
+        Log.i(TAG, "receipt_message_v2_cb:MSGv2HASH:2=" + message_id_hash_as_hex_string);
+
+        try
+        {
+            final Message m = orma.selectFromMessage().
+                    msg_id_hashEq(message_id_hash_as_hex_string).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    directionEq(1).
+                    readEq(false).
+                    toList().get(0);
+
+            if (m != null)
+            {
+                Log.i(TAG, "receipt_message_v2_cb:msgid found");
+
+                try
+                {
+                    if (!HelperRelay.is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
+                    {
+                        // only update if the "read receipt" comes from a friend, but not it's relay!
+                        m.raw_msgv2_bytes = "";
+                        m.rcvd_timestamp = System.currentTimeMillis();
+                        m.read = true;
+                        HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
+                    }
+
+                    m.resend_count = 2;
+                    HelperMessage.update_message_in_db_resend_count(m);
+                    HelperMessage.update_single_message(m, true);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else
+            {
+                Log.i(TAG, "receipt_message_v2_cb:msgid *NOT* found");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     static void android_tox_callback_file_recv_control_cb_method(long friend_number, long file_number, int a_TOX_FILE_CONTROL)

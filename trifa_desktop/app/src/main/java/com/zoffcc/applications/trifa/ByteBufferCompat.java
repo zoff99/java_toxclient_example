@@ -29,6 +29,7 @@ public class ByteBufferCompat
     public ByteBufferCompat(ByteBuffer bf)
     {
         this.f = bf;
+        bf.rewind();
         this.b = new byte[bf.remaining()];
         bf.slice().get(this.b);
     }
