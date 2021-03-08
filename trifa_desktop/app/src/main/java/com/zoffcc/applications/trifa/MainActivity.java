@@ -1689,6 +1689,7 @@ public class MainActivity extends JFrame
 
             if (m != null)
             {
+                // Log.i(TAG, "receipt_message_v2_cb:m id=" + m.id);
                 Log.i(TAG, "receipt_message_v2_cb:msgid found");
 
                 try

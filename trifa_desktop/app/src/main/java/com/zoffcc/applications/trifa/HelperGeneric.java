@@ -186,22 +186,12 @@ public class HelperGeneric
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:002:*PING*");
         }
         global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
-        // Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
+        Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
 
-        //** workaround **//
-        byte[] tmp_buf_ = new byte[raw_message_length_buf.remaining()];
-        //Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf.remaining()=" +
-        //           raw_message_length_buf.remaining());
-        raw_message_length_buf.slice().get(tmp_buf_);
-        int raw_message_length_int = tmp_buf_[0] & 0xFF + (tmp_buf_[1] & 0xFF) * 256;
-        //Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_int=" + raw_message_length_int);
-
-        //int raw_message_length_int = raw_message_length_buf.
-        //        array()[raw_message_length_buf.arrayOffset()] & 0xFF + (raw_message_length_buf.
-        //        array()[raw_message_length_buf.arrayOffset() + 1] & 0xFF) * 256;
-        //** workaround **//
-
-
+        ByteBufferCompat raw_message_length_buf_compat = new ByteBufferCompat(raw_message_length_buf);
+        int raw_message_length_int = raw_message_length_buf_compat.
+                array()[raw_message_length_buf_compat.arrayOffset()] & 0xFF + (raw_message_length_buf_compat.
+                array()[raw_message_length_buf_compat.arrayOffset() + 1] & 0xFF) * 256;
         // Log.i(TAG,
         //      "tox_friend_send_message_wrapper:message=" + message + " res=" + res + " len=" + raw_message_length_int);
         result.error_num = res;
@@ -211,18 +201,13 @@ public class HelperGeneric
             // msg V2 OK
             result.msg_num = (Long.MAX_VALUE - 1);
             result.msg_v2 = true;
-
-
-            byte[] tmp_buf2_ = new byte[msg_id_buffer.remaining()];
-            msg_id_buffer.slice().get(tmp_buf2_);
-            result.msg_hash_hex = bytesToHex(tmp_buf2_, 0, tmp_buf2_.length);
-
-            byte[] tmp_buf3_ = new byte[raw_message_buf.remaining()];
-            raw_message_buf.slice().get(tmp_buf3_);
-
-            result.raw_message_buf_hex = bytesToHex(tmp_buf3_, 0, tmp_buf3_.length);
-            // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
-            //            result.raw_message_buf_hex);
+            ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+            result.msg_hash_hex = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(), msg_id_buffer_compat.limit());
+            ByteBufferCompat raw_message_buf_compat = new ByteBufferCompat(raw_message_buf);
+            result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(), raw_message_buf_compat.arrayOffset(),
+                                                    raw_message_length_int);
+            Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
+                       result.raw_message_buf_hex);
             return result;
         }
         else if (res == -9991)
@@ -793,9 +778,8 @@ public class HelperGeneric
 
     public static Color darkenColor(Color inColor, float inAmount)
     {
-        return new Color( (int) Math.max(0, inColor.getRed() - 255 * inAmount),
-                          (int) Math.max(0, inColor.getGreen() - 255 * inAmount),
-                          (int) Math.max(0, inColor.getBlue() - 255 * inAmount),
-                          inColor.getAlpha());
+        return new Color((int) Math.max(0, inColor.getRed() - 255 * inAmount),
+                         (int) Math.max(0, inColor.getGreen() - 255 * inAmount),
+                         (int) Math.max(0, inColor.getBlue() - 255 * inAmount), inColor.getAlpha());
     }
 }

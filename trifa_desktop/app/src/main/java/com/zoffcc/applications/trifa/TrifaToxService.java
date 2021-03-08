@@ -352,7 +352,7 @@ public class TrifaToxService
                                         orderBySent_timestampAsc().
                                         toList();
 
-                                if (m_v1.size() > 0)
+                                if ((m_v1 != null) && (m_v1.size() > 0))
                                 {
                                     Iterator<Message> ii = m_v1.iterator();
                                     while (ii.hasNext())
@@ -362,24 +362,24 @@ public class TrifaToxService
                                         if (is_friend_online(
                                                 tox_friend_by_public_key__wrapper(m_resend_v1.tox_friendpubkey)) == 0)
                                         {
-                                            //Log.i(TAG, "send_pending_1-on-1_messages:v1:fname=" +
-                                            //           get_friend_name_from_pubkey(m_resend_v1.tox_friendpubkey) +
-                                            //           " NOT online m=" + m_resend_v1.text);
+                                            // Log.i(TAG, "send_pending_1-on-1_messages:v1:fname=" +
+                                            //            get_friend_name_from_pubkey(m_resend_v1.tox_friendpubkey) +
+                                            //            " m id=" + m_resend_v1.id + " NOT online m=" + m_resend_v1.text);
 
                                             continue;
                                         }
 
-                                        //Log.i(TAG, "send_pending_1-on-1_messages:v1:fname=" +
-                                        //           get_friend_name_from_pubkey(m_resend_v1.tox_friendpubkey) + " m=" +
-                                        //           m_resend_v1.text);
+                                        // Log.i(TAG, "send_pending_1-on-1_messages:v1:fname=" +
+                                        //            get_friend_name_from_pubkey(m_resend_v1.tox_friendpubkey) +
+                                        //            " m id=" + m_resend_v1.id + " m=" + m_resend_v1.text);
 
                                         MainActivity.send_message_result result = tox_friend_send_message_wrapper(
                                                 tox_friend_by_public_key__wrapper(m_resend_v1.tox_friendpubkey), 0,
                                                 m_resend_v1.text);
                                         long res = result.msg_num;
 
-                                        //Log.i(TAG,
-                                        //      "send_pending_1-on-1_messages:v1:res=" + res + " m=" + m_resend_v1.text);
+                                        // Log.i(TAG,
+                                        //       "send_pending_1-on-1_messages:v1:res=" + res + " m=" + m_resend_v1.text);
 
                                         if (res > -1) // sending was OK
                                         {
@@ -419,7 +419,7 @@ public class TrifaToxService
                             catch (Exception e)
                             {
                                 e.printStackTrace();
-                                // Log.i(TAG, "send_pending_1-on-1_messages:v1:EE:" + e.getMessage());
+                                Log.i(TAG, "send_pending_1-on-1_messages:v1:EE:" + e.getMessage());
                             }
                             // loop through all pending outgoing 1-on-1 text messages --------------
 
@@ -446,7 +446,7 @@ public class TrifaToxService
                                         orderBySent_timestampAsc().
                                         toList();
 
-                                if (m_v1.size() > 0)
+                                if ((m_v1 != null) && (m_v1.size() > 0))
                                 {
                                     Iterator<Message> ii = m_v1.iterator();
                                     while (ii.hasNext())
@@ -459,9 +459,9 @@ public class TrifaToxService
                                             continue;
                                         }
 
-                                        //Log.i(TAG, "send_pending_1-on-1_messages:v2:fname=" +
-                                        //           get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) + " m=" +
-                                        //           m_resend_v2.text);
+                                        // Log.i(TAG, "send_pending_1-on-1_messages:v2:fname=" +
+                                        //            get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) + " m=" +
+                                        //            m_resend_v2.text);
 
                                         // m_resend_v2.raw_msgv2_bytes
 
@@ -491,7 +491,7 @@ public class TrifaToxService
                             catch (Exception e)
                             {
                                 e.printStackTrace();
-                                // Log.i(TAG, "send_pending_1-on-1_messages:v1:EE:" + e.getMessage());
+                                Log.i(TAG, "send_pending_1-on-1_messages:v2:EE:" + e.getMessage());
                             }
                             // loop through all pending outgoing 1-on-1 text messages V2 (resend the resend) --------------
 
