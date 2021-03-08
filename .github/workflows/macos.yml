@@ -1,6 +1,16 @@
 name: MacOS CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+     - 'README.md'
+    tags:
+     - refs/tags/*
+  pull_request:
+    paths-ignore:
+     - 'README.md'
+    tags:
+     - refs/tags/*
 
 defaults:
   run:
