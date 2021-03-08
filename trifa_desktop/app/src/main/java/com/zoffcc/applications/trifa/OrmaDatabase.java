@@ -207,5 +207,15 @@ public class OrmaDatabase
     {
         return m.insert();
     }
+
+    /**
+     * Starts building a query: {@code UPDATE FriendList ...}.
+     */
+    public FriendList updateFriendList()
+    {
+        FriendList ret = new FriendList();
+        ret.sql_start = "UPDATE FriendList";
+        return ret;
+    }
 }
 

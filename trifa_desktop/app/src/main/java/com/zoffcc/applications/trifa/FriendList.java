@@ -148,6 +148,7 @@ public class FriendList
     }
 
     String sql_start = "";
+    String sql_set = "";
     String sql_where = "where 1=1 "; // where
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
@@ -371,4 +372,91 @@ public class FriendList
         this.sql_where = this.sql_where + " and added_timestamp <= '" + s(l) + "' ";
         return this;
     }
+
+    public FriendList name(String name)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " name='" + s(name) + "' ";
+        return this;
+    }
+
+    public FriendList status_message(String status_message)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " status_message='" + s(status_message) + "' ";
+        return this;
+    }
+
+    public FriendList TOX_CONNECTION(int TOX_CONNECTION)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " TOX_CONNECTION='" + s(TOX_CONNECTION) + "' ";
+        return this;
+    }
+
+    public FriendList TOX_CONNECTION_on_off(int TOX_CONNECTION_on_off)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " TOX_CONNECTION_on_off='" + s(TOX_CONNECTION_on_off) + "' ";
+        return this;
+    }
+
+    public FriendList TOX_USER_STATUS(int TOX_USER_STATUS)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " TOX_USER_STATUS='" + s(TOX_USER_STATUS) + "' ";
+        return this;
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            // Log.i(TAG, "sql=" + sql);
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
 }

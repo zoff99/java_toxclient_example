@@ -28,13 +28,14 @@ import javax.swing.SwingUtilities;
 import static com.zoffcc.applications.trifa.HelperConference.new_or_updated_conference;
 import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online;
 import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.bytes_to_hex;
+import static com.zoffcc.applications.trifa.HelperGeneric.get_combined_connection_status;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
+import static com.zoffcc.applications.trifa.HelperGeneric.get_toxconnection_wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.hex_to_bytes;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
@@ -43,6 +44,9 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_n
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
+import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
+import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
+import static com.zoffcc.applications.trifa.MainActivity.cache_pubkey_fnum;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
@@ -50,6 +54,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chat
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chatlist_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_id;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_type;
+import static com.zoffcc.applications.trifa.MainActivity.tox_friend_get_connection_status;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
@@ -128,6 +133,10 @@ public class TrifaToxService
                 }
                 // ------ correct startup order ------
 
+                cache_pubkey_fnum.clear();
+                cache_fnum_pubkey.clear();
+                cache_confid_confnum.clear();
+
                 // TODO --------
                 String my_tox_id_local = get_my_toxid();
                 global_my_toxid = my_tox_id_local;
@@ -160,6 +169,8 @@ public class TrifaToxService
                 Log.i(TAG, "AAA:011");
 
                 HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+
+                load_and_add_all_friends();
 
                 // --------------- bootstrap ---------------
                 // --------------- bootstrap ---------------
@@ -583,6 +594,147 @@ public class TrifaToxService
     // --------------- JNI ---------------
     // --------------- JNI ---------------
     // --------------- JNI ---------------
+
+    void load_and_add_all_friends()
+    {
+        // --- load and update all friends ---
+        MainActivity.friends = MainActivity.tox_self_get_friend_list();
+        Log.i(TAG, "loading_friend:number_of_friends=" + MainActivity.friends.length);
+
+        int fc = 0;
+        boolean exists_in_db = false;
+        //                try
+        //                {
+        //                    MainActivity.friend_list_fragment.clear_friends();
+        //                }
+        //                catch (Exception e)
+        //                {
+        //                }
+
+        for (fc = 0; fc < MainActivity.friends.length; fc++)
+        {
+            // Log.i(TAG, "loading_friend:" + fc + " friendnum=" + MainActivity.friends[fc]);
+            // Log.i(TAG, "loading_friend:" + fc + " pubkey=" + tox_friend_get_public_key__wrapper(MainActivity.friends[fc]));
+
+            FriendList f;
+            List<FriendList> fl = orma.selectFromFriendList().tox_public_key_stringEq(
+                    tox_friend_get_public_key__wrapper(MainActivity.friends[fc])).toList();
+
+            // Log.i(TAG, "loading_friend:" + fc + " db entry size=" + fl);
+
+            if (fl.size() > 0)
+            {
+                f = fl.get(0);
+                // Log.i(TAG, "loading_friend:" + fc + " db entry=" + f);
+            }
+            else
+            {
+                f = null;
+            }
+
+            if (f == null)
+            {
+                Log.i(TAG, "loading_friend:c is null");
+
+                f = new FriendList();
+                f.tox_public_key_string = "" + (long) ((Math.random() * 10000000d));
+                try
+                {
+                    f.tox_public_key_string = tox_friend_get_public_key__wrapper(MainActivity.friends[fc]);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                f.name = "friend #" + fc;
+                exists_in_db = false;
+                // Log.i(TAG, "loading_friend:c is null fnew=" + f);
+            }
+            else
+            {
+                // Log.i(TAG, "loading_friend:found friend in DB " + f.tox_public_key_string + " f=" + f);
+                exists_in_db = true;
+            }
+
+            try
+            {
+                // get the real "live" connection status of this friend
+                // the value in the database may be old (and wrong)
+                int status_new = tox_friend_get_connection_status(MainActivity.friends[fc]);
+                int combined_connection_status_ = get_combined_connection_status(f.tox_public_key_string, status_new);
+                f.TOX_CONNECTION = combined_connection_status_;
+                f.TOX_CONNECTION_on_off = get_toxconnection_wrapper(f.TOX_CONNECTION);
+                f.added_timestamp = System.currentTimeMillis();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            // ----- would be double in list -----
+            // ----- would be double in list -----
+            // ----- would be double in list -----
+            //                    if (MainActivity.friend_list_fragment != null)
+            //                    {
+            //                        try
+            //                        {
+            //                            MainActivity.friend_list_fragment.add_friends(f);
+            //                        }
+            //                        catch (Exception e)
+            //                        {
+            //                        }
+            //                    }
+            // ----- would be double in list -----
+            // ----- would be double in list -----
+            // ----- would be double in list -----
+
+            if (exists_in_db == false)
+            {
+                // Log.i(TAG, "loading_friend:1:insertIntoFriendList:" + " f=" + f);
+                orma.insertIntoFriendList(f);
+                // Log.i(TAG, "loading_friend:2:insertIntoFriendList:" + " f=" + f);
+            }
+            else
+            {
+                // Log.i(TAG, "loading_friend:1:updateFriendList:" + " f=" + f);
+                orma.updateFriendList().tox_public_key_stringEq(
+                        tox_friend_get_public_key__wrapper(MainActivity.friends[fc])).name(f.name).status_message(
+                        f.status_message).TOX_CONNECTION(f.TOX_CONNECTION).TOX_CONNECTION_on_off(
+                        get_toxconnection_wrapper(f.TOX_CONNECTION)).TOX_USER_STATUS(f.TOX_USER_STATUS).execute();
+                // Log.i(TAG, "loading_friend:1:updateFriendList:" + " f=" + f);
+            }
+
+            FriendList f_check;
+            List<FriendList> fl_check = orma.selectFromFriendList().tox_public_key_stringEq(
+                    tox_friend_get_public_key__wrapper(MainActivity.friends[fc])).toList();
+            // Log.i(TAG, "loading_friend:check:" + " db entry=" + fl_check);
+            try
+            {
+                // Log.i(TAG, "loading_friend:check:" + " db entry=" + fl_check.get(0));
+
+                try
+                {
+                    if (MainActivity.FriendPanel != null)
+                    {
+                        CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
+                        cc.is_friend = true;
+                        cc.friend_item = fl_check.get(0);
+                        MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "loading_friend:check:EE:" + e.getMessage());
+            }
+        }
+        // --- load and update all friends ---
+    }
 
     void load_and_add_all_conferences()
     {
