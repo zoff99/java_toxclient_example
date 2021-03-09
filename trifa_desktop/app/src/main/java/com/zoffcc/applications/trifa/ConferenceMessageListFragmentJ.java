@@ -21,6 +21,13 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -38,9 +45,11 @@ import static com.zoffcc.applications.trifa.HelperConference.get_conference_titl
 import static com.zoffcc.applications.trifa.HelperConference.insert_into_conference_message_db;
 import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
+import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
@@ -77,6 +86,38 @@ public class ConferenceMessageListFragmentJ extends JPanel
         conf_messagelistitems.setSelectedIndex(0);
         conf_messagelistitems.setSelectionModel(new DisabledItemSelectionModel());
         conf_messagelistitems.setCellRenderer(new Renderer_ConfMessageList());
+        conf_messagelistitems.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(final MouseEvent e)
+            {
+                final Point point = e.getPoint();
+                final int index = conf_messagelistitems.locationToIndex(point);
+                if (index != -1)
+                {
+                    // Next calculations assume that text is aligned to left, but are easy to adjust
+                    final ConferenceMessage element = conf_messagelistitems.getModel().getElementAt(index);
+                    final Rectangle cellBounds = conf_messagelistitems.getCellBounds(index, index);
+                    final Renderer_ConfMessageList renderer = (Renderer_ConfMessageList) conf_messagelistitems.getCellRenderer();
+                    final Insets insets = renderer.getInsets();
+
+                    // Ensure that mouse press happened within top/bottom insets
+                    if (cellBounds.y + insets.top <= point.y &&
+                        point.y <= cellBounds.y + cellBounds.height - insets.bottom)
+                    {
+                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text),
+                                                                                     null);
+                        Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                }
+            }
+        });
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
@@ -88,7 +129,6 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
         revalidate();
     }
-
 
     static synchronized public void send_message_onclick()
     {

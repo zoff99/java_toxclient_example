@@ -48,12 +48,12 @@ import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_messag
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
-
 
 public class MessageListFragmentJ extends JPanel
 {
@@ -109,7 +109,7 @@ public class MessageListFragmentJ extends JPanel
                     {
                         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text),
                                                                                      null);
-                        Toast.makeToast(MainFrame, "copyied Message text to clipboard", 800);
+                        Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
                     }
                     else
                     {
