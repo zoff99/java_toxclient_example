@@ -56,12 +56,12 @@ public class AudioFrame extends JFrame
         setSize(width / 2, height / 2);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        audio_panel = new JPanel();
+        audio_panel = new JPanel(true);
         audio_panel.setLayout(new BoxLayout(audio_panel, BoxLayout.PAGE_AXIS));
 
-        audio_in_panel = new JPanel();
+        audio_in_panel = new JPanel(true);
         audio_in_panel.setLayout(new BoxLayout(audio_in_panel, BoxLayout.X_AXIS));
-        audio_out_panel = new JPanel();
+        audio_out_panel = new JPanel(true);
         audio_out_panel.setLayout(new BoxLayout(audio_out_panel, BoxLayout.X_AXIS));
 
         JLabel audio_in_text = new JLabel("Audio - Mic", SwingConstants.LEFT);

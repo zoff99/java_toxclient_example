@@ -100,7 +100,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         webcam = picker.getSelectedWebcam();
 
-        ButtonPanel = new JPanel();
+        ButtonPanel = new JPanel(true);
         ButtonPanel.setLayout(new GridLayout());
         add(ButtonPanel, BorderLayout.SOUTH);
 

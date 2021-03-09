@@ -47,7 +47,7 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
 
     final JLabel m_date_time = new JLabel();
     final JTextArea m_text = new JTextArea();
-    final JPanel date_line = new JPanel();
+    final JPanel date_line = new JPanel(true);
 
     Renderer_ConfMessageList()
     {

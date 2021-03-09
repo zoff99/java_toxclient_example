@@ -54,7 +54,7 @@ public class VideoInFrame extends JFrame
         video_in_frame.setSize(width / 2, height / 2);
         video_in_frame.setBackground(Color.ORANGE);
 
-        wrapperPanel = new JPanel(new SingleComponentAspectRatioKeeperLayout());
+        wrapperPanel = new JPanel(new SingleComponentAspectRatioKeeperLayout(),true);
         wrapperPanel.add(video_in_frame);
         getContentPane().add(wrapperPanel);
 

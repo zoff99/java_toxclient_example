@@ -29,6 +29,7 @@ import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperFriend
@@ -69,16 +70,10 @@ public class HelperFriend
 
     synchronized static void update_friend_in_db_name(FriendList f)
     {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            statement.executeUpdate("update FriendList set name='" + s(f.name) + "' where tox_public_key_string = '" +
-                                    s(f.tox_public_key_string) + "'");
-        }
-        catch (Exception e)
-        {
-
-        }
+        orma.updateFriendList().
+                tox_public_key_stringEq(f.tox_public_key_string).
+                name(f.name).
+                execute();
     }
 
     static void add_friend_real(String friend_tox_id)
@@ -373,11 +368,11 @@ public class HelperFriend
     {
         try
         {
-            Statement statement = sqldb.createStatement();
-            statement.executeUpdate(
-                    "update FriendList set " + " TOX_CONNECTION_real='" + s(f.TOX_CONNECTION_real) + "'," +
-                    " TOX_CONNECTION_on_off_real='" + s(f.TOX_CONNECTION_on_off_real) + "'" +
-                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+            orma.updateFriendList().
+                    tox_public_key_stringEq(f.tox_public_key_string).
+                    TOX_CONNECTION_real(f.TOX_CONNECTION_real).
+                    TOX_CONNECTION_on_off_real(f.TOX_CONNECTION_on_off_real).
+                    execute();
         }
         catch (Exception e)
         {
@@ -389,10 +384,10 @@ public class HelperFriend
     {
         try
         {
-            Statement statement = sqldb.createStatement();
-            statement.executeUpdate(
-                    "update FriendList set " + " last_online_timestamp_real='" + s(f.last_online_timestamp_real) + "'" +
-                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+            orma.updateFriendList().
+                    tox_public_key_stringEq(f.tox_public_key_string).
+                    last_online_timestamp_real(f.last_online_timestamp_real).
+                    execute();
         }
         catch (Exception e)
         {
@@ -405,10 +400,10 @@ public class HelperFriend
         // Log.i(TAG, "update_friend_in_db_last_online_timestamp");
         try
         {
-            Statement statement = sqldb.createStatement();
-            statement.executeUpdate(
-                    "update FriendList set " + " last_online_timestamp='" + s(f.last_online_timestamp) + "'" +
-                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
+            orma.updateFriendList().
+                    tox_public_key_stringEq(f.tox_public_key_string).
+                    last_online_timestamp(f.last_online_timestamp).
+                    execute();
         }
         catch (Exception e)
         {
@@ -418,17 +413,11 @@ public class HelperFriend
 
     synchronized static void update_friend_in_db_connection_status(FriendList f)
     {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            statement.executeUpdate("update FriendList set " + " TOX_CONNECTION='" + s(f.TOX_CONNECTION) + "'," +
-                                    " TOX_CONNECTION_on_off='" + s(f.TOX_CONNECTION_on_off) + "'" +
-                                    " where tox_public_key_string = '" + s(f.tox_public_key_string) + "'");
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        orma.updateFriendList().
+                tox_public_key_stringEq(f.tox_public_key_string).
+                TOX_CONNECTION(f.TOX_CONNECTION).
+                TOX_CONNECTION_on_off(f.TOX_CONNECTION_on_off).
+                execute();
     }
 
     static String get_friend_name_from_pubkey(String friend_pubkey)
@@ -596,71 +585,67 @@ public class HelperFriend
 
     synchronized static void set_all_friends_offline()
     {
-        Thread t = new Thread()
+        try
         {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate("update FriendList set TOX_CONNECTION='0'");
-                }
-                catch (Exception e)
-                {
-                }
+            orma.updateFriendList().
+                    TOX_CONNECTION(0).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
 
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate("update FriendList set TOX_CONNECTION_real='0'");
-                }
-                catch (Exception e)
-                {
-                }
+        try
+        {
+            orma.updateFriendList().
+                    TOX_CONNECTION_real(0).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
 
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate("update FriendList set TOX_CONNECTION_on_off='0'");
-                }
-                catch (Exception e)
-                {
-                }
+        try
+        {
+            orma.updateFriendList().
+                    TOX_CONNECTION_on_off(0).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
 
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate("update FriendList set TOX_CONNECTION_on_off_real='0'");
-                }
-                catch (Exception e)
-                {
-                }
+        try
+        {
+            orma.updateFriendList().
+                    TOX_CONNECTION_on_off_real(0).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
 
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate(
-                            "update FriendList set last_online_timestamp='" + s(System.currentTimeMillis()) +
-                            "' where last_online_timestamp='+s(LAST_ONLINE_TIMSTAMP_ONLINE_NOW)+'");
-                }
-                catch (Exception e)
-                {
-                }
+        try
+        {
+            orma.updateFriendList().
+                    last_online_timestampEq(LAST_ONLINE_TIMSTAMP_ONLINE_NOW).
+                    last_online_timestamp(System.currentTimeMillis()).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
 
-                try
-                {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate(
-                            "update FriendList set last_online_timestamp_real='" + s(System.currentTimeMillis()) +
-                            "' where last_online_timestamp_real='+s(LAST_ONLINE_TIMSTAMP_ONLINE_NOW)+'");
-                }
-                catch (Exception e)
-                {
-                }
-            }
-        };
-        t.start();
+        try
+        {
+            orma.updateFriendList().
+                    last_online_timestamp_realEq(LAST_ONLINE_TIMSTAMP_ONLINE_NOW).
+                    last_online_timestamp_real(System.currentTimeMillis()).
+                    execute();
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     static int is_friend_online(long friendnum)

@@ -459,4 +459,71 @@ public class FriendList
         }
     }
 
+    public FriendList TOX_CONNECTION_real(int TOX_CONNECTION_real)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " TOX_CONNECTION_real='" + s(TOX_CONNECTION_real) + "' ";
+        return this;
+    }
+
+    public FriendList TOX_CONNECTION_on_off_real(int TOX_CONNECTION_on_off_real)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " TOX_CONNECTION_on_off_real='" + s(TOX_CONNECTION_on_off_real) + "' ";
+        return this;
+    }
+
+    public FriendList last_online_timestamp_real(long last_online_timestamp_real)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " last_online_timestamp_real='" + s(last_online_timestamp_real) + "' ";
+        return this;
+    }
+
+    public FriendList last_online_timestamp(long last_online_timestamp)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " last_online_timestamp='" + s(last_online_timestamp) + "' ";
+        return this;
+    }
+
+    public FriendList last_online_timestampEq(long last_online_timestamp)
+    {
+        this.sql_where = this.sql_where + " and last_online_timestamp='" + s(last_online_timestamp) + "' ";
+        return this;
+    }
+
+    public FriendList last_online_timestamp_realEq(long last_online_timestamp_real)
+    {
+        this.sql_where = this.sql_where + " and last_online_timestamp_real='" + s(last_online_timestamp_real) + "' ";
+        return this;
+    }
 }

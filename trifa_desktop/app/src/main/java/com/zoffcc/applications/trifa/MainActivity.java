@@ -237,7 +237,7 @@ public class MainActivity extends JFrame
         splitPane = new JSplitPane();
 
         FriendPanel = new FriendListFragmentJ();
-        MessagePanelContainer = new JPanel();
+        MessagePanelContainer = new JPanel(true);
 
         // ------------------
         // ------------------
@@ -287,7 +287,7 @@ public class MainActivity extends JFrame
         MessagePanel.setCurrentPK(null);
         MessagePanelConferences = new ConferenceMessageListFragmentJ();
 
-        MessageTextInputPanel = new JPanel();
+        MessageTextInputPanel = new JPanel(true);
 
         sendTextField = new JTextArea();
         sendTextField.setFont(new java.awt.Font("default", PLAIN, 9));
@@ -295,10 +295,10 @@ public class MainActivity extends JFrame
         sendButton = new JButton("send");
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
 
-        leftPanel = new JPanel();
+        leftPanel = new JPanel(true);
         ownProfileShort = new JTextArea();
 
-        FriendAddPanel = new JPanel();
+        FriendAddPanel = new JPanel(true);
         FriendAddPanel.setLayout(new BoxLayout(FriendAddPanel, BoxLayout.Y_AXIS));
         FriendAddPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 

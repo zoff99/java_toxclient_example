@@ -12,7 +12,7 @@ public class SingleComponentAspectRatioKeeperLayout implements LayoutManager
 {
     private static final String TAG = "trifa.tAspectRatio";
 
-    private static Component fakeComponent = new JPanel();
+    private static Component fakeComponent = new JPanel(true);
 
     public SingleComponentAspectRatioKeeperLayout()
     {

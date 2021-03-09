@@ -323,7 +323,7 @@ public class FriendListFragmentJ extends JPanel
     {
         boolean found_item = false;
 
-        Iterator it = friends_and_confs_list_model.elements().asIterator();
+        Iterator<CombinedFriendsAndConferences> it = friends_and_confs_list_model.elements().asIterator();
 
         while (it.hasNext())
         {
@@ -335,7 +335,7 @@ public class FriendListFragmentJ extends JPanel
                 {
                     FriendList f = f_combined.friend_item;
                     FriendList new_item = new_item_combined.friend_item;
-                    if (f.tox_public_key_string.compareTo(new_item.tox_public_key_string) == 0)
+                    if (f.tox_public_key_string.equals(new_item.tox_public_key_string))
                     {
                         found_item = true;
                         int pos = this.friends_and_confs_list_model.indexOf(f_combined);
@@ -351,7 +351,7 @@ public class FriendListFragmentJ extends JPanel
                     ConferenceDB f = f_combined.conference_item;
                     ConferenceDB new_item = new_item_combined.conference_item;
 
-                    if (f.conference_identifier.compareTo(new_item.conference_identifier) == 0)
+                    if (f.conference_identifier.equals(new_item.conference_identifier))
                     {
                         found_item = true;
                         int pos = this.friends_and_confs_list_model.indexOf(f_combined);
