@@ -20,8 +20,10 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -30,7 +32,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 
+import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperConference.insert_into_conference_message_db;
 import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
@@ -46,6 +50,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_fo
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static java.awt.Font.PLAIN;
 
 public class ConferenceMessageListFragmentJ extends JPanel
 {
@@ -77,6 +82,9 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
         Conf_MessageScrollPane = new JScrollPane(conf_messagelistitems);
         add(Conf_MessageScrollPane);
+
+        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
+        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, 8));
 
         revalidate();
     }
@@ -268,4 +276,36 @@ public class ConferenceMessageListFragmentJ extends JPanel
         conf_messagelistitems_model.addElement(new_item);
         MessagePanel.revalidate();
     }
+
+    static void setConfName()
+    {
+        try
+        {
+            if (MessagePanel != null)
+            {
+                EventQueue.invokeLater(() -> {
+                    try
+                    {
+                        MessagePanelConferences.setBorder(
+                                BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                                                                 (get_conference_title_from_confid(current_conf_id) +
+                                                                  " " + current_conf_id.substring(0, 5))));
+                        ((TitledBorder) MessagePanelConferences.getBorder()).setTitleFont(
+                                new Font("default", PLAIN, 8));
+
+                        MessagePanelConferences.revalidate();
+                        MessagePanelConferences.repaint();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
 }

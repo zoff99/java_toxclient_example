@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -30,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -38,7 +40,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 
+import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
@@ -48,6 +52,7 @@ import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static java.awt.Font.PLAIN;
 
 
 public class MessageListFragmentJ extends JPanel
@@ -120,20 +125,38 @@ public class MessageListFragmentJ extends JPanel
         MessageScrollPane = new JScrollPane(messagelistitems);
         add(MessageScrollPane);
 
-        /*
-        MessageScrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener()
-        {
-            public void adjustmentValueChanged(AdjustmentEvent e)
-            {
-                Log.i(TAG, "scroll2:" + e.getAdjustable().getMaximum() + " : " + e.getAdjustable().getValue() + " : " +
-                           e.getAdjustable().getVisibleAmount() + " : " + e.getAdjustmentType() + " : " +
-                           e.getValueIsAdjusting());
-                e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-            }
-        });
-         */
+        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
+        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, 8));
 
         revalidate();
+    }
+
+    static void setFriendName()
+    {
+        try
+        {
+            if (MessagePanel != null)
+            {
+                EventQueue.invokeLater(() -> {
+                    try
+                    {
+                        MessagePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                                                                                main_get_friend(
+                                                                                        MessagePanel.friendnum).name));
+                        ((TitledBorder) MessagePanel.getBorder()).setTitleFont(new Font("default", PLAIN, 8));
+                        MessagePanel.revalidate();
+                        MessagePanel.repaint();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     class DisabledItemSelectionModel extends DefaultListSelectionModel

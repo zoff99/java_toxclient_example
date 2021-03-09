@@ -31,11 +31,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.setConfName;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ONE_HOUR_IN_MS;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -98,10 +100,12 @@ public class FriendListFragmentJ extends JPanel
 
                             MessagePanel.setCurrentPK(pk);
                             MessagePanel.friendnum = tox_friend_by_public_key__wrapper(pk);
+
                             //System.out.println(
                             //        "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
 
                             update_all_messages(true);
+                            setFriendName();
                         }
                     }
                     else // --- conferences ---
@@ -112,6 +116,7 @@ public class FriendListFragmentJ extends JPanel
                         MessagePanelConferences.current_conf_id = conf_id;
 
                         MessagePanelConferences.update_all_messages(true);
+                        setConfName();
                     }
                 }
                 catch (Exception e2)
