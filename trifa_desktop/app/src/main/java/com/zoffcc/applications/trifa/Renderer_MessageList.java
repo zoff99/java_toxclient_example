@@ -59,18 +59,23 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         m_text.setText(m.text);
         m_text.setLineWrap(true);
         m_text.setWrapStyleWord(true);
-        m_text.setOpaque(true);
+        // m_text.setOpaque(true);
 
         if (m.direction == 0)
         {
-            // m_name.setText(get_friend_name_from_pubkey(m.tox_friendpubkey));
             m_text.setBackground(CHAT_MSG_BG_OTHER_COLOR);
         }
         else
         {
-            // m_name.setText("self");
             m_text.setBackground(CHAT_MSG_BG_SELF_COLOR);
         }
+
+        //if (isSelected)
+        //{
+        //    m_text.setBackground(Color.BLUE);
+        //}
+
+        //m_text.setEditable(true);
 
         final String unicode_PERSONAL_COMPUTER = "\uD83D\uDCBB";
         final String unicode_INCOMING_ENVELOPE = "\uD83D\uDCE8";

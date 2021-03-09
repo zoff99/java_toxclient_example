@@ -20,6 +20,13 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.EventQueue;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,6 +42,7 @@ import javax.swing.SwingUtilities;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
@@ -75,7 +83,38 @@ public class MessageListFragmentJ extends JPanel
         messagelistitems.setSelectedIndex(0);
         messagelistitems.setSelectionModel(new DisabledItemSelectionModel());
         messagelistitems.setCellRenderer(new Renderer_MessageList());
+        messagelistitems.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(final MouseEvent e)
+            {
+                final Point point = e.getPoint();
+                final int index = messagelistitems.locationToIndex(point);
+                if (index != -1)
+                {
+                    // Next calculations assume that text is aligned to left, but are easy to adjust
+                    final Message element = messagelistitems.getModel().getElementAt(index);
+                    final Rectangle cellBounds = messagelistitems.getCellBounds(index, index);
+                    final Renderer_MessageList renderer = (Renderer_MessageList) messagelistitems.getCellRenderer();
+                    final Insets insets = renderer.getInsets();
 
+                    // Ensure that mouse press happened within top/bottom insets
+                    if (cellBounds.y + insets.top <= point.y &&
+                        point.y <= cellBounds.y + cellBounds.height - insets.bottom)
+                    {
+                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text),
+                                                                                     null);
+                        Toast.makeToast(MainFrame, "copyied Message text to clipboard", 800);
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                }
+            }
+        });
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         MessageScrollPane = new JScrollPane(messagelistitems);
