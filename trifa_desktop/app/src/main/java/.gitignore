@@ -6,3 +6,5 @@ main.db
 main.iml
 release
 releases
+tempdir
+datadir
