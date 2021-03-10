@@ -470,4 +470,32 @@ public class Message
         this.sql_where = this.sql_where + " and  msg_id_hash='" + s(msg_id_hash) + "' ";
         return this;
     }
+
+    public Message ft_accepted(boolean ft_accepted)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " ft_accepted='" + b(ft_accepted) + "' ";
+        return this;
+    }
+
+    public Message state(int state)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " state='" + s(state) + "' ";
+        return this;
+    }
 }

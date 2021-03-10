@@ -40,6 +40,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTIO
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MAX_FILETRANSFER_SIZE_MSGV2;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperGeneric
 {
@@ -781,5 +782,17 @@ public class HelperGeneric
         return new Color((int) Math.max(0, inColor.getRed() - 255 * inAmount),
                          (int) Math.max(0, inColor.getGreen() - 255 * inAmount),
                          (int) Math.max(0, inColor.getBlue() - 255 * inAmount), inColor.getAlpha());
+    }
+
+    public static void set_message_accepted_from_id(long message_id)
+    {
+        try
+        {
+            orma.updateMessage().idEq(message_id).ft_accepted(true).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }

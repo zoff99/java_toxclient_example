@@ -368,4 +368,44 @@ public class HelperMessage
             e.printStackTrace();
         }
     }
+
+    public static void update_single_message_from_messge_id(final long message_id, final boolean force)
+    {
+        try
+        {
+            Thread t = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    if (message_id != -1)
+                    {
+                        try
+                        {
+                            Message m = orma.selectFromMessage().idEq(message_id).orderByIdDesc().toList().get(0);
+
+                            if (m.id != -1)
+                            {
+                                if ((force) || (MainActivity.update_all_messages_global_timestamp +
+                                                MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
+                                                System.currentTimeMillis()))
+                                {
+                                    MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
+                                    modify_message(m);
+                                }
+                            }
+                        }
+                        catch (Exception e2)
+                        {
+                        }
+                    }
+                }
+            };
+            t.start();
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+    }
 }

@@ -79,11 +79,14 @@ import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.current_conf_id;
 import static com.zoffcc.applications.trifa.HelperConference.get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
@@ -93,7 +96,11 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_PREFIX;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_TMP_FILE_DIR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -117,6 +124,9 @@ import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXA
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_AV;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_AVATAR;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -193,6 +203,10 @@ public class MainActivity extends JFrame
     // ---- lookup cache for conference drawer ----
 
     static boolean PREF__X_battery_saving_mode = false;
+    static boolean PREF__auto_accept_image = true;
+    static boolean PREF__auto_accept_video = false;
+    static boolean PREF__auto_accept_all_upto = false;
+
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
     final static long UPDATE_MESSAGES_NORMAL_MILLIS = 500; // ~0.5 seconds
@@ -1745,6 +1759,118 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_file_recv_cb_method(long friend_number, long file_number, int a_TOX_FILE_KIND, long file_size, String filename, long filename_length)
     {
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:010:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        // Log.i(TAG,
+        //       "file_recv:" + friend_number + ":fn==" + file_number + ":" + a_TOX_FILE_KIND + ":" + file_size + ":" +
+        //       filename + ":" + filename_length);
+
+        if (a_TOX_FILE_KIND == TOX_FILE_KIND_AVATAR.value)
+        {
+            try
+            {
+                tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            return;
+        }
+        else // DATA file ft
+        {
+            String filename_corrected = get_incoming_filetransfer_local_filename(filename,
+                                                                                 HelperFriend.tox_friend_get_public_key__wrapper(
+                                                                                         friend_number));
+
+            Log.i(TAG, "file_recv:incoming regular file");
+            Filetransfer f = new Filetransfer();
+            f.tox_public_key_string = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
+            f.direction = TRIFA_FT_DIRECTION_INCOMING.value;
+            f.file_number = file_number;
+            f.kind = a_TOX_FILE_KIND;
+            f.state = TOX_FILE_CONTROL_PAUSE.value;
+            f.path_name = VFS_PREFIX + VFS_TMP_FILE_DIR + "/" + f.tox_public_key_string + "/";
+            f.file_name = filename_corrected;
+            f.filesize = file_size;
+            f.ft_accepted = false;
+            f.ft_outgoing_started = false; // dummy for incoming FTs, but still set it here
+            f.current_position = 0;
+            long ft_id = HelperFiletransfer.insert_into_filetransfer_db(f);
+            f.id = ft_id;
+            // add FT message to UI
+            Message m = new Message();
+            m.tox_friendpubkey = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
+            m.direction = 0; // msg received
+            m.TOX_MESSAGE_TYPE = 0;
+            m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_FILE.value;
+            m.filetransfer_id = ft_id;
+            m.filedb_id = -1;
+            m.state = TOX_FILE_CONTROL_PAUSE.value;
+            m.ft_accepted = false;
+            m.ft_outgoing_started = false; // dummy for incoming FTs, but still set it here
+            m.rcvd_timestamp = System.currentTimeMillis();
+            m.sent_timestamp = m.rcvd_timestamp;
+            m.text = filename_corrected + "\n" + file_size + " bytes";
+            long new_msg_id = -1;
+
+
+            if (get_current_friendnum() == friend_number)
+            {
+                new_msg_id = HelperMessage.insert_into_message_db(m, true);
+                m.id = new_msg_id;
+            }
+            else
+            {
+                new_msg_id = HelperMessage.insert_into_message_db(m, false);
+                m.id = new_msg_id;
+            }
+
+            f.message_id = new_msg_id;
+            HelperFiletransfer.update_filetransfer_db_full(f);
+
+            try
+            {
+                // update "new" status on friendlist fragment
+                FriendList f2 = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
+                HelperFriend.update_single_friend_in_friendlist_view(f2);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+            }
+
+            final Message m2 = m;
+
+            try
+            {
+                Thread t = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            sleep(1 * 50);
+                        }
+                        catch (Exception e2)
+                        {
+                            e2.printStackTrace();
+                        }
+                        check_auto_accept_incoming_filetransfer(m2);
+                    }
+                };
+                t.start();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     static void android_tox_callback_file_recv_chunk_cb_method(long friend_number, long file_number, long position, byte[] data, long length)

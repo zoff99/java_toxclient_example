@@ -85,6 +85,15 @@ public class TRIFAGlobals
     static int MESSAGE_SYNC_DOUBLE_INTERVAL_SECS = 20;
     static int global_self_connection_status = ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE.value;
 
+    final static String VFS_TMP_FILE_DIR = "./tempdir/files/";
+    // final static String VFS_TMP_AVATAR_DIR = "/avatar_tempdir/files/"; // TODO: avatar should get their own directory!
+    final static String VFS_FILE_DIR = "./datadir/files/";
+    final static String VFS_OWN_AVATAR_DIR = "./datadir/myavatar/";
+    static String VFS_PREFIX = ""; // only set for normal (unencrypted) storage
+
+    final static long AVATAR_INCOMING_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
+    final static long AVATAR_SELF_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
+
     public static enum TRIFA_FT_DIRECTION
     {
         TRIFA_FT_DIRECTION_INCOMING(0), TRIFA_FT_DIRECTION_OUTGOING(1);

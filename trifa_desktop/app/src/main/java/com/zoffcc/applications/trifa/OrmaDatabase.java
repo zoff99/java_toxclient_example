@@ -217,5 +217,30 @@ public class OrmaDatabase
         ret.sql_start = "UPDATE FriendList";
         return ret;
     }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM Filetransfer ...}.
+     */
+    public Filetransfer selectFromFiletransfer()
+    {
+        Filetransfer ret = new Filetransfer();
+        ret.sql_start = "SELECT * FROM Filetransfer";
+        return ret;
+    }
+
+    public long insertIntoFiletransfer(Filetransfer f)
+    {
+        return f.insert();
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE Filetransfer ...}.
+     */
+    public Filetransfer updateFiletransfer()
+    {
+        Filetransfer ret = new Filetransfer();
+        ret.sql_start = "UPDATE Filetransfer";
+        return ret;
+    }
 }
 
