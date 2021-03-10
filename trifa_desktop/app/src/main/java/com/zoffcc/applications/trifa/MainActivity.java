@@ -85,6 +85,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
@@ -870,15 +871,21 @@ public class MainActivity extends JFrame
     // -------- native methods --------
     public static native void init(String data_dir, int udp_enabled, int local_discovery_enabled, int orbot_enabled, String orbot_host, long orbot_port, String tox_encrypt_passphrase_hash, int enable_ipv6, int force_udp_only_mode);
 
+    public native String getNativeLibAPI();
+
+    public static native String getNativeLibGITHASH();
+
+    public static native String getNativeLibTOXGITHASH();
+
     public static native void update_savedata_file(String tox_encrypt_passphrase_hash);
 
     public static native String get_my_toxid();
 
-    public static native void bootstrap();
-
     public static native int add_tcp_relay_single(String ip, String key_hex, long port);
 
     public static native int bootstrap_single(String ip, String key_hex, long port);
+
+    public static native int tox_self_get_connection_status();
 
     public static native void init_tox_callbacks();
 
@@ -954,18 +961,15 @@ public class MainActivity extends JFrame
 
     public static native int tox_file_control(long friend_number, long file_number, int a_TOX_FILE_CONTROL);
 
-    public static native int tox_hash(java.nio.ByteBuffer hash_buffer, java.nio.ByteBuffer data_buffer, long data_length);
+    public static native int tox_hash(ByteBuffer hash_buffer, ByteBuffer data_buffer, long data_length);
 
     public static native int tox_file_seek(long friend_number, long file_number, long position);
 
-    public static native int tox_file_get_file_id(long friend_number, long file_number, java.
-            nio.ByteBuffer file_id_buffer);
+    public static native int tox_file_get_file_id(long friend_number, long file_number, ByteBuffer file_id_buffer);
 
-    public static native long tox_file_send(long friend_number, long kind, long file_size, java.
-            nio.ByteBuffer file_id_buffer, String file_name, long filename_length);
+    public static native long tox_file_send(long friend_number, long kind, long file_size, ByteBuffer file_id_buffer, String file_name, long filename_length);
 
-    public static native int tox_file_send_chunk(long friend_number, long file_number, long position, java.
-            nio.ByteBuffer data_buffer, long data_length);
+    public static native int tox_file_send_chunk(long friend_number, long file_number, long position, ByteBuffer data_buffer, long data_length);
 
     // --------------- Message V2 -------------
     // --------------- Message V2 -------------
@@ -1503,6 +1507,14 @@ public class MainActivity extends JFrame
             f.name = friend_name;
             HelperFriend.update_friend_in_db_name(f);
             HelperFriend.update_single_friend_in_friendlist_view(f);
+
+            if (MessagePanel != null)
+            {
+                if (MessagePanel.friendnum == friend_number)
+                {
+                    setFriendName();
+                }
+            }
         }
     }
 
