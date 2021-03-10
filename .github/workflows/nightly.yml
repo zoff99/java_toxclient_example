@@ -1,0 +1,22 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  windows-compile:
+    runs-on: windows-latest
+    steps:
+      - name: Display the path
+        run: echo %PATH%
+        shell: cmd
+
+      - name: java version
+        run: set -x ; "$JAVA_HOME_11_X64/bin/java.exe" -version
+        shell: bash
+
