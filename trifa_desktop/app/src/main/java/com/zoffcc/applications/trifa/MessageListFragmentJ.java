@@ -46,11 +46,13 @@ import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
@@ -107,9 +109,24 @@ public class MessageListFragmentJ extends JPanel
                     if (cellBounds.y + insets.top <= point.y &&
                         point.y <= cellBounds.y + cellBounds.height - insets.bottom)
                     {
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text),
-                                                                                     null);
-                        Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+
+                        if (element.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+                        {
+                            if (element.filedb_id > 0)
+                            {
+                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                                {
+                                    run_file(element.filename_fullpath);
+                                    Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                                    new StringSelection(element.text), null);
+                            Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                        }
                     }
                     else
                     {
