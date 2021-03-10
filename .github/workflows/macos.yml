@@ -5,12 +5,12 @@ on:
     paths-ignore:
      - 'README.md'
     tags:
-     - refs/tags/*
+     - tags/*
   pull_request:
     paths-ignore:
      - 'README.md'
     tags:
-     - refs/tags/*
+     - tags/*
 
 defaults:
   run:
