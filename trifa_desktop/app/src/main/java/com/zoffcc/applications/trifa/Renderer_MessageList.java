@@ -150,24 +150,44 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         add(m_text);
         add(date_line);
 
+        progress_bar.setValue(0);
+        progress_bar.setIndeterminate(false);
+
         if (m.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
         {
+            add(progress_bar);
             progress_bar.setMaximum(1000);
 
-            try
+            if (m.filedb_id > 0)
             {
-                Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
-                float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
-                //Log.i(TAG,
-                //      "ftid=" + ft.id + " progress:" + progress_1000 + " ft.current_position=" + ft.current_position +
-                //      " ft.filesize=" + ft.filesize);
-                progress_bar.setValue((int) progress_1000);
+                // FT complete, file is here
+                progress_bar.setValue(1000);
             }
-            catch (Exception e)
+            else
             {
-                // e.printStackTrace();
+                try
+                {
+                    Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
+
+                    if (ft.current_position == ft.filesize)
+                    {
+                        progress_bar.setValue(1000);
+                    }
+                    else
+                    {
+
+                        float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
+                        Log.i(TAG, "m.id=" + m.id + " ftid=" + ft.id + " progress:" + progress_1000 +
+                                   " ft.current_position=" + ft.current_position + " ft.filesize=" + ft.filesize);
+                        progress_bar.setValue((int) progress_1000);
+                    }
+                }
+                catch (Exception e)
+                {
+                    // e.printStackTrace();
+                    progress_bar.setIndeterminate(true);
+                }
             }
-            add(progress_bar);
         }
         else
         {

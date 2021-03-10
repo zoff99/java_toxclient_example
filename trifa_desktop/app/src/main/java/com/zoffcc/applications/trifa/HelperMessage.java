@@ -23,15 +23,11 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
-import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
-import static com.zoffcc.applications.trifa.OrmaDatabase.b;
-import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperMessage
@@ -482,8 +478,9 @@ public class HelperMessage
                 {
                     try
                     {
-                        Message m = orma.selectFromMessage().filetransfer_idEq(
-                                filetransfer_id).orderByIdDesc().toList().get(0);
+                        Message m = orma.selectFromMessage().
+                                filetransfer_idEq(filetransfer_id).
+                                orderByIdDesc().toList().get(0);
 
                         if (m.id != -1)
                         {

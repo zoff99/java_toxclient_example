@@ -2036,26 +2036,23 @@ public class MainActivity extends JFrame
             {
                 Log.i(TAG, "file_recv_chunk:file fully received");
 
-                if (VFS_ENCRYPT)
+                FileOutputStream fos = null;
+                fos = cache_ft_fos.get(
+                        HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
+
+                if (f.fos_open)
                 {
-                    FileOutputStream fos = null;
-                    fos = cache_ft_fos.get(
-                            HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
-
-                    if (f.fos_open)
+                    try
                     {
-                        try
-                        {
-                            fos.close();
-                        }
-                        catch (Exception e3)
-                        {
-                            Log.i(TAG, "file_recv_chunk:EE3:" + e3.getMessage());
-                        }
+                        fos.close();
                     }
-
-                    f.fos_open = false;
+                    catch (Exception e3)
+                    {
+                        Log.i(TAG, "file_recv_chunk:EE3:" + e3.getMessage());
+                    }
                 }
+
+                f.fos_open = false;
 
                 HelperFiletransfer.update_filetransfer_db_fos_open(f);
                 HelperGeneric.move_tmp_file_to_real_file(f.path_name, f.file_name,
@@ -2136,43 +2133,39 @@ public class MainActivity extends JFrame
         {
             try
             {
-                if (VFS_ENCRYPT)
-                {
-                    FileOutputStream fos = null;
+                FileOutputStream fos = null;
 
-                    if (!f.fos_open)
+                if (!f.fos_open)
+                {
+                    fos = new FileOutputStream(f.path_name + "/" + f.file_name);
+                    // Log.i(TAG, "file_recv_chunk:new fos[1]=" + fos + " file=" + f.path_name + "/" + f.file_name);
+                    cache_ft_fos.put(HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number,
+                                     fos);
+                    f.fos_open = true;
+                    HelperFiletransfer.update_filetransfer_db_fos_open(f);
+                }
+                else
+                {
+                    fos = cache_ft_fos.get(
+                            HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
+
+                    if (fos == null)
                     {
                         fos = new FileOutputStream(f.path_name + "/" + f.file_name);
-                        // Log.i(TAG, "file_recv_chunk:new fos[1]=" + fos + " file=" + f.path_name + "/" + f.file_name);
+                        // Log.i(TAG,
+                        //       "file_recv_chunk:new fos[2]=" + fos + " file=" + f.path_name + "/" + f.file_name);
                         cache_ft_fos.put(
                                 HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number,
                                 fos);
                         f.fos_open = true;
                         HelperFiletransfer.update_filetransfer_db_fos_open(f);
                     }
-                    else
-                    {
-                        fos = cache_ft_fos.get(
-                                HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
 
-                        if (fos == null)
-                        {
-                            fos = new FileOutputStream(f.path_name + "/" + f.file_name);
-                            // Log.i(TAG,
-                            //       "file_recv_chunk:new fos[2]=" + fos + " file=" + f.path_name + "/" + f.file_name);
-                            cache_ft_fos.put(
-                                    HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number,
-                                    fos);
-                            f.fos_open = true;
-                            HelperFiletransfer.update_filetransfer_db_fos_open(f);
-                        }
-
-                        // Log.i(TAG, "file_recv_chunk:fos=" + fos + " file=" + f.path_name + "/" + f.file_name);
-                    }
-
-                    // Log.i(TAG, "file_recv_chunk:fos:" + fos);
-                    fos.write(data);
+                    // Log.i(TAG, "file_recv_chunk:fos=" + fos + " file=" + f.path_name + "/" + f.file_name);
                 }
+
+                // Log.i(TAG, "file_recv_chunk:fos:" + fos);
+                fos.write(data);
 
                 if (f.filesize < UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES)
                 {

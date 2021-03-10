@@ -426,6 +426,7 @@ public class MessageListFragmentJ extends JPanel
                     if (msg.id == m.id)
                     {
                         int pos = messagelistitems_model.indexOf(msg);
+                        Log.i(TAG, "modify_message:m.id=" + m.id);
 
                         EventQueue.invokeLater(() -> {
                             messagelistitems_model.set(pos, m);
