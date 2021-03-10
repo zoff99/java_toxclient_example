@@ -21,10 +21,12 @@ package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
@@ -38,78 +40,7 @@ public class HelperMessage
 
     static long insert_into_message_db(final Message m, final boolean update_message_view_flag)
     {
-        Statement statement = null;
-        long row_id = -1;
-
-        try
-        {
-            // @formatter:off
-            statement = sqldb.createStatement();
-            final String sql_str="insert into Message" +
-                              "(" +
-                              "message_id," +
-                              "tox_friendpubkey," +
-                              "direction," +
-                              "TOX_MESSAGE_TYPE," +
-                              "TRIFA_MESSAGE_TYPE," +
-                              "state," +
-                              "ft_accepted," +
-                              "ft_outgoing_started," +
-                              "filedb_id," +
-                              "filetransfer_id," +
-                              "sent_timestamp," +
-                              "sent_timestamp_ms," +
-                              "rcvd_timestamp," +
-                              "rcvd_timestamp_ms," +
-                              "read," +
-                              "send_retries," +
-                              "is_new," +
-                              "text," +
-                              "filename_fullpath," +
-                              "msg_id_hash," +
-                              "msg_version," +
-                              "raw_msgv2_bytes," +
-                              "resend_count" +
-                              ")" +
-                              "values" +
-                              "(" +
-                              "'"+s(""+m.message_id)+"'," +
-                              "'"+s(m.tox_friendpubkey)+"'," +
-                              "'"+s(""+m.direction)+"'," +
-                              "'"+s(""+m.TOX_MESSAGE_TYPE)+"'," +
-                              "'"+s(""+m.TRIFA_MESSAGE_TYPE)+"'," +
-                              "'"+s(""+m.state)+"'," +
-                              "'"+b(m.ft_accepted)+"'," +
-                              "'"+b(m.ft_outgoing_started)+"'," +
-                              "'"+s(""+m.filedb_id)+"'," +
-                              "'"+s(""+m.filedb_id)+"'," +
-                              "'"+s(""+m.sent_timestamp)+"'," +
-                              "'"+s(""+m.sent_timestamp_ms)+"'," +
-                              "'"+s(""+m.rcvd_timestamp)+"'," +
-                              "'"+s(""+m.rcvd_timestamp_ms)+"'," +
-                              "'"+b(m.read)+"'," +
-                              "'"+s(""+m.send_retries)+"'," +
-                              "'"+b(m.is_new)+"'," +
-                              "'"+s(m.text)+"'," +
-                              "'"+s(m.filename_fullpath)+"'," +
-                              "'"+s(m.msg_id_hash)+"'," +
-                              "'"+s(""+m.msg_version)+"'," +
-                              "'"+s(m.raw_msgv2_bytes)+"'," +
-                              "'"+s(""+m.resend_count)+"'" +
-                              ")";
-
-            //  Log.i(TAG, "sql="+ sql_str);
-
-            statement.execute(sql_str);
-            row_id = get_last_rowid(statement);
-            // @formatter:on
-
-            // Log.i(TAG, "row_id=" + row_id + ":" + sql_str);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        long row_id = orma.insertIntoMessage(m);
 
         try
         {
@@ -117,6 +48,7 @@ public class HelperMessage
 
             try
             {
+                Statement statement = sqldb.createStatement();
                 ResultSet rs = statement.executeQuery("SELECT id FROM Message where rowid='" + row_id + "'");
                 if (rs.next())
                 {
@@ -408,4 +340,174 @@ public class HelperMessage
             // e.printStackTrace();
         }
     }
+
+    public static long get_message_id_from_filetransfer_id_and_friendnum(long filetransfer_id, long friend_number)
+    {
+        try
+        {
+            List<Message> m = orma.selectFromMessage().
+                    filetransfer_idEq(filetransfer_id).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    orderByIdDesc().toList();
+
+            if (m.size() == 0)
+            {
+                return -1;
+            }
+
+            return m.get(0).id;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "get_message_id_from_filetransfer_id_and_friendnum:EE:" + e.getMessage());
+            return -1;
+        }
+    }
+
+    static void update_message_in_db_filename_fullpath_friendnum_and_filenum(long friend_number, long file_number, String filename_fullpath)
+    {
+        try
+        {
+            long ft_id = orma.selectFromFiletransfer().
+                    tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    file_numberEq(file_number).orderByIdDesc().toList().get(0).id;
+
+            update_message_in_db_filename_fullpath_from_id(orma.selectFromMessage().
+                    filetransfer_idEq(ft_id).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).toList().
+                    get(0).id, filename_fullpath);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    static void update_message_in_db_filename_fullpath_from_id(long msg_id, String filename_fullpath)
+    {
+        try
+        {
+            orma.updateMessage().idEq(msg_id).filename_fullpath(filename_fullpath).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void set_message_state_from_friendnum_and_filenum(long friend_number, long file_number, int state)
+    {
+        try
+        {
+            long ft_id = orma.selectFromFiletransfer().
+                    tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    file_numberEq(file_number).orderByIdDesc().toList().get(0).id;
+            // Log.i(TAG,
+            //       "set_message_state_from_friendnum_and_filenum:ft_id=" + ft_id + " friend_number=" + friend_number +
+            //       " file_number=" + file_number);
+            set_message_state_from_id(orma.selectFromMessage().
+                    filetransfer_idEq(ft_id).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    toList().get(0).id, state);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_message_state_from_friendnum_and_filenum:EE:" + e.getMessage());
+        }
+    }
+
+    public static void set_message_state_from_id(long message_id, int state)
+    {
+        try
+        {
+            orma.updateMessage().idEq(message_id).state(state).execute();
+            // Log.i(TAG, "set_message_state_from_id:message_id=" + message_id + " state=" + state);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_message_state_from_id:EE:" + e.getMessage());
+        }
+    }
+
+    public static void set_message_filedb_from_friendnum_and_filenum(long friend_number, long file_number, long filedb_id)
+    {
+        try
+        {
+            long ft_id = orma.selectFromFiletransfer().
+                    tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    file_numberEq(file_number).
+                    orderByIdDesc().toList().
+                    get(0).id;
+            // Log.i(TAG,
+            //       "set_message_filedb_from_friendnum_and_filenum:ft_id=" + ft_id + " friend_number=" + friend_number +
+            //       " file_number=" + file_number);
+            set_message_filedb_from_id(orma.selectFromMessage().
+                    filetransfer_idEq(ft_id).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    orderByIdDesc().toList().
+                    get(0).id, filedb_id);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_message_filedb_from_friendnum_and_filenum:EE:" + e.getMessage());
+        }
+    }
+
+    public static void set_message_filedb_from_id(long message_id, long filedb_id)
+    {
+        try
+        {
+            orma.updateMessage().idEq(message_id).filedb_id(filedb_id).execute();
+            // Log.i(TAG, "set_message_filedb_from_id:message_id=" + message_id + " filedb_id=" + filedb_id);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_message_filedb_from_id:EE:" + e.getMessage());
+        }
+    }
+
+    public static void update_single_message_from_ftid(final long filetransfer_id, final boolean force)
+    {
+        try
+        {
+            Thread t = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Message m = orma.selectFromMessage().filetransfer_idEq(
+                                filetransfer_id).orderByIdDesc().toList().get(0);
+
+                        if (m.id != -1)
+                        {
+                            if ((force) || (MainActivity.update_all_messages_global_timestamp +
+                                            MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS < System.currentTimeMillis()))
+                            {
+                                MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
+                                modify_message(m);
+                            }
+                        }
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+                }
+            };
+            t.start();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "update_message_view:EE:" + e.getMessage());
+        }
+    }
+
 }

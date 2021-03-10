@@ -37,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -99,11 +100,16 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INT
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_AFTER_BYTES;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_FILE_DIR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_PREFIX;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_TMP_FILE_DIR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.cache_ft_fos;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_connection_status;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE;
@@ -126,6 +132,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONF
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_AVATAR;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -146,7 +153,7 @@ public class MainActivity extends JFrame
     // --------- global config ---------
     // --------- global config ---------
     final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
-    final static boolean ORMA_TRACE = true; // set "false" for release builds
+    final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
     final static boolean DEBUG_SCREENSHOT = false; // set "false" for release builds
@@ -204,8 +211,8 @@ public class MainActivity extends JFrame
 
     static boolean PREF__X_battery_saving_mode = false;
     static boolean PREF__auto_accept_image = true;
-    static boolean PREF__auto_accept_video = false;
-    static boolean PREF__auto_accept_all_upto = false;
+    static boolean PREF__auto_accept_video = true;
+    static boolean PREF__auto_accept_all_upto = true;
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
@@ -1751,6 +1758,110 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_file_recv_control_cb_method(long friend_number, long file_number, int a_TOX_FILE_CONTROL)
     {
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:008:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        // Log.i(TAG, "file_recv_control:" + friend_number + ":fn==" + file_number + ":" + a_TOX_FILE_CONTROL);
+
+        if (a_TOX_FILE_CONTROL == TOX_FILE_CONTROL_CANCEL.value)
+        {
+            Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_CANCEL");
+            HelperFiletransfer.cancel_filetransfer(friend_number, file_number);
+        }
+        else if (a_TOX_FILE_CONTROL == TOX_FILE_CONTROL_RESUME.value)
+        {
+            Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME");
+
+            try
+            {
+                long ft_id = HelperFiletransfer.get_filetransfer_id_from_friendnum_and_filenum(friend_number,
+                                                                                               file_number);
+                Filetransfer ft_check = orma.selectFromFiletransfer().idEq(ft_id).toList().get(0);
+
+                // -------- DEBUG --------
+                //                List<Filetransfer> ft_res = orma.selectFromFiletransfer().
+                //                        tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friend_number)).
+                //                        orderByIdDesc().
+                //                        limit(30).toList();
+                //                int ii;
+                //                Log.i(TAG, "file_recv_control:SQL:===============================================");
+                //                for (ii = 0; ii < ft_res.size(); ii++)
+                //                {
+                //                    Log.i(TAG, "file_recv_control:SQL:" + ft_res.get(ii));
+                //                }
+                //                Log.i(TAG, "file_recv_control:SQL:===============================================");
+                // -------- DEBUG --------
+
+                if (ft_check.kind == TOX_FILE_KIND_AVATAR.value)
+                {
+                    //Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME::+AVATAR+");
+                    //Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME:ft_id=" + ft_id);
+                    HelperFiletransfer.set_filetransfer_state_from_id(ft_id, TOX_FILE_CONTROL_RESUME.value);
+                    // if outgoing FT set "ft_accepted" to true
+                    HelperFiletransfer.set_filetransfer_accepted_from_id(ft_id);
+                }
+                else
+                {
+                    //Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME::*DATA*");
+                    //Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME:ft_id=" + ft_id);
+                    long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(ft_id, friend_number);
+                    //Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_RESUME:msg_id=" + msg_id);
+                    HelperFiletransfer.set_filetransfer_state_from_id(ft_id, TOX_FILE_CONTROL_RESUME.value);
+                    HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_RESUME.value);
+                    // if outgoing FT set "ft_accepted" to true
+                    HelperFiletransfer.set_filetransfer_accepted_from_id(ft_id);
+                    HelperGeneric.set_message_accepted_from_id(msg_id);
+
+                    // update_all_messages_global(true);
+                    try
+                    {
+                        if (ft_id != -1)
+                        {
+                            HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else if (a_TOX_FILE_CONTROL == TOX_FILE_CONTROL_PAUSE.value)
+        {
+            Log.i(TAG, "file_recv_control:TOX_FILE_CONTROL_PAUSE");
+
+            try
+            {
+                long ft_id = HelperFiletransfer.get_filetransfer_id_from_friendnum_and_filenum(friend_number,
+                                                                                               file_number);
+                long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(ft_id, friend_number);
+                HelperFiletransfer.set_filetransfer_state_from_id(ft_id, TOX_FILE_CONTROL_PAUSE.value);
+                HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_PAUSE.value);
+
+                // update_all_messages_global(true);
+                try
+                {
+                    if (ft_id != -1)
+                    {
+                        HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+        }
     }
 
     static void android_tox_callback_file_chunk_request_cb_method(long friend_number, long file_number, long position, long length)
@@ -1772,6 +1883,7 @@ public class MainActivity extends JFrame
         {
             try
             {
+                // TODO: cancel all incoming avatar for now
                 tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
             }
             catch (Exception e)
@@ -1786,7 +1898,7 @@ public class MainActivity extends JFrame
                                                                                  HelperFriend.tox_friend_get_public_key__wrapper(
                                                                                          friend_number));
 
-            Log.i(TAG, "file_recv:incoming regular file");
+            Log.i(TAG, "file_recv:incoming regular file:file_number=" + file_number);
             Filetransfer f = new Filetransfer();
             f.tox_public_key_string = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
             f.direction = TRIFA_FT_DIRECTION_INCOMING.value;
@@ -1800,6 +1912,7 @@ public class MainActivity extends JFrame
             f.ft_outgoing_started = false; // dummy for incoming FTs, but still set it here
             f.current_position = 0;
             long ft_id = HelperFiletransfer.insert_into_filetransfer_db(f);
+            Log.i(TAG, "file_recv:ft_id=" + ft_id);
             f.id = ft_id;
             // add FT message to UI
             Message m = new Message();
@@ -1828,6 +1941,8 @@ public class MainActivity extends JFrame
                 new_msg_id = HelperMessage.insert_into_message_db(m, false);
                 m.id = new_msg_id;
             }
+
+            Log.i(TAG, "new_msg_id=" + new_msg_id);
 
             f.message_id = new_msg_id;
             HelperFiletransfer.update_filetransfer_db_full(f);
@@ -1875,6 +1990,247 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_file_recv_chunk_cb_method(long friend_number, long file_number, long position, byte[] data, long length)
     {
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:011:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        // Log.i(TAG, "file_recv_chunk:" + friend_number + ":fn==" + file_number + ":position=" + position + ":length=" + length + ":data len=" + data.length + ":data=" + data);
+        // Log.i(TAG, "file_recv_chunk:--START--");
+        // Log.i(TAG, "file_recv_chunk:" + friend_number + ":" + file_number + ":" + position + ":" + length);
+        Filetransfer f = null;
+
+        try
+        {
+            f = orma.selectFromFiletransfer().
+                    directionEq(TRIFA_FT_DIRECTION_INCOMING.value).
+                    file_numberEq(file_number).
+                    tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    orderByIdDesc().toList().
+                    get(0);
+
+            // Log.i(TAG, "file_recv_chunk:filesize==" + f.filesize);
+
+            if (position == 0)
+            {
+                // Log.i(TAG, "file_recv_chunk:START-O-F:filesize==" + f.filesize);
+
+                // file start. just to be sure, make directories
+                File f1 = new File(f.path_name + "/" + f.file_name);
+                File f2 = new File(f1.getParent());
+                // Log.i(TAG, "file_recv_chunk:f1=" + f1.getAbsolutePath());
+                // Log.i(TAG, "file_recv_chunk:f2=" + f2.getAbsolutePath());
+                f2.mkdirs();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (length == 0)
+        {
+            Log.i(TAG, "file_recv_chunk:END-O-F:filesize==" + f.filesize);
+
+            try
+            {
+                Log.i(TAG, "file_recv_chunk:file fully received");
+
+                if (VFS_ENCRYPT)
+                {
+                    FileOutputStream fos = null;
+                    fos = cache_ft_fos.get(
+                            HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
+
+                    if (f.fos_open)
+                    {
+                        try
+                        {
+                            fos.close();
+                        }
+                        catch (Exception e3)
+                        {
+                            Log.i(TAG, "file_recv_chunk:EE3:" + e3.getMessage());
+                        }
+                    }
+
+                    f.fos_open = false;
+                }
+
+                HelperFiletransfer.update_filetransfer_db_fos_open(f);
+                HelperGeneric.move_tmp_file_to_real_file(f.path_name, f.file_name,
+                                                         VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string +
+                                                         "/", f.file_name);
+                long filedb_id = -1;
+
+                if (f.kind != TOX_FILE_KIND_AVATAR.value)
+                {
+                    // put into "FileDB" table
+                    FileDB file_ = new FileDB();
+                    file_.kind = f.kind;
+                    file_.direction = f.direction;
+                    file_.tox_public_key_string = f.tox_public_key_string;
+                    file_.path_name = VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string + "/";
+                    file_.file_name = f.file_name;
+                    file_.filesize = f.filesize;
+                    long row_id = orma.insertIntoFileDB(file_);
+                    // Log.i(TAG, "file_recv_chunk:FileDB:row_id=" + row_id);
+                    filedb_id = orma.selectFromFileDB().tox_public_key_stringEq(f.tox_public_key_string).file_nameEq(
+                            f.file_name).orderByIdDesc().toList().get(0).id;
+                    // Log.i(TAG, "file_recv_chunk:FileDB:filedb_id=" + filedb_id);
+                }
+
+                // Log.i(TAG, "file_recv_chunk:kind=" + f.kind);
+
+                if (f.kind == TOX_FILE_KIND_AVATAR.value)
+                {
+                    // we have received an avatar image for a friend. and the filetransfer is complete here
+                    //HelperFriend.set_friend_avatar(HelperFriend.tox_friend_get_public_key__wrapper(friend_number),
+                    //                               VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string + "/",
+                    //                               f.file_name);
+                }
+                else
+                {
+                    // Log.i(TAG, "file_recv_chunk:file_READY:001:f.id=" + f.id);
+                    long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(f.id, friend_number);
+                    // Log.i(TAG, "file_recv_chunk:file_READY:001a:msg_id=" + msg_id);
+                    HelperMessage.update_message_in_db_filename_fullpath_friendnum_and_filenum(friend_number,
+                                                                                               file_number, VFS_PREFIX +
+                                                                                                            VFS_FILE_DIR +
+                                                                                                            "/" +
+                                                                                                            f.tox_public_key_string +
+                                                                                                            "/" +
+                                                                                                            f.file_name);
+                    HelperMessage.set_message_state_from_friendnum_and_filenum(friend_number, file_number,
+                                                                               TOX_FILE_CONTROL_CANCEL.value);
+                    HelperMessage.set_message_filedb_from_friendnum_and_filenum(friend_number, file_number, filedb_id);
+                    HelperFiletransfer.set_filetransfer_for_message_from_friendnum_and_filenum(friend_number,
+                                                                                               file_number, -1);
+
+                    try
+                    {
+                        // Log.i(TAG, "file_recv_chunk:file_READY:002");
+
+                        if (f.id != -1)
+                        {
+                            // Log.i(TAG, "file_recv_chunk:file_READY:003:f.id=" + f.id + " msg_id=" + msg_id);
+                            HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.i(TAG, "file_recv_chunk:file_READY:EE:" + e.getMessage());
+                    }
+                }
+
+                // remove FT from DB
+                HelperFiletransfer.delete_filetransfers_from_friendnum_and_filenum(friend_number, file_number);
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+                Log.i(TAG, "file_recv_chunk:EE2:" + e2.getMessage());
+            }
+        }
+        else // normal chunck recevied ---------- (NOT start, and NOT end)
+        {
+            try
+            {
+                if (VFS_ENCRYPT)
+                {
+                    FileOutputStream fos = null;
+
+                    if (!f.fos_open)
+                    {
+                        fos = new FileOutputStream(f.path_name + "/" + f.file_name);
+                        // Log.i(TAG, "file_recv_chunk:new fos[1]=" + fos + " file=" + f.path_name + "/" + f.file_name);
+                        cache_ft_fos.put(
+                                HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number,
+                                fos);
+                        f.fos_open = true;
+                        HelperFiletransfer.update_filetransfer_db_fos_open(f);
+                    }
+                    else
+                    {
+                        fos = cache_ft_fos.get(
+                                HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number);
+
+                        if (fos == null)
+                        {
+                            fos = new FileOutputStream(f.path_name + "/" + f.file_name);
+                            // Log.i(TAG,
+                            //       "file_recv_chunk:new fos[2]=" + fos + " file=" + f.path_name + "/" + f.file_name);
+                            cache_ft_fos.put(
+                                    HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + ":" + file_number,
+                                    fos);
+                            f.fos_open = true;
+                            HelperFiletransfer.update_filetransfer_db_fos_open(f);
+                        }
+
+                        // Log.i(TAG, "file_recv_chunk:fos=" + fos + " file=" + f.path_name + "/" + f.file_name);
+                    }
+
+                    // Log.i(TAG, "file_recv_chunk:fos:" + fos);
+                    fos.write(data);
+                }
+
+                if (f.filesize < UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES)
+                {
+                    if ((f.current_position + UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES) < position)
+                    {
+                        f.current_position = position;
+                        Log.i(TAG, "file_recv_chunk:filesize==:2:" + f.filesize);
+                        HelperFiletransfer.update_filetransfer_db_current_position(f);
+
+                        if (f.kind != TOX_FILE_KIND_AVATAR.value)
+                        {
+                            // update_all_messages_global(false);
+                            try
+                            {
+                                if (f.id != -1)
+                                {
+                                    HelperMessage.update_single_message_from_ftid(f.id, false);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if ((f.current_position + UPDATE_MESSAGE_PROGRESS_AFTER_BYTES) < position)
+                    {
+                        f.current_position = position;
+                        // Log.i(TAG, "file_recv_chunk:filesize==:2:" + f.filesize);
+                        HelperFiletransfer.update_filetransfer_db_current_position(f);
+
+                        if (f.kind != TOX_FILE_KIND_AVATAR.value)
+                        {
+                            // update_all_messages_global(false);
+                            try
+                            {
+                                if (f.id != -1)
+                                {
+                                    HelperMessage.update_single_message_from_ftid(f.id, false);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "file_recv_chunk:EE1:" + e.getMessage());
+            }
+        }
+
+        // Log.i(TAG, "file_recv_chunk:--END--");
     }
 
     static void android_tox_log_cb_method(int a_TOX_LOG_LEVEL, String file, long line, String function, String message)

@@ -242,5 +242,32 @@ public class OrmaDatabase
         ret.sql_start = "UPDATE Filetransfer";
         return ret;
     }
+
+    public long insertIntoFileDB(FileDB f)
+    {
+        return f.insert();
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM FileDB ...}.
+     */
+    public FileDB selectFromFileDB()
+    {
+        FileDB ret = new FileDB();
+        ret.sql_start = "SELECT * FROM FileDB";
+        return ret;
+    }
+
+    public Filetransfer deleteFromFiletransfer()
+    {
+        Filetransfer ret = new Filetransfer();
+        ret.sql_start = "DELETE FROM Filetransfer";
+        return ret;
+    }
+
+    public long insertIntoMessage(Message m)
+    {
+        return m.insert();
+    }
 }
 

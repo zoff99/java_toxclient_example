@@ -27,6 +27,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
@@ -35,6 +36,8 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
+import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
 
 public class Renderer_MessageList extends JPanel implements ListCellRenderer
@@ -44,11 +47,13 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
     final JLabel m_date_time = new JLabel();
     final JTextArea m_text = new JTextArea();
     final JPanel date_line = new JPanel(true);
+    final JProgressBar progress_bar = new JProgressBar();
 
     Renderer_MessageList()
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        progress_bar.setLayout(new FlowLayout(FlowLayout.LEFT));
     }
 
     @Override
@@ -144,6 +149,30 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         date_line.add(m_date_time);
         add(m_text);
         add(date_line);
+
+        if (m.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+        {
+            progress_bar.setMaximum(1000);
+
+            try
+            {
+                Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
+                float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
+                //Log.i(TAG,
+                //      "ftid=" + ft.id + " progress:" + progress_1000 + " ft.current_position=" + ft.current_position +
+                //      " ft.filesize=" + ft.filesize);
+                progress_bar.setValue((int) progress_1000);
+            }
+            catch (Exception e)
+            {
+                // e.printStackTrace();
+            }
+            add(progress_bar);
+        }
+        else
+        {
+            remove(progress_bar);
+        }
 
         return this;
     }

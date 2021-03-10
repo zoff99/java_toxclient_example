@@ -24,6 +24,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -173,7 +175,10 @@ public class Message
             Statement statement = sqldb.createStatement();
 
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            // Log.i(TAG, "sql=" + sql);
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
             ResultSet rs = statement.executeQuery(sql);
             while (rs.next())
             {
@@ -217,6 +222,87 @@ public class Message
         }
 
         return list;
+    }
+
+
+    public long insert()
+    {
+        long ret = -1;
+
+        try
+        {
+            // @formatter:off
+            Statement statement = sqldb.createStatement();
+
+            final String sql_str="insert into Message" +
+                                 "(" +
+                                 "message_id," +
+                                 "tox_friendpubkey," +
+                                 "direction," +
+                                 "TOX_MESSAGE_TYPE," +
+                                 "TRIFA_MESSAGE_TYPE," +
+                                 "state," +
+                                 "ft_accepted," +
+                                 "ft_outgoing_started," +
+                                 "filedb_id," +
+                                 "filetransfer_id," +
+                                 "sent_timestamp," +
+                                 "sent_timestamp_ms," +
+                                 "rcvd_timestamp," +
+                                 "rcvd_timestamp_ms," +
+                                 "read," +
+                                 "send_retries," +
+                                 "is_new," +
+                                 "text," +
+                                 "filename_fullpath," +
+                                 "msg_id_hash," +
+                                 "msg_version," +
+                                 "raw_msgv2_bytes," +
+                                 "resend_count" +
+                                 ")" +
+                                 "values" +
+                                 "(" +
+                                 "'"+s(""+this.message_id)+"'," +
+                                 "'"+s(this.tox_friendpubkey)+"'," +
+                                 "'"+s(""+this.direction)+"'," +
+                                 "'"+s(""+this.TOX_MESSAGE_TYPE)+"'," +
+                                 "'"+s(""+this.TRIFA_MESSAGE_TYPE)+"'," +
+                                 "'"+s(""+this.state)+"'," +
+                                 "'"+b(this.ft_accepted)+"'," +
+                                 "'"+b(this.ft_outgoing_started)+"'," +
+                                 "'"+s(""+this.filedb_id)+"'," +
+                                 "'"+s(""+this.filetransfer_id)+"'," +
+                                 "'"+s(""+this.sent_timestamp)+"'," +
+                                 "'"+s(""+this.sent_timestamp_ms)+"'," +
+                                 "'"+s(""+this.rcvd_timestamp)+"'," +
+                                 "'"+s(""+this.rcvd_timestamp_ms)+"'," +
+                                 "'"+b(this.read)+"'," +
+                                 "'"+s(""+this.send_retries)+"'," +
+                                 "'"+b(this.is_new)+"'," +
+                                 "'"+s(this.text)+"'," +
+                                 "'"+s(this.filename_fullpath)+"'," +
+                                 "'"+s(this.msg_id_hash)+"'," +
+                                 "'"+s(""+this.msg_version)+"'," +
+                                 "'"+s(this.raw_msgv2_bytes)+"'," +
+                                 "'"+s(""+this.resend_count)+"'" +
+                                 ")";
+
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql_str);
+            }
+
+            statement.execute(sql_str);
+            ret = get_last_rowid(statement);
+            // @formatter:on
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 
     public Message tox_friendpubkeyEq(String tox_friendpubkey)
@@ -303,7 +389,10 @@ public class Message
         {
             Statement statement = sqldb.createStatement();
             final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            // Log.i(TAG, "sql=" + sql);
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
             statement.executeUpdate(sql);
         }
         catch (Exception e2)
@@ -498,4 +587,40 @@ public class Message
         this.sql_set = this.sql_set + " state='" + s(state) + "' ";
         return this;
     }
+
+    public Message filetransfer_idEq(long filetransfer_id)
+    {
+        this.sql_where = this.sql_where + " and  filetransfer_id='" + s(filetransfer_id) + "' ";
+        return this;
+    }
+
+    public Message filedb_id(long filedb_id)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " filedb_id='" + s(filedb_id) + "' ";
+        return this;
+    }
+
+    public Message filetransfer_id(long filetransfer_id)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " filetransfer_id='" + s(filetransfer_id) + "' ";
+        return this;
+    }
+
+
 }

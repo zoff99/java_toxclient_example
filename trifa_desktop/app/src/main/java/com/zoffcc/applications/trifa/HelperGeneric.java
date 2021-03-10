@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -203,10 +204,11 @@ public class HelperGeneric
             result.msg_num = (Long.MAX_VALUE - 1);
             result.msg_v2 = true;
             ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
-            result.msg_hash_hex = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(), msg_id_buffer_compat.limit());
+            result.msg_hash_hex = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(),
+                                             msg_id_buffer_compat.limit());
             ByteBufferCompat raw_message_buf_compat = new ByteBufferCompat(raw_message_buf);
-            result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(), raw_message_buf_compat.arrayOffset(),
-                                                    raw_message_length_int);
+            result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(),
+                                                    raw_message_buf_compat.arrayOffset(), raw_message_length_int);
             Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
                        result.raw_message_buf_hex);
             return result;
@@ -792,6 +794,27 @@ public class HelperGeneric
         }
         catch (Exception e)
         {
+            e.printStackTrace();
+        }
+    }
+
+    static void move_tmp_file_to_real_file(String src_path_name, String src_file_name, String dst_path_name, String dst_file_name)
+    {
+        // Log.i(TAG, "move_tmp_file_to_real_file:" + src_path_name + "/" + src_file_name + " -> " + dst_path_name + "/" +
+        //           dst_file_name);
+        try
+        {
+            File f1 = new File(src_path_name + "/" + src_file_name);
+            File f2 = new File(dst_path_name + "/" + dst_file_name);
+            File dst_dir = new File(dst_path_name + "/");
+            dst_dir.mkdirs();
+            f1.renameTo(f2);
+
+            Log.i(TAG, "move_tmp_file_to_real_file:OK");
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "move_tmp_file_to_real_file:EE:" + e.getMessage());
             e.printStackTrace();
         }
     }

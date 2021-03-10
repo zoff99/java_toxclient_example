@@ -20,6 +20,8 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class TRIFAGlobals
@@ -93,6 +95,15 @@ public class TRIFAGlobals
 
     final static long AVATAR_INCOMING_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
     final static long AVATAR_SELF_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
+
+    // ---- lookup cache ----
+    static Map<String, java.io.FileOutputStream> cache_ft_fos = new HashMap<String, java.io.FileOutputStream>();
+    static Map<String, java.io.FileOutputStream> cache_ft_fos_normal = new HashMap<String, java.io.FileOutputStream>();
+    // ---- lookup cache ----
+
+    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES = 250000L; // 250 kBytes // update FT and progress bars every XX bytes
+    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES = 15000L; // 15 kBytes
+    static final long UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES = 250000L; // 250 kByzes, less than this in bytes is a small file
 
     public static enum TRIFA_FT_DIRECTION
     {
