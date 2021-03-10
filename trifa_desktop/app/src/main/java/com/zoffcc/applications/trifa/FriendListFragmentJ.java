@@ -19,15 +19,27 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -50,6 +62,7 @@ public class FriendListFragmentJ extends JPanel
     private final JList<CombinedFriendsAndConferences> friends_and_confs_list;
     static DefaultListModel<CombinedFriendsAndConferences> friends_and_confs_list_model;
     JScrollPane FriendScrollPane;
+    static JPopupMenu popup;
 
     static Boolean in_update_data = false;
     static final Boolean in_update_data_lock = false;
@@ -63,6 +76,30 @@ public class FriendListFragmentJ extends JPanel
         friends_and_confs_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         friends_and_confs_list.setSelectedIndex(0);
         friends_and_confs_list.setCellRenderer(new Renderer_FriendsAndConfsList());
+
+        popup = new JPopupMenu();
+
+        Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popup.getForeground());
+        TitledBorder labelBorder = BorderFactory.createTitledBorder(titleUnderline, "...", TitledBorder.CENTER,
+                                                                    TitledBorder.ABOVE_TOP, popup.getFont(),
+                                                                    popup.getForeground());
+        popup.setBorder(labelBorder);
+
+        JMenuItem menuItem = new JMenuItem(MainActivity.lo.getString("delete_friend"));
+        menuItem.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ev)
+            {
+                JMenuItem mitem = (JMenuItem) ev.getSource();
+                Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                Log.i(TAG, "delete friend:name=" + b.getSelectedValue().friend_item.name);
+                Log.i(TAG,
+                      "delete friend:tox_public_key_string=" + b.getSelectedValue().friend_item.tox_public_key_string);
+            }
+        });
+        popup.add(menuItem);
 
         friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
         {
@@ -127,6 +164,33 @@ public class FriendListFragmentJ extends JPanel
 
         });
 
+        friends_and_confs_list.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(final MouseEvent e)
+            {
+                final Point point = e.getPoint();
+                final int index = friends_and_confs_list.locationToIndex(point);
+                Log.i(TAG, "mousePressed");
+                if (index != -1)
+                {
+                    show_popup_menu(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(final MouseEvent e)
+            {
+                final Point point = e.getPoint();
+                final int index = friends_and_confs_list.locationToIndex(point);
+                Log.i(TAG, "mouseReleased");
+                if (index != -1)
+                {
+                    show_popup_menu(e);
+                }
+            }
+        });
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         FriendScrollPane = new JScrollPane();
@@ -134,6 +198,50 @@ public class FriendListFragmentJ extends JPanel
         FriendScrollPane.setViewportView(friends_and_confs_list);
 
         add_all_friends_clear(1);
+    }
+
+    public void show_popup_menu(MouseEvent e)
+    {
+        if (e.isPopupTrigger())
+        {
+            final int index = friends_and_confs_list.locationToIndex(e.getPoint());
+
+
+            EventQueue.invokeLater(() -> {
+
+                TitledBorder labelBorder = null;
+                try
+                {
+                    final String name = friends_and_confs_list_model.getElementAt(index).friend_item.name;
+                    String name_shortened = name;
+                    if ((name == null) || (name.length() == 0))
+                    {
+                        name_shortened = "...";
+                    }
+                    else if (name.length() > 10)
+                    {
+                        name_shortened = name.substring(0, 10);
+                    }
+                    Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popup.getForeground());
+                    labelBorder = BorderFactory.createTitledBorder(titleUnderline, name_shortened, TitledBorder.CENTER,
+                                                                   TitledBorder.ABOVE_TOP, popup.getFont(),
+                                                                   popup.getForeground());
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+                friends_and_confs_list.setSelectedIndex(index);
+                //if (labelBorder != null)
+                //{
+                popup.setBorder(labelBorder);
+                //}
+                popup.show(friends_and_confs_list, e.getX(), e.getY());
+                popup.revalidate();
+                popup.getParent().revalidate();
+                popup.repaint();
+            });
+        }
     }
 
     synchronized static void add_all_friends_clear(final int delay)
