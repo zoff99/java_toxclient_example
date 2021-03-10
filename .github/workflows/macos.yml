@@ -70,6 +70,7 @@ jobs:
            screencapture -T 45 -x -t png /Users/runner/screen05.png &
            screencapture -T 120 -x -t png /Users/runner/screen06.png &
            screencapture -T 240 -x -t png /Users/runner/screen07.png &
+           screencapture -T 320 -x -t png /Users/runner/screen08.png &
            export _HOME_
            cd "$_HOME_"
            cd "$_SRC_"
