@@ -24,7 +24,7 @@ jobs:
         shell: bash
 
       - name: java version with path
-        run: set -x ; set PATH=%PATH%;"$JAVA_HOME_11_X64/bin" ; java.exe -version
+        run: set -x ; set PATH="%PATH%;$JAVA_HOME_11_X64/bin" ; java.exe -version
         shell: bash
 
       - name: java compile
