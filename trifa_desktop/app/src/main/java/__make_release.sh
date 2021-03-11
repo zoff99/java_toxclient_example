@@ -16,6 +16,7 @@ cd $_HOME_
 cp -a \
   assets \
   com \
+  org \
   i18n \
   \
   bridj-0.7.0.jar \
