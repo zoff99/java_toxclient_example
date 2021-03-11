@@ -22,7 +22,7 @@ jobs:
         shell: cmd
 
       - name: java version
-        run:  "$JAVA_HOME_11_X64/bin/java.exe" -version
+        run: "$JAVA_HOME_11_X64/bin/java.exe" -version
         shell: bash
 
       - name: java compile
