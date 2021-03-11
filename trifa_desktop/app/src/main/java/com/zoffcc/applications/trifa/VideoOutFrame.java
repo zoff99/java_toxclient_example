@@ -28,7 +28,6 @@ import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
-import com.github.sarxos.webcam.ds.ffmpegcli.FFmpegCliDriver;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics2D;
