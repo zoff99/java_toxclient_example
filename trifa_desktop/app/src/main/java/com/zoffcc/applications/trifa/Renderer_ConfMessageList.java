@@ -105,7 +105,7 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
         final String unicode_INCOMING_ENVELOPE = "\uD83D\uDCE8";
         final String unicode_Mobile_Phone_With_Arrow = "\uD83D\uDCF2";
         final String unicode_MEMO = "\uD83D\uDCDD";
-        final String unicode_ARROW_LEFT = "←";
+        final String unicode_ARROW_LEFT = "\u2190";
 
         String date_time_text = "";
 
