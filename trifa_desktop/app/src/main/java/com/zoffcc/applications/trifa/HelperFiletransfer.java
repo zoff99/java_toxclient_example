@@ -154,6 +154,28 @@ public class HelperFiletransfer
                 execute();
     }
 
+    public static boolean file_is_image(String filename_with_path)
+    {
+        try
+        {
+            String mimeType = URLConnection.guessContentTypeFromName(filename_with_path);
+
+            if (mimeType != null)
+            {
+                if (mimeType.startsWith("image"))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public static boolean check_auto_accept_incoming_filetransfer(Message message)
     {
         try

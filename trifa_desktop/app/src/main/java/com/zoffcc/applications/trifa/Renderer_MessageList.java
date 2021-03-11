@@ -19,11 +19,18 @@
 
 package com.zoffcc.applications.trifa;
 
+import org.imgscalr.Scalr;
+
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -33,6 +40,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
@@ -48,12 +56,20 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
     final JTextArea m_text = new JTextArea();
     final JPanel date_line = new JPanel(true);
     final JProgressBar progress_bar = new JProgressBar();
+    final ImageIcon message_image = new ImageIcon();
+    final JPanel message_image_label_line = new JPanel(true);
+    final JLabel message_image_label = new JLabel();
 
     Renderer_MessageList()
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        message_image_label_line.setLayout(new FlowLayout(FlowLayout.LEFT));
         progress_bar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        // message_image_label.setHorizontalAlignment(SwingConstants.LEFT);
+        message_image_label.setIconTextGap(0);
+        //message_image_label.setMaximumSize(new Dimension(80, 80));
+        //message_image_label.setPreferredSize(new Dimension(80, 80));
     }
 
     @Override
@@ -148,23 +164,60 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         date_line.add(m_date_time);
         add(m_text);
-        add(date_line);
 
         progress_bar.setValue(0);
         progress_bar.setIndeterminate(false);
 
+        message_image_label.setIcon(null);
+        remove(message_image_label_line);
+
         if (m.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
         {
-            add(progress_bar);
-            progress_bar.setMaximum(1000);
-
             if (m.filedb_id > 0)
             {
                 // FT complete, file is here
                 progress_bar.setValue(1000);
+
+                if (file_is_image(m.filename_fullpath))
+                {
+                    // show image on component
+
+                    try
+                    {
+                        BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
+                        Dimension newMaxSize = new Dimension(80, 80);
+                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.QUALITY, newMaxSize.width,
+                                                                newMaxSize.height);
+                        message_image.setImage(resizedImg);
+
+                        if (m.direction == 0)
+                        {
+                            message_image_label_line.setBackground(CHAT_MSG_BG_OTHER_COLOR);
+                        }
+                        else
+                        {
+                            message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
+                        }
+
+                        message_image_label.setIcon(message_image);
+                        add(message_image_label_line);
+                        message_image_label_line.add(message_image_label);
+                        message_image_label_line.setBorder(new EmptyBorder(new Insets(-5, -5, -5, -5)));
+                    }
+                    catch (Exception ie)
+                    {
+                    }
+                }
+
+                add(progress_bar);
+                progress_bar.setMaximum(1000);
+
             }
             else
             {
+                add(progress_bar);
+                progress_bar.setMaximum(1000);
+
                 try
                 {
                     Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
@@ -193,6 +246,8 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         {
             remove(progress_bar);
         }
+
+        add(date_line);
 
         return this;
     }
