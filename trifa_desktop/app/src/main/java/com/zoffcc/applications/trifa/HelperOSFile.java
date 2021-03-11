@@ -19,6 +19,9 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Desktop;
+import java.io.File;
+
 public class HelperOSFile
 {
     private static final String TAG = "trifa.Hlp.HelperOSFile";
@@ -32,7 +35,7 @@ public class HelperOSFile
             Log.i(TAG, "run_file:OS:WINDOWS");
             try
             {
-                Runtime.getRuntime().exec("" + filename_with_path);
+                Desktop.getDesktop().open(new File(filename_with_path.replace("/", "\\")));
                 return;
             }
             catch (Exception e)
@@ -45,7 +48,8 @@ public class HelperOSFile
             Log.i(TAG, "run_file:OS:LINUX");
             try
             {
-                Runtime.getRuntime().exec("xdg-open " + filename_with_path);
+                Desktop.getDesktop().open(new File(filename_with_path));
+                // Runtime.getRuntime().exec("xdg-open " + filename_with_path);
                 return;
             }
             catch (Exception e)
@@ -58,7 +62,8 @@ public class HelperOSFile
             Log.i(TAG, "run_file:OS:MACOS");
             try
             {
-                Runtime.getRuntime().exec("xdg-open " + filename_with_path);
+                Desktop.getDesktop().open(new File(filename_with_path));
+                // Runtime.getRuntime().exec("xdg-open " + filename_with_path);
                 return;
             }
             catch (Exception e)
