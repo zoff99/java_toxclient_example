@@ -66,7 +66,7 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         InputStream out = process.getInputStream();
 
         final int SIZE = arraySize();
-        int CHUNK_SIZE = 16484;
+        int CHUNK_SIZE = 16384;
 
         int cursor = 0;
         byte[] buffer = new byte[SIZE];
