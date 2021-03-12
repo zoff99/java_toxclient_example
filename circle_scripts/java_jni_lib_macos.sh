@@ -51,11 +51,11 @@ echo "JAVADIR1------------------"
 find /usr -name 'jni.h'
 echo "JAVADIR1------------------"
 
-# /usr/local/Cellar/openjdk/15.0.1/include/jni.h
-# /usr/local/Cellar/openjdk/15.0.1/include/jni_md.h
+# /usr/local/Cellar/openjdk/15.0.2/include/jni.h
+# /usr/local/Cellar/openjdk/15.0.2/include/jni_md.h
 
-# /usr/local/Cellar/openjdk/15.0.1/libexec/openjdk.jdk/Contents/Home/include/jni.h
-# /usr/local/Cellar/openjdk/15.0.1/libexec/openjdk.jdk/Contents/Home/include/darwin/jni_md.h
+# /usr/local/Cellar/openjdk/15.0.2/libexec/openjdk.jdk/Contents/Home/include/jni.h
+# /usr/local/Cellar/openjdk/15.0.2/libexec/openjdk.jdk/Contents/Home/include/darwin/jni_md.h
 
 echo "JAVADIR2------------------"
 find /usr -name 'jni_md.h'
@@ -66,8 +66,8 @@ dirname $(find /usr -name 'jni_md.h' 2>/dev/null|head -1) > /tmp/xx2
 export JAVADIR1=$(cat /tmp/xx1)
 export JAVADIR2=$(cat /tmp/xx2)
 
-export JAVADIR1="/usr/local/Cellar/openjdk/15.0.1/include"
-export JAVADIR2="/usr/local/Cellar/openjdk/15.0.1/include"
+export JAVADIR1="/usr/local/Cellar/openjdk/15.0.2/include"
+export JAVADIR2="/usr/local/Cellar/openjdk/15.0.2/include"
 
 echo "JAVADIR1:""$JAVADIR1"
 echo "JAVADIR2:""$JAVADIR2"
