@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TRIfA
+StartupWMClass=normal_trifa
+Comment=A Desktop Tox client
+TryExec=do_run.sh
+Exec=do_run.sh
+Icon=trifa_icon.png
+Categories=InstantMessaging;Network;
+Terminal=false
+MimeType=x-scheme-handler/tox;
