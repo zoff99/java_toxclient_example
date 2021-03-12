@@ -34,7 +34,8 @@ cp -a \
   do_run.bat \
   do_run.sh \
   \
-  \
+  trifa.desktop \
+  trifa_icon.png \
   \
   release/
 
