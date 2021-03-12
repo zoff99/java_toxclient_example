@@ -142,7 +142,6 @@ import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
-import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 import static java.awt.Font.PLAIN;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
@@ -1107,6 +1106,8 @@ public class MainActivity extends JFrame
     public static native int toxav_video_send_frame_uv_reversed(long friendnum, int frame_width_px, int frame_height_px);
 
     public static native int toxav_video_send_frame(long friendnum, int frame_width_px, int frame_height_px);
+
+    public static native int toxav_video_send_frame_age(long friendnum, int frame_width_px, int frame_height_px, int age_ms);
 
     public static native int toxav_video_send_frame_h264(long friendnum, int frame_width_px, int frame_height_px, long data_len);
 

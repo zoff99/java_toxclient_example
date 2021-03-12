@@ -55,7 +55,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_call_control;
-import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame_age;
 import static com.zoffcc.applications.trifa.MainActivity.video_buffer_2;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
@@ -357,8 +357,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     {
         try
         {
-            //final long ts0 = System.currentTimeMillis();
             // Log.i(TAG, "webcam_image:captured:001");
+            final long ts0 = System.currentTimeMillis();
             final BufferedImage buf = we.getImage();
             if (buf != null)
             {
@@ -430,9 +430,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                     //Log.i(TAG, "webcam_image:captured:002:004:" + (System.currentTimeMillis() - ts1));
                                     video_buffer_2.put(b, 0, len);
                                     //Log.i(TAG, "webcam_image:captured:002:005:" + (System.currentTimeMillis() - ts1));
-                                    int res = toxav_video_send_frame(
+                                    int age = (int) (System.currentTimeMillis() - ts0);
+                                    if ((age < 0) || (age > 100))
+                                    {
+                                        age = 0;
+                                    }
+                                    int res = toxav_video_send_frame_age(
                                             tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), buf.getWidth(),
-                                            buf.getHeight());
+                                            buf.getHeight(), age);
                                     //Log.i(TAG, "webcam_image:captured:002:006:" + (System.currentTimeMillis() - ts1));
                                     // Log.i(TAG, "webcam_image:captured:006:fn=" +
                                     //            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) + " res=" + res);
