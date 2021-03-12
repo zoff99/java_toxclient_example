@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
@@ -35,8 +36,10 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -105,9 +108,19 @@ public class ConferenceMessageListFragmentJ extends JPanel
                     if (cellBounds.y + insets.top <= point.y &&
                         point.y <= cellBounds.y + cellBounds.height - insets.bottom)
                     {
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text),
-                                                                                     null);
-                        Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+
+
+                        if (SwingUtilities.isLeftMouseButton(e))
+                        {
+                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                                    new StringSelection(element.text), null);
+                            Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                        }
+                        else
+                        {
+                            Log.i(TAG, "popup dialog");
+                            textAreaDialog(null, element.text, "Message");
+                        }
                     }
                     else
                     {
@@ -348,4 +361,27 @@ public class ConferenceMessageListFragmentJ extends JPanel
         }
     }
 
+    public static String textAreaDialog(Object obj, String text, String title)
+    {
+        if (title == null)
+        {
+            title = "Your input";
+        }
+        JTextArea textArea = new JTextArea(text);
+        textArea.setColumns(30);
+        textArea.setRows(10);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setSize(textArea.getPreferredSize().width, textArea.getPreferredSize().height);
+        int ret = JOptionPane.showConfirmDialog((Component) obj, new JScrollPane(textArea), title,
+                                                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ret == 0)
+        {
+            return textArea.getText();
+        }
+        else
+        {
+        }
+        return null;
+    }
 }
