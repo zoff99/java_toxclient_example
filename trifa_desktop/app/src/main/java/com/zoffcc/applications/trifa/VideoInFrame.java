@@ -198,7 +198,7 @@ public class VideoInFrame extends JFrame
     static void on_call_started_actions()
     {
         Log.i(TAG, "on_call_started_actions");
-        if (screengrab_active)
+        if (screengrab_active == 1)
         {
             final Thread t_set_bitrates = new Thread()
             {

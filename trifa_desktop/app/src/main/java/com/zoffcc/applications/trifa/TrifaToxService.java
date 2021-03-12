@@ -106,11 +106,17 @@ public class TrifaToxService
                 // --------------------------------------------------
                 // --- wait for UI to finish layouting
                 // --------------------------------------------------
+                long count_msgs = 0;
+                final long count_msgs_max = 20;
                 while ((MainFrame == null) || (!MainFrame.isShowing()))
                 {
                     try
                     {
-                        Log.i(TAG, "waiting for UI to finish layout ...");
+                        if (count_msgs < count_msgs_max)
+                        {
+                            Log.i(TAG, "waiting for UI to finish layout ...");
+                            count_msgs++;
+                        }
                         Thread.sleep(30);
                     }
                     catch (Exception e)

@@ -28,6 +28,8 @@ import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
+import com.github.sarxos.webcam.ds.dummy.WebcamDummyDriver;
 import com.github.sarxos.webcam.ds.ffmpegcli.FFmpegScreenDriver;
 
 import java.awt.BorderLayout;
@@ -53,6 +55,7 @@ import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.VideoOutFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_call_control;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame_age;
@@ -79,6 +82,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     static JButton VideoCallStartButton = null;
     static JButton VideoCallStopButton = null;
     static JPanel ButtonPanel = null;
+    static JButton VideoToggleScreengrab = null;
     private static Webcam webcam = null;
     private static BufferedImage IMAGE_FRAME = null;
     private static final String VIDEO_OVERLAY_ASSET_NAME = "video_overlay.png";
@@ -89,10 +93,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public final static int width_screengrab = 1920; // 1280;
     public final static int height_screengrab = 1080; // 720;
 
-    public static boolean screengrab_active = true;
+    public static int screengrab_active = 0;
     final static Semaphore semaphore_video_out_convert = new Semaphore(1);
     static int semaphore_video_out_convert_active_threads = 0;
     static int semaphore_video_out_convert_max_active_threads = 2;
+
+    final static String DRIVER_DEFAULT = "default";
+    final static String DRIVER_DUMMY = "dummy";
+    final static String DRIVER_SCREENGRAB = "screengrab";
 
     public VideoOutFrame()
     {
@@ -104,13 +112,19 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         IMAGE_FRAME = getImage();
 
-        if (screengrab_active)
+        if (screengrab_active == 1)
         {
-            Webcam.setDriver(new FFmpegScreenDriver());
+            change_webcam_driver(DRIVER_SCREENGRAB, false);
+        }
+        else if (screengrab_active == 2)
+        {
+            change_webcam_driver(DRIVER_DUMMY, false);
         }
         else
         {
+            change_webcam_driver(DRIVER_DEFAULT, false);
         }
+
         Webcam.addDiscoveryListener(this);
 
         picker = new WebcamPicker();
@@ -123,15 +137,20 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         add(ButtonPanel, BorderLayout.SOUTH);
 
         VideoCallStartButton = new JButton("start Video Call");
-        VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         ButtonPanel.add(VideoCallStartButton);
 
         VideoCallStopButton = new JButton("stop Video Call");
-        VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         ButtonPanel.add(VideoCallStopButton);
+
+        VideoToggleScreengrab = new JButton("toggle Cam / Screen");
+        VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        ButtonPanel.add(VideoToggleScreengrab);
 
         VideoCallStartButton.setVisible(true);
         VideoCallStopButton.setVisible(true);
+        VideoToggleScreengrab.setVisible(true);
 
         VideoCallStartButton.addActionListener(new ActionListener()
         {
@@ -153,20 +172,41 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
         });
 
+        VideoToggleScreengrab.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG, "VideoToggleScreengrab pressed");
+                if (screengrab_active == 1)
+                {
+                    change_webcam_driver(DRIVER_DEFAULT, true);
+                }
+                else if (screengrab_active == 0)
+                {
+                    change_webcam_driver(DRIVER_DUMMY, true);
+                }
+                else
+                {
+                    change_webcam_driver(DRIVER_SCREENGRAB, true);
+                }
+            }
+        });
+
         if (webcam != null)
         {
-            if (screengrab_active)
+            if (screengrab_active == 1)
             {
                 webcam.setViewSize(
                         new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
             }
             else
             {
-                WebcamResolution.VGA.getSize();
+                webcam.setViewSize(WebcamResolution.VGA.getSize());
             }
             width = webcam.getViewSize().width;
             height = webcam.getViewSize().height;
-            if (!screengrab_active)
+            if (screengrab_active != 1)
             {
                 webcam.setImageTransformer(this);
             }
@@ -175,7 +215,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             panel.setFPSDisplayed(true);
             panel.setDisplayDebugInfo(true);
             panel.setImageSizeDisplayed(true);
-            if (!screengrab_active)
+            if (screengrab_active != 1)
             {
                 panel.setMirrored(true);
             }
@@ -239,16 +279,20 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     webcam.close();
 
                     webcam = (Webcam) e.getItem();
-                    if (screengrab_active)
+                    if (screengrab_active == 1)
                     {
                         webcam.setViewSize(
                                 new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+                        Log.i(TAG, "size1");
                     }
                     else
                     {
-                        WebcamResolution.VGA.getSize();
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        Log.i(TAG, "size2");
                     }
-                    if (!screengrab_active)
+                    width = webcam.getViewSize().width;
+                    height = webcam.getViewSize().height;
+                    if (screengrab_active != 1)
                     {
                         webcam.setImageTransformer(this);
                     }
@@ -260,7 +304,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     panel.setFPSDisplayed(true);
                     panel.setDisplayDebugInfo(true);
                     panel.setImageSizeDisplayed(true);
-                    if (!screengrab_active)
+                    if (screengrab_active != 1)
                     {
                         panel.setMirrored(true);
                     }
@@ -285,18 +329,18 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 else if ((e.getItem() != null) && (webcam == null))
                 {
                     webcam = (Webcam) e.getItem();
-                    if (screengrab_active)
+                    if (screengrab_active == 1)
                     {
                         webcam.setViewSize(
                                 new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
                     }
                     else
                     {
-                        WebcamResolution.VGA.getSize();
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
                     }
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
-                    if (!screengrab_active)
+                    if (screengrab_active != 1)
                     {
                         webcam.setImageTransformer(this);
                     }
@@ -308,7 +352,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     panel.setFPSDisplayed(true);
                     panel.setDisplayDebugInfo(true);
                     panel.setImageSizeDisplayed(true);
-                    if (!screengrab_active)
+                    if (screengrab_active != 1)
                     {
                         panel.setMirrored(true);
                     }
@@ -665,7 +709,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         Graphics2D g2 = modified.createGraphics();
         g2.drawImage(image, null, 0, 0);
-        if (!screengrab_active)
+        if (screengrab_active != 1)
         {
             g2.drawImage(IMAGE_FRAME, null, 0, 0);
         }
@@ -686,6 +730,119 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         catch (IOException e)
         {
             return null;
+        }
+    }
+
+    static void change_webcam_driver(String driver_name, boolean start_cam)
+    {
+        if (start_cam)
+        {
+            try
+            {
+                if (webcam != null)
+                {
+                    panel.stop();
+                    VideoOutFrame1.remove(picker);
+                    VideoOutFrame1.remove(panel);
+                    webcam.removeWebcamListener(VideoOutFrame1);
+                    webcam.close();
+                }
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+        }
+        if (driver_name.equals(DRIVER_SCREENGRAB))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_SCREENGRAB");
+                screengrab_active = 1;
+                Webcam.setDriver(new FFmpegScreenDriver());
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+        }
+        else if (driver_name.equals(DRIVER_DUMMY))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_DUMMY");
+                screengrab_active = 2;
+                Webcam.setDriver(new WebcamDummyDriver(1));
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+        }
+        else
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_DEFAULT");
+                screengrab_active = 0;
+                Webcam.setDriver(new WebcamDefaultDriver());
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+        }
+
+        if (start_cam)
+        {
+
+            picker = new WebcamPicker();
+            picker.addItemListener(VideoOutFrame1);
+
+            webcam = picker.getSelectedWebcam();
+            if (screengrab_active == 1)
+            {
+                webcam.setViewSize(
+                        new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+            }
+            else
+            {
+                webcam.setViewSize(WebcamResolution.VGA.getSize());
+            }
+            if (screengrab_active != 1)
+            {
+                webcam.setImageTransformer(VideoOutFrame1);
+            }
+            webcam.addWebcamListener(VideoOutFrame1);
+
+            Log.i(TAG, "selected " + webcam.getName());
+
+            panel = new WebcamPanel(webcam, false);
+            panel.setFPSDisplayed(true);
+            panel.setDisplayDebugInfo(true);
+            panel.setImageSizeDisplayed(true);
+            if (screengrab_active != 1)
+            {
+                panel.setMirrored(true);
+            }
+
+            VideoOutFrame1.add(picker, BorderLayout.NORTH);
+            VideoOutFrame1.add(panel, BorderLayout.CENTER);
+            VideoOutFrame1.revalidate();
+
+            Thread t = new Thread()
+            {
+
+                @Override
+                public void run()
+                {
+                    panel.start();
+                }
+            };
+            t.setName("trifa_cam2");
+            t.setDaemon(true);
+            t.setUncaughtExceptionHandler(VideoOutFrame1);
+            t.start();
         }
     }
 }
