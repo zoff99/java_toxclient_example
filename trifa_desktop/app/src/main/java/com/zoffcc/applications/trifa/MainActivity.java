@@ -30,6 +30,7 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -141,6 +142,7 @@ import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
+import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 import static java.awt.Font.PLAIN;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
@@ -722,6 +724,24 @@ public class MainActivity extends JFrame
         Log.i(TAG, locale.getLanguage());
         Log.i(TAG, locale.getCountry());
 
+        try
+        {
+            // set "StartupWMClass" for Java Swing applications
+            //
+            // https://stackoverflow.com/a/29218320
+            //
+            Toolkit xToolkit = Toolkit.getDefaultToolkit();
+            java.lang.reflect.Field awtAppClassNameField = null;
+            awtAppClassNameField = xToolkit.getClass().getDeclaredField("awtAppClassName");
+            awtAppClassNameField.setAccessible(true);
+            awtAppClassNameField.set(xToolkit,
+                                     "normal_trifa"); // this needs to be exactly the same String as in "trifa.desktop" file
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         lo = ResourceBundle.getBundle("i18n.ResourceBundle", locale);
         Log.i(TAG, "locale_test:" + lo.getString("locale_test"));
 
@@ -1156,6 +1176,9 @@ public class MainActivity extends JFrame
         Callstate.friend_pubkey = tox_friend_get_public_key__wrapper(friend_number);
         Callstate.accepted_call = 1;
         set_av_call_status(Callstate.state);
+
+        on_call_started_actions();
+
         Log.i(TAG, "android_toxav_callback_call_cb_method:Callstate.state=" + Callstate.state);
     }
 

@@ -29,7 +29,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
+import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 
 public class VideoInFrame extends JFrame
 {
@@ -54,7 +58,7 @@ public class VideoInFrame extends JFrame
         video_in_frame.setSize(width / 2, height / 2);
         video_in_frame.setBackground(Color.ORANGE);
 
-        wrapperPanel = new JPanel(new SingleComponentAspectRatioKeeperLayout(),true);
+        wrapperPanel = new JPanel(new SingleComponentAspectRatioKeeperLayout(), true);
         wrapperPanel.add(video_in_frame);
         getContentPane().add(wrapperPanel);
 
@@ -193,6 +197,36 @@ public class VideoInFrame extends JFrame
 
     static void on_call_started_actions()
     {
+        Log.i(TAG, "on_call_started_actions");
+        if (screengrab_active)
+        {
+            final Thread t_set_bitrates = new Thread()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Thread.sleep(3000);
+                        int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), 128,
+                                                      8000);
+
+                        int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                    ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,
+                                                    8000);
+
+                        int res3 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                    ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_BITRATE_AUTOSET.value,
+                                                    0);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.i(TAG, "on_call_started_actions:EE01:" + e.getMessage());
+                    }
+                }
+            };
+            t_set_bitrates.start();
+        }
     }
 
     static void on_call_ended_actions()

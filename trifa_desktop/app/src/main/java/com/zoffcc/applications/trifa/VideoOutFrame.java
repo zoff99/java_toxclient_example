@@ -28,8 +28,10 @@ import com.github.sarxos.webcam.WebcamListener;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamPicker;
 import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.ds.ffmpegcli.FFmpegScreenDriver;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -42,6 +44,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -83,6 +86,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public static int width = 640;
     public static int height = 480;
 
+    public final static int width_screengrab = 1920; // 1280;
+    public final static int height_screengrab = 1080; // 720;
+
+    public static boolean screengrab_active = true;
+    final static Semaphore semaphore_video_out_convert = new Semaphore(1);
+    static int semaphore_video_out_convert_active_threads = 0;
+    static int semaphore_video_out_convert_max_active_threads = 2;
+
     public VideoOutFrame()
     {
         super("TRIfA - Camera");
@@ -93,7 +104,13 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         IMAGE_FRAME = getImage();
 
-        // Webcam.setDriver(new FFmpegCliDriver());
+        if (screengrab_active)
+        {
+            Webcam.setDriver(new FFmpegScreenDriver());
+        }
+        else
+        {
+        }
         Webcam.addDiscoveryListener(this);
 
         picker = new WebcamPicker();
@@ -138,16 +155,30 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         if (webcam != null)
         {
-            webcam.setViewSize(WebcamResolution.VGA.getSize());
+            if (screengrab_active)
+            {
+                webcam.setViewSize(
+                        new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+            }
+            else
+            {
+                WebcamResolution.VGA.getSize();
+            }
             width = webcam.getViewSize().width;
             height = webcam.getViewSize().height;
-            webcam.setImageTransformer(this);
+            if (!screengrab_active)
+            {
+                webcam.setImageTransformer(this);
+            }
             webcam.addWebcamListener(this);
             panel = new WebcamPanel(webcam, false);
             panel.setFPSDisplayed(true);
             panel.setDisplayDebugInfo(true);
             panel.setImageSizeDisplayed(true);
-            panel.setMirrored(true);
+            if (!screengrab_active)
+            {
+                panel.setMirrored(true);
+            }
 
             add(picker, BorderLayout.NORTH);
             add(panel, BorderLayout.CENTER);
@@ -208,8 +239,19 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     webcam.close();
 
                     webcam = (Webcam) e.getItem();
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
-                    webcam.setImageTransformer(this);
+                    if (screengrab_active)
+                    {
+                        webcam.setViewSize(
+                                new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+                    }
+                    else
+                    {
+                        WebcamResolution.VGA.getSize();
+                    }
+                    if (!screengrab_active)
+                    {
+                        webcam.setImageTransformer(this);
+                    }
                     webcam.addWebcamListener(this);
 
                     Log.i(TAG, "selected " + webcam.getName());
@@ -218,7 +260,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     panel.setFPSDisplayed(true);
                     panel.setDisplayDebugInfo(true);
                     panel.setImageSizeDisplayed(true);
-                    panel.setMirrored(true);
+                    if (!screengrab_active)
+                    {
+                        panel.setMirrored(true);
+                    }
 
                     add(panel, BorderLayout.CENTER);
                     revalidate();
@@ -240,10 +285,21 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 else if ((e.getItem() != null) && (webcam == null))
                 {
                     webcam = (Webcam) e.getItem();
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    if (screengrab_active)
+                    {
+                        webcam.setViewSize(
+                                new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+                    }
+                    else
+                    {
+                        WebcamResolution.VGA.getSize();
+                    }
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
-                    webcam.setImageTransformer(this);
+                    if (!screengrab_active)
+                    {
+                        webcam.setImageTransformer(this);
+                    }
                     webcam.addWebcamListener(this);
 
                     Log.i(TAG, "selected " + webcam.getName());
@@ -252,7 +308,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     panel.setFPSDisplayed(true);
                     panel.setDisplayDebugInfo(true);
                     panel.setImageSizeDisplayed(true);
-                    panel.setMirrored(true);
+                    if (!screengrab_active)
+                    {
+                        panel.setMirrored(true);
+                    }
 
                     add(panel, BorderLayout.CENTER);
                     revalidate();
@@ -298,45 +357,107 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     {
         try
         {
+            //final long ts0 = System.currentTimeMillis();
             // Log.i(TAG, "webcam_image:captured:001");
-            BufferedImage buf = we.getImage();
+            final BufferedImage buf = we.getImage();
             if (buf != null)
             {
-                // Log.i(TAG, "webcam_image:captured:002");
-                if (Callstate.state != 0)
+                try
                 {
-                    // Log.i(TAG, "webcam_image:captured:003");
-                    if ((Callstate.friend_pubkey != null) && (Callstate.friend_pubkey.length() > 0))
+                    semaphore_video_out_convert.acquire();
+                    if (semaphore_video_out_convert_active_threads > semaphore_video_out_convert_max_active_threads)
                     {
-                        // Log.i(TAG, "webcam_image:captured:004");
-                        int frame_width_px = buf.getWidth();
-                        int frame_height_px = buf.getHeight();
-
-                        if ((video_buffer_2 == null) || (frame_width_px != width) || (frame_height_px != height))
-                        {
-                            Log.i(TAG, "webcam_image:captured:005:w=" + frame_width_px + " h=" + frame_height_px);
-                            int buffer_size_in_bytes2 = (int) (frame_width_px * frame_height_px * 1.5f);
-                            video_buffer_2 = ByteBuffer.allocateDirect(buffer_size_in_bytes2);
-                            set_JNI_video_buffer2(video_buffer_2, frame_width_px, frame_height_px);
-                        }
-
-                        video_buffer_2.rewind();
-                        byte[] b = rgb2yuv(buf, frame_width_px, frame_height_px);
-                        // Log.i(TAG, "webcam_image:captured:005a:r=" + video_buffer_2.remaining() + " p=" +
-                        //            video_buffer_2.capacity() + " b=" + b.length);
-                        int len = video_buffer_2.remaining();
-                        if (len > b.length)
-                        {
-                            len = b.length;
-                        }
-
-                        video_buffer_2.put(b, 0, len);
-                        int res = toxav_video_send_frame(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
-                                                         buf.getWidth(), buf.getHeight());
-                        // Log.i(TAG, "webcam_image:captured:006:fn=" +
-                        //            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) + " res=" + res);
+                        semaphore_video_out_convert.release();
+                        return;
                     }
+                    semaphore_video_out_convert.release();
                 }
+                catch (Exception e)
+                {
+                }
+
+                final Thread t_convert_frame_and_send = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            semaphore_video_out_convert.acquire();
+                            semaphore_video_out_convert_active_threads++;
+                            semaphore_video_out_convert.release();
+                        }
+                        catch (Exception e)
+                        {
+                        }
+
+                        try
+                        {
+                            // Log.i(TAG, "webcam_image:captured:002:start");
+                            if (Callstate.state != 0)
+                            {
+                                // Log.i(TAG, "webcam_image:captured:003");
+                                if ((Callstate.friend_pubkey != null) && (Callstate.friend_pubkey.length() > 0))
+                                {
+                                    // Log.i(TAG, "webcam_image:captured:004");
+                                    int frame_width_px = buf.getWidth();
+                                    int frame_height_px = buf.getHeight();
+
+                                    if ((video_buffer_2 == null) || (frame_width_px != width) ||
+                                        (frame_height_px != height))
+                                    {
+                                        //Log.i(TAG, "webcam_image:captured:005:w=" + frame_width_px + " h=" +
+                                        //           frame_height_px);
+                                        int buffer_size_in_bytes2 = (int) (frame_width_px * frame_height_px * 1.5f);
+                                        video_buffer_2 = ByteBuffer.allocateDirect(buffer_size_in_bytes2);
+                                        set_JNI_video_buffer2(video_buffer_2, frame_width_px, frame_height_px);
+                                    }
+
+                                    //final long ts1 = System.currentTimeMillis();
+                                    //Log.i(TAG, "webcam_image:captured:002:001");
+                                    video_buffer_2.rewind();
+                                    //Log.i(TAG, "webcam_image:captured:002:002:" + (System.currentTimeMillis() - ts1));
+                                    byte[] b = rgb2yuv(buf, frame_width_px, frame_height_px);
+                                    //Log.i(TAG, "webcam_image:captured:002:003:" + (System.currentTimeMillis() - ts1));
+                                    // Log.i(TAG, "webcam_image:captured:005a:r=" + video_buffer_2.remaining() + " p=" +
+                                    //            video_buffer_2.capacity() + " b=" + b.length);
+                                    int len = video_buffer_2.remaining();
+                                    if (len > b.length)
+                                    {
+                                        len = b.length;
+                                    }
+
+                                    //Log.i(TAG, "webcam_image:captured:002:004:" + (System.currentTimeMillis() - ts1));
+                                    video_buffer_2.put(b, 0, len);
+                                    //Log.i(TAG, "webcam_image:captured:002:005:" + (System.currentTimeMillis() - ts1));
+                                    int res = toxav_video_send_frame(
+                                            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), buf.getWidth(),
+                                            buf.getHeight());
+                                    //Log.i(TAG, "webcam_image:captured:002:006:" + (System.currentTimeMillis() - ts1));
+                                    // Log.i(TAG, "webcam_image:captured:006:fn=" +
+                                    //            tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) + " res=" + res);
+                                }
+                            }
+                            //Log.i(TAG, "webcam_image:captured:003:done:" + (System.currentTimeMillis() - ts0));
+
+                        }
+                        catch (Exception e)
+                        {
+                        }
+
+                        try
+                        {
+                            semaphore_video_out_convert.acquire();
+                            semaphore_video_out_convert_active_threads--;
+                            semaphore_video_out_convert.release();
+                        }
+                        catch (Exception e)
+                        {
+                        }
+
+                    }
+                };
+                t_convert_frame_and_send.start();
             }
         }
         catch (Exception e)
@@ -539,7 +660,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         Graphics2D g2 = modified.createGraphics();
         g2.drawImage(image, null, 0, 0);
-        g2.drawImage(IMAGE_FRAME, null, 0, 0);
+        if (!screengrab_active)
+        {
+            g2.drawImage(IMAGE_FRAME, null, 0, 0);
+        }
         g2.dispose();
 
         modified.flush();
