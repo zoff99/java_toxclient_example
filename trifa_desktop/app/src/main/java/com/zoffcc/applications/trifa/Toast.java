@@ -47,13 +47,13 @@ class Toast extends JFrame
     private final int FADE_REFRESH_RATE = 20;
 
     private final int WINDOW_RADIUS = 15;
-    private final int CHARACTER_LENGTH_MULTIPLIER = 9;
+    private final int CHARACTER_LENGTH_MULTIPLIER = 16;
     private final int DISTANCE_FROM_PARENT_BOTTOM = 100;
 
 
     public Toast(JFrame owner, String toastText)
     {
-        setTitle("Transparent JFrame Demo");
+        setTitle("");
         setLayout(new GridBagLayout());
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
