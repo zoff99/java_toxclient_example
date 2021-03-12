@@ -86,6 +86,7 @@ import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_file
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
@@ -2000,7 +2001,13 @@ public class MainActivity extends JFrame
                         {
                             e2.printStackTrace();
                         }
-                        check_auto_accept_incoming_filetransfer(m2);
+                        if (!check_auto_accept_incoming_filetransfer(m2))
+                        {
+                            // TODO: every non-auto-accept-file transfer will be canceled for now
+                            //       write me!!
+                            tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
+                            update_single_message_from_messge_id(m2.id, true);
+                        }
                     }
                 };
                 t.start();
