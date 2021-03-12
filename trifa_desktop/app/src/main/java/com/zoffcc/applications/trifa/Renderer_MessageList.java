@@ -230,8 +230,8 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     {
 
                         float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
-                        Log.i(TAG, "m.id=" + m.id + " ftid=" + ft.id + " progress:" + progress_1000 +
-                                   " ft.current_position=" + ft.current_position + " ft.filesize=" + ft.filesize);
+                        // Log.i(TAG, "m.id=" + m.id + " ftid=" + ft.id + " progress:" + progress_1000 +
+                        //            " ft.current_position=" + ft.current_position + " ft.filesize=" + ft.filesize);
                         progress_bar.setValue((int) progress_1000);
                     }
                 }
