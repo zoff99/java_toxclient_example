@@ -33,7 +33,8 @@ public class TrifaSetPatternActivity
         try
         {
             // TODO: be less strict here, but really actually test it then!
-            return path.replaceAll("[^a-zA-Z0-9_.]", "_");
+            // update: just to be safe, do NOT allow more than 1 "." in a row
+            return path.replaceAll("[^a-zA-Z0-9_.]", "_").replaceAll("\\.+",".");
         }
         catch (Exception e)
         {
