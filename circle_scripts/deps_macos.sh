@@ -191,7 +191,7 @@ tar -xf "$VPX_FILENAME"
 cd libvpx*/
 
 if [ -e /usr/bin/nasm ]; then
-    nasm_option=" --disable-asm "
+    nasm_option=" --as=yasm "
 else
     nasm_option=""
 fi
