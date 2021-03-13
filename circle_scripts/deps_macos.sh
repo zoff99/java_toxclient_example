@@ -58,7 +58,7 @@ cd "$_SRC_"
     touch ndisasm.1
     sudo make install || exit 1
 
-    export PATH=$NEWPATH:"$_INST_""/bin"
+    export PATH="$_INST_""/bin":$NEWPATH
 
     type -a nasm
 
