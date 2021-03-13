@@ -15,6 +15,6 @@ script:
   - export JAVA_HOME=$(/usr/libexec/java_home -v11) ; $JAVA_HOME/bin/javac -version
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
-  - _HOME_="/Users/runner/" ; export _HOME_ ; cd "$_HOME_" ; cd "$_SRC_" ; /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
-  - _HOME_="/Users/runner/" ; export _HOME_ ; cd "$_HOME_" ; cd "$_SRC_" ; /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
+  - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
+  - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
 

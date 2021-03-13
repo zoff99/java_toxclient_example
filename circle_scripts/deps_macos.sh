@@ -200,7 +200,7 @@ fi
                                          --prefix="$_INST_" \
                                          --disable-shared \
                                          --size-limit=16384x16384 \
-                                         "$nasm_option" \
+                                         $nasm_option \
                                          --enable-onthefly-bitpacking \
                                          --enable-runtime-cpu-detect \
                                          --enable-realtime-only \
