@@ -39,7 +39,8 @@ echo "--------------"
 
 
 ## ---------------------------
-mkdir -p /Users/runner/
+sudo mkdir -p /Users/runner/
+sudo chmod a+rwx /Users/runner/
 cd /Users/runner/
 git clone https://github.com/zoff99/ToxAndroidRefImpl
 cd /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/
