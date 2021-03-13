@@ -662,6 +662,7 @@ public class MessageListFragmentJ extends JPanel
                         EventQueue.invokeLater(() -> {
                             messagelistitems_model.set(pos, m);
                         });
+                        break;
                     }
                 }
             }

@@ -298,7 +298,6 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     catch (Exception ie)
                     {
                     }
-
                 }
 
                 if (m.direction == 1)
@@ -359,18 +358,25 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
                 try
                 {
-                    Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
-
-                    if (ft.current_position == ft.filesize)
+                    if ((m.filetransfer_id > 0) && (m.state == TOX_FILE_CONTROL_RESUME.value))
                     {
-                        progress_bar.setValue(1000);
+                        Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
+
+                        if (ft.current_position == ft.filesize)
+                        {
+                            progress_bar.setValue(1000);
+                        }
+                        else
+                        {
+                            float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
+                            // Log.i(TAG, "m.id=" + m.id + " ftid=" + ft.id + " progress:" + progress_1000 +
+                            //            " ft.current_position=" + ft.current_position + " ft.filesize=" + ft.filesize);
+                            progress_bar.setValue((int) progress_1000);
+                        }
                     }
                     else
                     {
-                        float progress_1000 = ((float) ft.current_position / (float) ft.filesize) * 1000.0f;
-                        // Log.i(TAG, "m.id=" + m.id + " ftid=" + ft.id + " progress:" + progress_1000 +
-                        //            " ft.current_position=" + ft.current_position + " ft.filesize=" + ft.filesize);
-                        progress_bar.setValue((int) progress_1000);
+                        progress_bar.setValue(0);
                     }
                 }
                 catch (Exception e)

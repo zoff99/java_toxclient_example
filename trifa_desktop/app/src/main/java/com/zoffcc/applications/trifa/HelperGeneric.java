@@ -21,10 +21,8 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.RandomAccessFile;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
@@ -829,37 +827,20 @@ public class HelperGeneric
 
     static byte[] read_chunk_from_SD_file(String file_name_with_path, long position, long file_chunk_length)
     {
-        byte[] out = new byte[(int) file_chunk_length];
+        final byte[] out = new byte[(int) file_chunk_length];
 
         try
         {
-            RandomAccessFile raf = new RandomAccessFile(file_name_with_path, "r");
-            FileChannel inChannel = raf.getChannel();
-            MappedByteBuffer buffer = inChannel.map(FileChannel.MapMode.READ_ONLY, position, file_chunk_length);
-
-            // Log.i(TAG, "read_chunk_from_SD_file:" + buffer.limit() + " <-> " + file_chunk_length);
-
-            for (int i = 0; i < buffer.limit(); i++)
-            {
-                out[i] = buffer.get();
-            }
+            final FileInputStream fis = new FileInputStream(new File(file_name_with_path));
+            fis.getChannel().position(position);
+            final int actually_read = fis.read(out, 0, (int) file_chunk_length);
 
             try
             {
-                inChannel.close();
+                fis.close();
             }
-            catch (Exception e)
+            catch (Exception e2)
             {
-                e.printStackTrace();
-            }
-
-            try
-            {
-                raf.close();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
             }
         }
         catch (Exception e)

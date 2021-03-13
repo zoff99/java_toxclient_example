@@ -308,21 +308,22 @@ public class TrifaToxService
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
+
+                Log.i(TAG, "Priority of thread is CUR: " + Thread.currentThread().getPriority());
+                Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+                Thread.currentThread().setName("t_iterate");
+                Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
+
                 while (!stop_me)
                 {
                     try
                     {
+                        // Log.i(TAG, "(tox_iteration_interval_ms):" + tox_iteration_interval_ms + "ms");
                         if (tox_iteration_interval_ms < 2)
                         {
-                            Log.i(TAG, "tox_iterate:(tox_iteration_interval_ms < 2ms!!):" + tox_iteration_interval_ms +
-                                       "ms");
-                            Thread.sleep(2);
+                            tox_iteration_interval_ms = 2;
                         }
-                        else
-                        {
-                            // Log.i(TAG, "(tox_iteration_interval_ms):" + tox_iteration_interval_ms + "ms");
-                            Thread.sleep(tox_iteration_interval_ms);
-                        }
+                        Thread.sleep(tox_iteration_interval_ms);
                     }
                     catch (InterruptedException e)
                     {
@@ -338,7 +339,6 @@ public class TrifaToxService
                     // --- send pending 1-on-1 text messages here --------------
                     if (global_self_connection_status != TOX_CONNECTION_NONE.value)
                     {
-
                         if ((last_resend_pending_messages_ms + (20 * 1000)) < System.currentTimeMillis())
                         {
                             // Log.i(TAG, "send_pending_1-on-1_messages ============================================");
@@ -509,15 +509,16 @@ public class TrifaToxService
                     // --- send pending 1-on-1 text messages here --------------
 
                     // Log.i(TAG, "tox_iterate:--START--");
-                    long s_time = System.currentTimeMillis();
+                    //long s_time = System.currentTimeMillis();
                     MainActivity.tox_iterate();
-                    if (s_time + 4000 < System.currentTimeMillis())
-                    {
-                        tox_iteration_interval_ms = MainActivity.tox_iteration_interval();
-                        Log.i(TAG, "tox_iterate:--END--:took" +
-                                   (long) (((float) (s_time - System.currentTimeMillis()) / 1000f)) +
-                                   "s, new interval=" + tox_iteration_interval_ms + "ms");
-                    }
+                    //if (s_time + 4000 < System.currentTimeMillis())
+                    //{
+                    tox_iteration_interval_ms = MainActivity.tox_iteration_interval();
+                    // Log.i(TAG, "tox_iterate:tox_iteration_interval_ms=" + tox_iteration_interval_ms);
+                    //Log.i(TAG, "tox_iterate:--END--:took" +
+                    //           (long) (((float) (s_time - System.currentTimeMillis()) / 1000f)) +
+                    //           "s, new interval=" + tox_iteration_interval_ms + "ms");
+                    //}
                 }
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------

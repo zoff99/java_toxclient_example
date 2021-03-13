@@ -465,6 +465,7 @@ public class HelperFiletransfer
         orma.updateFiletransfer().
                 tox_public_key_stringEq(f.tox_public_key_string).
                 file_numberEq(f.file_number).
+                stateNotEq(TOX_FILE_CONTROL_CANCEL.value).
                 current_position(f.current_position).
                 execute();
     }

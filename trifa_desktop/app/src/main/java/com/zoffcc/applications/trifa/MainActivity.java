@@ -787,6 +787,14 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
+        try
+        {
+            Thread.currentThread().setName("t_main");
+        }
+        catch (Exception e)
+        {
+        }
+
         lo = ResourceBundle.getBundle("i18n.ResourceBundle", locale);
         Log.i(TAG, "locale_test:" + lo.getString("locale_test"));
 
@@ -1936,6 +1944,8 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_file_chunk_request_cb_method(long friend_number, long file_number, long position, long length)
     {
+        // final long ts01 = System.currentTimeMillis();
+
         if (PREF__X_battery_saving_mode)
         {
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:009:*PING*");
@@ -1948,6 +1958,7 @@ public class MainActivity extends JFrame
         {
             Filetransfer ft = orma.selectFromFiletransfer().
                     directionEq(TRIFA_FT_DIRECTION_OUTGOING.value).
+                    stateNotEq(TOX_FILE_CONTROL_CANCEL.value).
                     tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
                     file_numberEq(file_number).
                     orderByIdDesc().toList().
@@ -2036,11 +2047,12 @@ public class MainActivity extends JFrame
                     final String fname = new File(ft.path_name + "/" + ft.file_name).getAbsolutePath();
                     // Log.i(TAG, "file_chunk_request:fname=" + fname);
                     long file_chunk_length = length;
-                    byte[] bytes_chunck = HelperGeneric.read_chunk_from_SD_file(fname, position, file_chunk_length);
+                    final byte[] bytes_chunck = HelperGeneric.read_chunk_from_SD_file(fname, position,
+                                                                                      file_chunk_length);
                     // byte[] bytes_chunck = new byte[(int) file_chunk_length];
                     // avatar_bytes.position((int) position);
                     // avatar_bytes.get(bytes_chunck, 0, (int) file_chunk_length);
-                    ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) file_chunk_length);
+                    final ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) file_chunk_length);
                     file_chunk.put(bytes_chunck);
                     int res = tox_file_send_chunk(friend_number, file_number, position, file_chunk, file_chunk_length);
                     // Log.i(TAG, "file_chunk_request:res(1)=" + res);
@@ -2092,6 +2104,7 @@ public class MainActivity extends JFrame
                             }
                         }
                     }
+                    // Log.i(TAG, "file_chunk_request:ft:099:" + (System.currentTimeMillis() - ts01));
                 }
             }
         }
@@ -2245,6 +2258,7 @@ public class MainActivity extends JFrame
             f = orma.selectFromFiletransfer().
                     directionEq(TRIFA_FT_DIRECTION_INCOMING.value).
                     file_numberEq(file_number).
+                    stateNotEq(TOX_FILE_CONTROL_CANCEL.value).
                     tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
                     orderByIdDesc().toList().
                     get(0);

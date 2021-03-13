@@ -489,4 +489,10 @@ public class Filetransfer
         this.sql_set = this.sql_set + " ft_outgoing_started='" + b(ft_outgoing_started) + "' ";
         return this;
     }
+
+    public Filetransfer stateNotEq(int state)
+    {
+        this.sql_where = this.sql_where + " and state<>'" + s(state) + "' ";
+        return this;
+    }
 }
