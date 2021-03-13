@@ -119,7 +119,8 @@ file libjni-c-toxcore.jnilib
 
 if [ -e /usr/bin/nasm ]; then
     pwd
-    ls -hal libjni-c-toxcore.jnilib || exit 1
+    ls -hal libjni-c-toxcore.jnilib
+    echo "-------- DONE --------"
 else
 
 cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1

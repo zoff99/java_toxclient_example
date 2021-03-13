@@ -21,5 +21,6 @@ script:
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
 
 after_success:
-  - ls -hal /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
+  - echo ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
+  - echo "xxxxxxxxxxxxxx"
 
