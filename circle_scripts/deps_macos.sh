@@ -190,11 +190,17 @@ wget $WGET_OPTIONS "https://github.com/webmproject/libvpx/archive/$VPX_VERSION.t
 tar -xf "$VPX_FILENAME"
 cd libvpx*/
 
+if [ -e /usr/bin/nasm ]; then
+    nasm_option=" --disable-asm "
+else
+    nasm_option=""
+fi
 
   CFLAGS="-O2 -g -fPIC" ./configure \
                                          --prefix="$_INST_" \
                                          --disable-shared \
                                          --size-limit=16384x16384 \
+                                         "$nasm_option" \
                                          --enable-onthefly-bitpacking \
                                          --enable-runtime-cpu-detect \
                                          --enable-realtime-only \
@@ -237,11 +243,11 @@ cd "$_SRC_"
     touch ndisasm.1
     sudo make install || exit 1
 
-    export PATH=$NEWPATH:"$_INST_""/bin"
+    export PATH="$_INST_""/bin":$NEWPATH
 
     type -a nasm
 
-    nasm --version || exit 1
+    nasm --version # || exit 1
     set +x
 
 cd "$_HOME_"
@@ -260,6 +266,8 @@ cd x264/
 
   git checkout "$_X264_VERSION_"
 
+  export PATH="$_INST_""/bin":$NEWPATH
+
   CFLAGS="-O2 -g -fPIC" ./configure \
                                          --prefix="$_INST_" \
                                          --disable-opencl \
@@ -270,6 +278,8 @@ cd x264/
 
   make || exit 1
   make install
+
+  export PATH=$NEWPATH
 
 cd "$_HOME_"
 
