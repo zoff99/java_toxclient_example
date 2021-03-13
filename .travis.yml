@@ -8,7 +8,6 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
-  - brew install cliclick
   - /usr/libexec/java_home -v 11
   - export JAVA_HOME=$(/usr/libexec/java_home -v11)
   - java -version
