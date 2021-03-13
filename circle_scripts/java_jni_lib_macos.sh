@@ -70,6 +70,14 @@ export JAVADIR2=$(cat /tmp/xx2)
 export JAVADIR1="/usr/local/Cellar/openjdk/15.0.2/include"
 export JAVADIR2="/usr/local/Cellar/openjdk/15.0.2/include"
 
+if [ ! -e "$JAVADIR1" ]; then
+    mkdir -p "$_INST_/jinclude/"
+    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni_md.h "$_INST_/jinclude/"
+    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni.h "$_INST_/jinclude/"
+    export JAVADIR1="$_INST_/jinclude"
+    export JAVADIR2="$_INST_/jinclude"
+fi
+
 echo "JAVADIR1:""$JAVADIR1"
 echo "JAVADIR2:""$JAVADIR2"
 

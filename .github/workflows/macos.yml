@@ -38,12 +38,12 @@ jobs:
             $JAVA_HOME/bin/java -version
             $JAVA_HOME/bin/javac -version
 
-    - name: cat jni headers
+    - name: cat jni headers1
       run:  |
             cat /usr/local/Cellar/openjdk/15.0.2/include/jni_md.h
-            echo "-----------------"
-            echo "-----------------"
-            echo "-----------------"
+
+    - name: cat jni headers2
+      run:  |
             cat /usr/local/Cellar/openjdk/15.0.2/include/jni.h
 
     - name: install java
