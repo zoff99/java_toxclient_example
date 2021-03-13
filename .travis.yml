@@ -1,0 +1,6 @@
+jobs:
+  include:
+    - os: osx
+      osx_image: xcode10.1
+
+
