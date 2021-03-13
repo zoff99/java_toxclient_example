@@ -276,7 +276,9 @@ fi
 
 # ---------- c-toxcore ---------
 
+pwd
 cd "$_SRC_"
+pwd
 
 git clone https://github.com/zoff99/c-toxcore c-toxcore
 cd c-toxcore/
