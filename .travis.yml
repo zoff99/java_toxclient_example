@@ -10,15 +10,13 @@ script:
   - id -a;pwd;ls -al
   - type -a sftp
   - type -a scp
-  - /usr/libexec/java_home -v 11
-  - export JAVA_HOME=$(/usr/libexec/java_home -v11)
   - java -version
-  - export JAVA_HOME=$(/usr/libexec/java_home -v11) ; $JAVA_HOME/bin/java -version
-  - export JAVA_HOME=$(/usr/libexec/java_home -v11) ; $JAVA_HOME/bin/javac -version
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
+
+after_success:
   - echo ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - echo "xxxxxxxxxxxxxx"
 
