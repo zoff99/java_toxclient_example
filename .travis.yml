@@ -8,6 +8,8 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
+  - type -a sftp
+  - type -a scp
   - /usr/libexec/java_home -v 11
   - export JAVA_HOME=$(/usr/libexec/java_home -v11)
   - java -version
@@ -17,4 +19,7 @@ script:
   - system_profiler SPSoftwareDataType
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
+
+after_success:
+  - ls -hal /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
 
