@@ -177,6 +177,38 @@ cd "$_HOME_"
 fi
 # ---------- sodium ---------
 
+# --- YASM ---
+if [ -e /usr/bin/nasm ]; then
+
+cd "$_SRC_"
+
+    export PATH=$ORIGPATH
+
+YASM_VERSION=1.3.0
+YASM_FILENAME="yasm-$YASM_VERSION.tar.gz"
+rm -f yasm-*.tar.gz
+wget $WGET_OPTIONS "https://github.com/yasm/yasm/releases/download/v1.3.0/$YASM_FILENAME" -O "$YASM_FILENAME"
+tar -xf "$YASM_FILENAME"
+cd yasm*/
+
+    ./configure --prefix="$_INST_"
+
+    set -x
+    make || exit 1
+
+    make install || exit 1
+
+    export PATH="$_INST_""/bin":$NEWPATH
+
+    type -a yasm
+
+    yasm --version # || exit 1
+    set +x
+
+cd "$_HOME_"
+
+fi
+# --- YASM ---
 
 # ---------- vpx ---------
 if [ 1 == 1 ]; then
