@@ -641,4 +641,16 @@ public class HelperFiletransfer
             e.printStackTrace();
         }
     }
+
+    public static void set_filetransfer_start_sending_from_id(long filetransfer_id)
+    {
+        try
+        {
+            orma.updateFiletransfer().idEq(filetransfer_id).ft_outgoing_started(true).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 }

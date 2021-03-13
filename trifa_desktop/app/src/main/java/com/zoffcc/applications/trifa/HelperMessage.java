@@ -507,4 +507,16 @@ public class HelperMessage
         }
     }
 
+    public static void set_message_start_sending_from_id(long message_id)
+    {
+        try
+        {
+            orma.updateMessage().idEq(message_id).ft_outgoing_started(true).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_message_start_sending_from_id:EE:" + e.getMessage());
+        }
+    }
 }

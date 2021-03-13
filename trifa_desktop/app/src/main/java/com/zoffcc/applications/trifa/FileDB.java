@@ -205,4 +205,21 @@ public class FileDB
         return list;
     }
 
+    public FileDB path_nameEq(String path_name)
+    {
+        this.sql_where = this.sql_where + " and path_name='" + s(path_name) + "' ";
+        return this;
+    }
+
+    public FileDB directionEq(int direction)
+    {
+        this.sql_where = this.sql_where + " and direction='" + s(direction) + "' ";
+        return this;
+    }
+
+    public FileDB filesizeEq(long filesize)
+    {
+        this.sql_where = this.sql_where + " and filesize='" + s(filesize) + "' ";
+        return this;
+    }
 }

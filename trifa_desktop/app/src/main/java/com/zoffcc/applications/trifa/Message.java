@@ -24,6 +24,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JButton;
+
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
@@ -116,6 +118,11 @@ public class Message
 
     @Column(indexed = true, defaultExpr = "2")
     int resend_count; // 2 -> do not resend msg anymore, 0 or 1 -> resend count
+
+    // ------- SWING UI elements ------- //
+    JButton _swing_ok = null;
+    JButton _swing_cancel = null;
+    // ------- SWING UI elements ------- //
 
     static Message deep_copy(Message in)
     {
@@ -623,4 +630,17 @@ public class Message
     }
 
 
+    public Message ft_outgoing_started(boolean ft_outgoing_started)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " ft_outgoing_started='" + b(ft_outgoing_started) + "' ";
+        return this;
+    }
 }

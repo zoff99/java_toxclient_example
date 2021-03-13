@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -88,6 +89,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.add_outgoing_file;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
@@ -100,6 +102,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_AFTER_BYTES;
@@ -187,6 +190,7 @@ public class MainActivity extends JFrame
     static JPanel MessageTextInputPanel;
     static JTextArea sendTextField;
     static JButton sendButton;
+    static JButton attachmentButton;
     static JButton FriendAddButton;
     static JTextField FriendAddToxID = null;
     static JTextField myToxID = null;
@@ -316,8 +320,11 @@ public class MainActivity extends JFrame
         sendTextField = new JTextArea();
         sendTextField.setFont(new java.awt.Font("default", PLAIN, 9));
 
-        sendButton = new JButton("send");
+        sendButton = new JButton(lo.getString("send_button_text"));
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+
+        attachmentButton = new JButton("\uD83D\uDCCE"); // paperclip utf-8 char
+        attachmentButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
 
         leftPanel = new JPanel(true);
         ownProfileShort = new JTextArea();
@@ -417,6 +424,7 @@ public class MainActivity extends JFrame
 
 
         MessageTextInputPanel.add(sendButton);
+        MessageTextInputPanel.add(attachmentButton);
 
         sendButton.addActionListener(new ActionListener()
         {
@@ -432,6 +440,43 @@ public class MainActivity extends JFrame
                 else if (message_panel_displayed == 2)
                 {
                     ConferenceMessageListFragmentJ.send_message_onclick();
+                }
+            }
+        });
+
+        attachmentButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent evt)
+            {
+                Log.i(TAG, "attachmentButton pressed");
+
+                try
+                {
+                    if (message_panel_displayed == 1)
+                    {
+                        if (friendnum != -1)
+                        {
+                            // show filepicker
+                            JFileChooser fileChooser = new JFileChooser();
+                            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                            int result = fileChooser.showOpenDialog(attachmentButton);
+                            if (result == JFileChooser.APPROVE_OPTION)
+                            {
+                                File selectedFile = fileChooser.getSelectedFile();
+                                System.out.println(
+                                        "selected_file: " + selectedFile.getAbsoluteFile().getParent() + " :: " +
+                                        selectedFile.getAbsoluteFile().getName());
+                                // send file
+                                add_outgoing_file(selectedFile.getAbsoluteFile().getParent(),
+                                                  selectedFile.getAbsoluteFile().getName());
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
                 }
             }
         });
@@ -1891,6 +1936,170 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_file_chunk_request_cb_method(long friend_number, long file_number, long position, long length)
     {
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:009:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+
+        // Log.i(TAG, "file_chunk_request:" + friend_number + ":" + file_number + ":" + position + ":" + length);
+
+        try
+        {
+            Filetransfer ft = orma.selectFromFiletransfer().
+                    directionEq(TRIFA_FT_DIRECTION_OUTGOING.value).
+                    tox_public_key_stringEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    file_numberEq(file_number).
+                    orderByIdDesc().toList().
+                    get(0);
+
+            if (ft == null)
+            {
+                Log.i(TAG, "file_chunk_request:ft=NULL");
+                return;
+            }
+
+            // Log.i(TAG, "file_chunk_request:ft=" + ft.kind + ":" + ft);
+
+            if (ft.kind == TOX_FILE_KIND_AVATAR.value)
+            {
+                // TODO: write me!!
+            }
+            else // TOX_FILE_KIND_DATA.value
+            {
+                if (length == 0)
+                {
+                    Log.i(TAG, "file_chunk_request:file fully sent");
+                    // transfer finished -----------
+                    long filedb_id = -1;
+
+                    if (ft.kind != TOX_FILE_KIND_AVATAR.value)
+                    {
+                        // put into "FileDB" table
+                        FileDB file_ = new FileDB();
+                        file_.kind = ft.kind;
+                        file_.direction = ft.direction;
+                        file_.tox_public_key_string = ft.tox_public_key_string;
+                        file_.path_name = ft.path_name;
+                        file_.file_name = ft.file_name;
+                        file_.is_in_VFS = false;
+                        file_.filesize = ft.filesize;
+                        long row_id = orma.insertIntoFileDB(file_);
+                        // Log.i(TAG, "file_chunk_request:FileDB:row_id=" + row_id);
+                        filedb_id = orma.selectFromFileDB().
+                                tox_public_key_stringEq(ft.tox_public_key_string).
+                                file_nameEq(ft.file_name).
+                                path_nameEq(ft.path_name).
+                                directionEq(ft.direction).
+                                filesizeEq(ft.filesize).
+                                orderByIdDesc().toList().get(0).id;
+                        // Log.i(TAG, "file_chunk_request:FileDB:filedb_id=" + filedb_id);
+                    }
+
+                    // Log.i(TAG, "file_chunk_request:file_READY:001:f.id=" + ft.id);
+                    long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(ft.id, friend_number);
+                    // Log.i(TAG, "file_chunk_request:file_READY:001a:msg_id=" + msg_id);
+                    HelperMessage.update_message_in_db_filename_fullpath_friendnum_and_filenum(friend_number,
+                                                                                               file_number,
+                                                                                               ft.path_name + "/" +
+                                                                                               ft.file_name);
+                    HelperMessage.set_message_state_from_friendnum_and_filenum(friend_number, file_number,
+                                                                               TOX_FILE_CONTROL_CANCEL.value);
+                    HelperMessage.set_message_filedb_from_friendnum_and_filenum(friend_number, file_number, filedb_id);
+                    HelperFiletransfer.set_filetransfer_for_message_from_friendnum_and_filenum(friend_number,
+                                                                                               file_number, -1);
+
+                    try
+                    {
+                        // Log.i(TAG, "file_chunk_request:file_READY:002");
+
+                        if (ft.id != -1)
+                        {
+                            // Log.i(TAG, "file_chunk_request:file_READY:003:f.id=" + ft.id + " msg_id=" + msg_id);
+                            HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.i(TAG, "file_chunk_request:file_READY:EE:" + e.getMessage());
+                    }
+
+                    // transfer finished -----------
+                    ByteBuffer avatar_chunk = ByteBuffer.allocateDirect(1);
+                    int res = tox_file_send_chunk(friend_number, file_number, position, avatar_chunk, 0);
+                    // Log.i(TAG, "file_chunk_request:res(2)=" + res);
+                    // remove FT from DB
+                    HelperFiletransfer.delete_filetransfers_from_friendnum_and_filenum(friend_number, file_number);
+                }
+                else
+                {
+                    final String fname = new File(ft.path_name + "/" + ft.file_name).getAbsolutePath();
+                    // Log.i(TAG, "file_chunk_request:fname=" + fname);
+                    long file_chunk_length = length;
+                    byte[] bytes_chunck = HelperGeneric.read_chunk_from_SD_file(fname, position, file_chunk_length);
+                    // byte[] bytes_chunck = new byte[(int) file_chunk_length];
+                    // avatar_bytes.position((int) position);
+                    // avatar_bytes.get(bytes_chunck, 0, (int) file_chunk_length);
+                    ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) file_chunk_length);
+                    file_chunk.put(bytes_chunck);
+                    int res = tox_file_send_chunk(friend_number, file_number, position, file_chunk, file_chunk_length);
+                    // Log.i(TAG, "file_chunk_request:res(1)=" + res);
+                    // TODO: handle error codes from tox_file_send_chunk() here ----
+
+                    if (ft.filesize < UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES)
+                    {
+                        if ((ft.current_position + UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES) < position)
+                        {
+                            ft.current_position = position;
+                            HelperFiletransfer.update_filetransfer_db_current_position(ft);
+
+                            if (ft.kind != TOX_FILE_KIND_AVATAR.value)
+                            {
+                                // update_all_messages_global(false);
+                                try
+                                {
+                                    if (ft.id != -1)
+                                    {
+                                        HelperMessage.update_single_message_from_ftid(ft.id, false);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ((ft.current_position + UPDATE_MESSAGE_PROGRESS_AFTER_BYTES) < position)
+                        {
+                            ft.current_position = position;
+                            HelperFiletransfer.update_filetransfer_db_current_position(ft);
+
+                            if (ft.kind != TOX_FILE_KIND_AVATAR.value)
+                            {
+                                // update_all_messages_global(false);
+                                try
+                                {
+                                    if (ft.id != -1)
+                                    {
+                                        HelperMessage.update_single_message_from_ftid(ft.id, false);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "file_chunk_request:EE1:" + e.getMessage());
+        }
     }
 
     static void android_tox_callback_file_recv_cb_method(long friend_number, long file_number, int a_TOX_FILE_KIND, long file_size, String filename, long filename_length)

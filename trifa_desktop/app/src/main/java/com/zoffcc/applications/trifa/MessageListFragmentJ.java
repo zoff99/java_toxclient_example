@@ -29,6 +29,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,18 +46,35 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
+import static com.zoffcc.applications.trifa.HelperFiletransfer.get_filetransfer_filenum_from_id;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.insert_into_filetransfer_db;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_start_sending_from_id;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_state_from_id;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.update_filetransfer_db_full;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_start_sending_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
+import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
+import static com.zoffcc.applications.trifa.MainActivity.tox_file_send;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_ID_LENGTH;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
 
@@ -108,14 +126,199 @@ public class MessageListFragmentJ extends JPanel
                     final Renderer_MessageList renderer = (Renderer_MessageList) messagelistitems.getCellRenderer();
                     final Insets insets = renderer.getInsets();
 
+                    boolean button_pressed = false;
+
+                    // Log.i(TAG,
+                    //      "cellBounds.x=" + cellBounds.x + " cellBounds.y=" + cellBounds.y + "  cellBounds.width=" +
+                    //      cellBounds.width + "  cellBounds.height=" + cellBounds.height + " element._swing_ok=" +
+                    //      element._swing_ok.getBounds());
+
                     // Ensure that mouse press happened within top/bottom insets
                     if (cellBounds.y + insets.top <= point.y &&
                         point.y <= cellBounds.y + cellBounds.height - insets.bottom)
                     {
-
                         if (element.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
                         {
+                            if ((element.direction == 1) && ((element.state == TOX_FILE_CONTROL_PAUSE.value) ||
+                                                             (element.state == TOX_FILE_CONTROL_RESUME.value)))
+                            {
+                                Rectangle ok_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    ok_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_ok.getLocation().x +
+                                            element._swing_ok.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_ok.getLocation().y +
+                                            element._swing_ok.getParent().getLocation().y,
+                                            element._swing_ok.getBounds().width, element._swing_ok.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                Rectangle cancel_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    cancel_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_cancel.getLocation().x +
+                                            element._swing_cancel.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_cancel.getLocation().y +
+                                            element._swing_cancel.getParent().getLocation().y,
+                                            element._swing_cancel.getBounds().width,
+                                            element._swing_cancel.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                // ok and cancel button
+                                try
+                                {
+                                    if (ok_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "OK button pressed");
+                                        button_pressed = true;
+
+                                        try
+                                        {
+                                            // accept FT
+                                            set_message_start_sending_from_id(element.id);
+                                            set_filetransfer_start_sending_from_id(element.filetransfer_id);
+
+                                            try
+                                            {
+                                                element._swing_ok.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            // update message view
+                                            update_single_message_from_messge_id(element.id, true);
+
+                                            Filetransfer ft = orma.selectFromFiletransfer().
+                                                    idEq(element.filetransfer_id).
+                                                    orderByIdDesc().toList().get(0);
+
+                                            Log.i(TAG,
+                                                  "MM2MM:8:ft.filesize=" + ft.filesize + " ftid=" + ft.id + " ft.mid=" +
+                                                  ft.message_id + " mid=" + element.id);
+
+                                            // ------ DEBUG ------
+                                            Log.i(TAG, "MM2MM:8a:ft full=" + ft);
+                                            // ------ DEBUG ------
+
+                                            ByteBuffer file_id_buffer = ByteBuffer.allocateDirect(TOX_FILE_ID_LENGTH);
+                                            byte[] sha256_buf = TrifaSetPatternActivity.sha256(
+                                                    TrifaSetPatternActivity.StringToBytes2(
+                                                            "" + ft.path_name + ":" + ft.file_name + ":" +
+                                                            ft.filesize));
+
+                                            Log.i(TAG, "TOX_FILE_ID_LENGTH=" + TOX_FILE_ID_LENGTH + " sha_byte=" +
+                                                       sha256_buf.length);
+
+                                            file_id_buffer.put(sha256_buf);
+
+                                            // actually start sending the file to friend
+                                            long file_number = tox_file_send(
+                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                                    ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value, ft.filesize,
+                                                    file_id_buffer, ft.file_name, ft.file_name.length());
+                                            // TODO: handle errors from tox_file_send() here -------
+
+                                            Log.i(TAG, "MM2MM:9:new filenum=" + file_number);
+
+                                            // update the tox file number in DB -----------
+                                            ft.file_number = file_number;
+                                            update_filetransfer_db_full(ft);
+                                            // update the tox file number in DB -----------
+
+                                            Log.i(TAG, "button_ok:OnTouch:009:f_num=" + file_number);
+                                        }
+                                        catch (Exception e2)
+                                        {
+                                            e2.printStackTrace();
+                                            Log.i(TAG, "MM2MM:EE1:" + e2.getMessage());
+                                        }
+
+                                    }
+                                    else if (cancel_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "CANCEL button pressed");
+                                        button_pressed = true;
+
+                                        try
+                                        {
+                                            // cancel FT
+                                            Log.i(TAG, "button_cancel:OnTouch:001");
+                                            // values.get(position).state = TOX_FILE_CONTROL_CANCEL.value;
+                                            tox_file_control(
+                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
+                                                    TOX_FILE_CONTROL_CANCEL.value);
+                                            set_filetransfer_state_from_id(element.filetransfer_id,
+                                                                           TOX_FILE_CONTROL_CANCEL.value);
+                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
+
+                                            try
+                                            {
+                                                element._swing_cancel.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            try
+                                            {
+                                                element._swing_ok.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            // update message view
+                                            update_single_message_from_messge_id(element.id, true);
+                                        }
+                                        catch (Exception e4)
+                                        {
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        Log.i(TAG, "button:" + element._swing_ok.getBounds().contains(point) + " " +
+                                                   element._swing_ok.getLocation().x + " " +
+                                                   element._swing_ok.getLocation().y + " " +
+                                                   element._swing_ok.getParent().getLocation().x + " " +
+                                                   element._swing_ok.getParent().getLocation().y);
+
+                                        Log.i(TAG, "button:" + element._swing_cancel.getBounds().contains(point) + " " +
+                                                   element._swing_cancel.getLocation().x + " " +
+                                                   element._swing_cancel.getLocation().y + " " +
+                                                   element._swing_cancel.getParent().getLocation().x + " " +
+                                                   element._swing_cancel.getParent().getLocation().y);
+
+                                    }
+                                }
+                                catch (Exception e2)
+                                {
+                                }
+                            }
+
+                            if (button_pressed)
+                            {
+                                return;
+                            }
+
                             if (element.filedb_id > 0)
+                            {
+                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                                {
+                                    run_file(element.filename_fullpath);
+                                    Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                }
+                            }
+                            else if (element.direction == 1)
                             {
                                 if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
                                 {
@@ -496,5 +699,120 @@ public class MessageListFragmentJ extends JPanel
         {
         }
         return null;
+    }
+
+    static void add_outgoing_file(String filepath, String filename)
+    {
+        Log.i(TAG, "add_outgoing_file:regular file");
+
+        long file_size = -1;
+        try
+        {
+            file_size = new java.io.File(filepath + "/" + filename).length();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            // file length unknown?
+            return;
+        }
+
+        if (file_size < 1)
+        {
+            // file length "zero"?
+            return;
+        }
+
+        Log.i(TAG, "add_outgoing_file:friendnum=" + friendnum);
+
+        if (friendnum == -1)
+        {
+            // sorry, still no friendnum
+            Log.i(TAG, "add_outgoing_file:sorry, still no friendnum");
+            return;
+        }
+
+        Log.i(TAG, "add_outgoing_file:friendnum(2)=" + friendnum);
+
+        Filetransfer f = new Filetransfer();
+        f.tox_public_key_string = tox_friend_get_public_key__wrapper(friendnum);
+        f.direction = TRIFA_FT_DIRECTION_OUTGOING.value;
+        f.file_number = -1; // add later when we actually have the number
+        f.kind = TOX_FILE_KIND_DATA.value;
+        f.state = TOX_FILE_CONTROL_PAUSE.value;
+        f.path_name = filepath;
+        f.file_name = filename;
+        f.filesize = file_size;
+        f.ft_accepted = false;
+        f.ft_outgoing_started = false;
+        f.current_position = 0;
+
+        Log.i(TAG, "add_outgoing_file:tox_public_key_string=" + f.tox_public_key_string);
+
+        long ft_id = insert_into_filetransfer_db(f);
+        f.id = ft_id;
+
+        // Message m_tmp = orma.selectFromMessage().tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(3)).orderByMessage_idDesc().get(0);
+        Log.i(TAG, "add_outgoing_file:MM2MM:2:" + ft_id);
+
+
+        // ---------- DEBUG ----------
+        Filetransfer ft_tmp = orma.selectFromFiletransfer().idEq(ft_id).toList().get(0);
+        Log.i(TAG, "add_outgoing_file:MM2MM:4a:" + "fid=" + ft_tmp.id + " mid=" + ft_tmp.message_id);
+        // ---------- DEBUG ----------
+
+
+        // add FT message to UI
+        Message m = new Message();
+
+        m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friendnum);
+        m.direction = 1; // msg outgoing
+        m.TOX_MESSAGE_TYPE = 0;
+        m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_FILE.value;
+        m.filetransfer_id = ft_id;
+        m.filedb_id = -1;
+        m.state = TOX_FILE_CONTROL_PAUSE.value;
+        m.ft_accepted = false;
+        m.ft_outgoing_started = false;
+        m.filename_fullpath = new java.io.File(filepath + "/" + filename).getAbsolutePath();
+        m.sent_timestamp = System.currentTimeMillis();
+        m.text = filename + "\n" + file_size + " bytes";
+
+        long new_msg_id = insert_into_message_db(m, true);
+        m.id = new_msg_id;
+
+        // ---------- DEBUG ----------
+        Log.i(TAG, "add_outgoing_file:MM2MM:3:" + new_msg_id);
+        Message m_tmp = orma.selectFromMessage().idEq(new_msg_id).toList().get(0);
+        Log.i(TAG, "add_outgoing_file:MM2MM:4:" + m.filetransfer_id + "::" + m_tmp);
+        // ---------- DEBUG ----------
+
+        f.message_id = new_msg_id;
+        // ** // update_filetransfer_db_messageid_from_id(f, ft_id);
+        update_filetransfer_db_full(f);
+
+        // ---------- DEBUG ----------
+        Filetransfer ft_tmp2 = orma.selectFromFiletransfer().idEq(ft_id).toList().get(0);
+        Log.i(TAG, "add_outgoing_file:MM2MM:4b:" + "fid=" + ft_tmp2.id + " mid=" + ft_tmp2.message_id);
+        // ---------- DEBUG ----------
+
+        // ---------- DEBUG ----------
+        m_tmp = orma.selectFromMessage().idEq(new_msg_id).toList().get(0);
+        Log.i(TAG, "add_outgoing_file:MM2MM:5:" + m.filetransfer_id + "::" + m_tmp);
+        // ---------- DEBUG ----------
+
+        // --- ??? should we do this here?
+        //        try
+        //        {
+        //            // update "new" status on friendlist fragment
+        //            FriendList f2 = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
+        //            friend_list_fragment.modify_friend(f2, friendnum);
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            e.printStackTrace();
+        //            Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+        //        }
+        // --- ??? should we do this here?
     }
 }

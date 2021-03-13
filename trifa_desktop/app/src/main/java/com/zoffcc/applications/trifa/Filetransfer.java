@@ -475,4 +475,18 @@ public class Filetransfer
         this.sql_set = this.sql_set + " ft_accepted='" + b(ft_accepted) + "' ";
         return this;
     }
+
+    public Filetransfer ft_outgoing_started(boolean ft_outgoing_started)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " ft_outgoing_started='" + b(ft_outgoing_started) + "' ";
+        return this;
+    }
 }
