@@ -35,40 +35,10 @@ export CFLAGS="$CFLAGS -fPIC"
 type sudo
 
 
-# --- NASM ---
-if [ 1 == 1 ]; then
+# travis has some strange thing installes as "/usr/bin/nasm"
+# remove it
+sudo rm -Rf /usr/bin/nasm
 
-cd "$_SRC_"
-
-    export PATH=$ORIGPATH
-
-    rm -Rf nasm
-    git clone http://repo.or.cz/nasm.git
-    cd nasm/
-    git checkout nasm-2.13.03
-
-    ./autogen.sh
-    ./configure --prefix="$_INST_"
-
-    set -x
-    sudo make || exit 1
-
-    # seems man pages are not always built. but who needs those
-    touch nasm.1
-    touch ndisasm.1
-    sudo make install || exit 1
-
-    export PATH="$_INST_""/bin":$NEWPATH
-
-    type -a nasm
-
-    nasm --version || exit 1
-    set +x
-
-cd "$_HOME_"
-
-fi
-# --- NASM ---
 
 # ---------- ffmpeg ---------
 if [ 1 == 1 ]; then
@@ -244,7 +214,40 @@ cd "$_HOME_"
 fi
 # ---------- vpx ---------
 
+# --- NASM ---
+if [ 1 == 1 ]; then
 
+cd "$_SRC_"
+
+    export PATH=$ORIGPATH
+
+    rm -Rf nasm
+    git clone http://repo.or.cz/nasm.git
+    cd nasm/
+    git checkout nasm-2.13.03
+
+    ./autogen.sh
+    ./configure --prefix="$_INST_"
+
+    set -x
+    sudo make || exit 1
+
+    # seems man pages are not always built. but who needs those
+    touch nasm.1
+    touch ndisasm.1
+    sudo make install || exit 1
+
+    export PATH=$NEWPATH:"$_INST_""/bin"
+
+    type -a nasm
+
+    nasm --version || exit 1
+    set +x
+
+cd "$_HOME_"
+
+fi
+# --- NASM ---
 
 # ---------- x264 ---------
 if [ 1 == 1 ]; then
