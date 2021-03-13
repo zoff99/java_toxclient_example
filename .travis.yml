@@ -8,5 +8,6 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
+  - brew install cliclick
 
 
