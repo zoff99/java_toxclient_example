@@ -38,6 +38,14 @@ jobs:
             $JAVA_HOME/bin/java -version
             $JAVA_HOME/bin/javac -version
 
+    - name: cat jni headers
+      run:  |
+            cat /usr/local/Cellar/openjdk/15.0.2/include/jni_md.h
+            echo "-----------------"
+            echo "-----------------"
+            echo "-----------------"
+            cat /usr/local/Cellar/openjdk/15.0.2/include/jni.h
+
     - name: install java
       run:  brew install java
 

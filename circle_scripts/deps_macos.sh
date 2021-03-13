@@ -35,11 +35,6 @@ export CFLAGS="$CFLAGS -fPIC"
 type sudo
 
 
-# travis has some strange thing installes as "/usr/bin/nasm"
-# remove it
-sudo rm -Rf /usr/bin/nasm
-
-
 # ---------- ffmpeg ---------
 if [ 1 == 1 ]; then
 
