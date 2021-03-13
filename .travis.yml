@@ -2,5 +2,9 @@ jobs:
   include:
     - os: osx
       osx_image: xcode10.1
+      sudo: required
+
+script:
+  - id -a;pwd;ls -al
 
 
