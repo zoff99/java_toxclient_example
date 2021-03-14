@@ -21,6 +21,8 @@ package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
 import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
@@ -91,6 +93,46 @@ public class RelayListDB
     {
         this.sql_where = this.sql_where + " and  own_relay='" + b(own_relay) + "' ";
         return this;
+    }
+
+    public List<RelayListDB> toList()
+    {
+        List<RelayListDB> list = null;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next())
+            {
+                RelayListDB out = new RelayListDB();
+
+                out.tox_public_key_string = rs.getString("tox_public_key_string");
+                out.TOX_CONNECTION = rs.getInt("TOX_CONNECTION");
+                out.TOX_CONNECTION_on_off = rs.getInt("TOX_CONNECTION_on_off");
+                out.own_relay = rs.getBoolean("own_relay");
+                out.last_online_timestamp = rs.getLong("last_online_timestamp");
+                out.tox_public_key_string_of_owner = rs.getString("tox_public_key_string_of_owner");
+
+                if (list == null)
+                {
+                    list = new ArrayList<RelayListDB>();
+                }
+                list.add(out);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     public int count()
@@ -168,4 +210,9 @@ public class RelayListDB
         return ret;
     }
 
+    public RelayListDB tox_public_key_stringEq(String tox_public_key_string)
+    {
+        this.sql_where = this.sql_where + " and  tox_public_key_string='" + s(tox_public_key_string) + "' ";
+        return this;
+    }
 }

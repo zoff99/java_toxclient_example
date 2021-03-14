@@ -85,6 +85,7 @@ import static com.zoffcc.applications.trifa.HelperConference.get_last_conference
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
@@ -136,6 +137,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXA
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_FRIEND_CALL_STATE.TOXAV_FRIEND_CALL_STATE_SENDING_V;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_AV;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONFERENCE_TYPE.TOX_CONFERENCE_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
@@ -1685,6 +1687,42 @@ public class MainActivity extends JFrame
                 HelperFriend.update_friend_in_db_connection_status_real(f);
             }
 
+            if (f.TOX_CONNECTION != a_TOX_CONNECTION)
+            {
+                if (f.TOX_CONNECTION == TOX_CONNECTION_NONE.value)
+                {
+                    // ******** friend just came online ********
+                    if (HelperRelay.have_own_relay())
+                    {
+                        if (!HelperRelay.is_any_relay(f.tox_public_key_string))
+                        {
+                            HelperRelay.send_relay_pubkey_to_friend(HelperRelay.get_own_relay_pubkey(),
+                                                                    f.tox_public_key_string);
+
+                            HelperRelay.send_friend_pubkey_to_relay(HelperRelay.get_own_relay_pubkey(),
+                                                                    f.tox_public_key_string);
+                        }
+                        else
+                        {
+                            HelperRelay.invite_to_all_conferences_own_relay(f.tox_public_key_string);
+                        }
+                    }
+                }
+            }
+
+            if (HelperRelay.is_any_relay(f.tox_public_key_string))
+            {
+                if (!HelperRelay.is_own_relay(f.tox_public_key_string))
+                {
+                    FriendList f_real = HelperRelay.get_friend_for_relay(f.tox_public_key_string);
+
+                    if (f_real != null)
+                    {
+                        HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f_real, true);
+                    }
+                }
+            }
+
             HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
 
             if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
@@ -1788,6 +1826,218 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_sync_message_v2_cb_method(long friend_number, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length, byte[] raw_data, long raw_data_length)
     {
+        if (!HelperRelay.is_own_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
+        {
+            // sync message only accepted from my own relay
+            return;
+        }
+
+        if (PREF__X_battery_saving_mode)
+        {
+            Log.i(TAG, "global_last_activity_for_battery_savings_ts:006:*PING*");
+        }
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        // Log.i(TAG, "friend_sync_message_v2_cb:fn=" + friend_number + " full rawmsg    =" + bytes_to_hex(raw_message));
+        // Log.i(TAG, "friend_sync_message_v2_cb:fn=" + friend_number + " wrapped rawdata=" + bytes_to_hex(raw_data));
+        final ByteBuffer raw_message_buf_wrapped = ByteBuffer.allocateDirect((int) raw_data_length);
+        raw_message_buf_wrapped.put(raw_data, 0, (int) raw_data_length);
+        ByteBuffer raw_message_buf = ByteBuffer.allocateDirect((int) raw_message_length);
+        raw_message_buf.put(raw_message, 0, (int) raw_message_length);
+        long msg_sec = tox_messagev2_get_ts_sec(raw_message_buf);
+        long msg_ms = tox_messagev2_get_ts_ms(raw_message_buf);
+        // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_sec + " ms=" + msg_ms);
+        ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+        tox_messagev2_get_message_id(raw_message_buf, msg_id_buffer);
+        ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+        String msg_id_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
+                                                               msg_id_buffer_compat.arrayOffset(),
+                                                               msg_id_buffer_compat.limit());
+        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string);
+        String real_sender_as_hex_string = tox_messagev2_get_sync_message_pubkey(raw_message_buf);
+        // Log.i(TAG, "friend_sync_message_v2_cb:real sender pubkey=" + real_sender_as_hex_string);
+        long msgv2_type = tox_messagev2_get_sync_message_type(raw_message_buf);
+        // Log.i(TAG, "friend_sync_message_v2_cb:msg type=" + ToxVars.TOX_FILE_KIND.value_str((int) msgv2_type));
+        ByteBuffer msg_id_buffer_wrapped = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+        tox_messagev2_get_message_id(raw_message_buf_wrapped, msg_id_buffer_wrapped);
+
+        ByteBufferCompat msg_id_buffer_wrapped_compat = new ByteBufferCompat(msg_id_buffer_wrapped);
+        String msg_id_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_id_buffer_wrapped_compat.array(),
+                                                                       msg_id_buffer_wrapped_compat.arrayOffset(),
+                                                                       msg_id_buffer_wrapped_compat.limit());
+        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
+
+        if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_SEND.value)
+        {
+            long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
+            long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
+            // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
+            ByteBuffer msg_text_buffer_wrapped = ByteBuffer.allocateDirect((int) raw_data_length);
+            long text_length = tox_messagev2_get_message_text(raw_message_buf_wrapped, raw_data_length, 0, 0,
+                                                              msg_text_buffer_wrapped);
+            String wrapped_msg_text_as_string = "";
+
+            try
+            {
+                wrapped_msg_text_as_string = new String(msg_text_buffer_wrapped.array(),
+                                                        msg_text_buffer_wrapped.arrayOffset(), (int) text_length,
+                                                        "UTF-8");
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            String msg_text_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_text_buffer_wrapped.array(),
+                                                                             msg_text_buffer_wrapped.arrayOffset(),
+                                                                             msg_text_buffer_wrapped.limit());
+            // Log.i(TAG, "friend_sync_message_v2_cb:len=" + text_length + " wrapped msg text str=" +
+            //            wrapped_msg_text_as_string);
+            // Log.i(TAG, "friend_sync_message_v2_cb:wrapped msg text hex=" + msg_text_as_hex_string_wrapped);
+
+            try
+            {
+                if (tox_friend_by_public_key__wrapper(real_sender_as_hex_string) == -1)
+                {
+                    // pubkey does NOT belong to a friend. it is probably a conference id
+                    // check it here
+
+                    // Log.i(TAG, "friend_sync_message_v2_cb:LL:" + orma.selectFromConferenceDB().toList());
+                    String real_conference_id = real_sender_as_hex_string;
+
+                    long conference_num = HelperConference.tox_conference_by_confid__wrapper(real_conference_id);
+                    // Log.i(TAG, "friend_sync_message_v2_cb:conference_num=" + conference_num);
+                    if (conference_num > -1)
+                    {
+                        String real_sender_peer_pubkey = wrapped_msg_text_as_string.substring(0, 64);
+                        long real_text_length = (text_length - 64 - 9);
+                        String real_sender_text_ = wrapped_msg_text_as_string.substring(64);
+
+                        String real_sender_text = "";
+                        String real_send_message_id = "";
+
+                        // Log.i(TAG,
+                        //      "xxxxxxxxxxxxx2:" + real_sender_text_.length() + " " + real_sender_text_.substring(8, 9) +
+                        //      " " + real_sender_text_.substring(9) + " " + real_sender_text_.substring(0, 8));
+
+                        if ((real_sender_text_.length() > 8) && (real_sender_text_.startsWith(":", 8)))
+                        {
+                            real_sender_text = real_sender_text_.substring(9);
+                            real_send_message_id = real_sender_text_.substring(0, 8).toLowerCase();
+                        }
+                        else
+                        {
+                            real_sender_text = real_sender_text_;
+                            real_send_message_id = "";
+                        }
+
+
+                        long sync_msg_received_timestamp = (msg_wrapped_sec * 1000) + msg_wrapped_ms;
+
+                        // add text as conference message
+                        long sender_peer_num = HelperConference.get_peernum_from_peer_pubkey(real_conference_id,
+                                                                                             real_sender_peer_pubkey);
+                        // Log.i(TAG, "friend_sync_message_v2_cb:sender_peer_num=" + sender_peer_num);
+
+                        // now check if this is "potentially" a double message, we can not be sure a 100%
+                        // since there is no uniqe key for each message
+                        ConferenceMessage cm = get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey(
+                                real_conference_id, real_sender_peer_pubkey, sync_msg_received_timestamp,
+                                real_send_message_id, MESSAGE_SYNC_DOUBLE_INTERVAL_SECS, false);
+
+                        if (cm != null)
+                        {
+                            if (cm.text.equals(real_sender_text))
+                            {
+                                Log.i(TAG, "friend_sync_message_v2_cb:potentially double message");
+                                // ok it's a "potentially" double message
+                                // just ignore it, but still send "receipt" to proxy so it won't send this message again
+                                send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer);
+                                return;
+                            }
+                        }
+
+                        HelperGeneric.conference_message_add_from_sync(
+                                HelperConference.tox_conference_by_confid__wrapper(real_conference_id), sender_peer_num,
+                                real_sender_peer_pubkey, TRIFA_MSG_TYPE_TEXT.value, real_sender_text, real_text_length,
+                                sync_msg_received_timestamp);
+                        //TODO: bestätigung senden, dass wir die nachricht bekommen haben.
+                        // TOX_FILE_KIND_MESSAGEV2_ANSWER
+                        // send_friend_msg_receipt_v2_wrapper
+                        //ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+
+                        send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer);
+                    }
+                    else
+                    {
+                        // sync message from unkown original sender
+                        // still send "receipt" to our relay, or else it will send us this message forever
+                        Log.i(TAG, "friend_sync_message_v2_cb:send receipt for unknown message");
+                        send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+
+                        return;
+                    }
+                }
+                else
+                {
+                    HelperGeneric.receive_incoming_message(2,
+                                                           tox_friend_by_public_key__wrapper(real_sender_as_hex_string),
+                                                           wrapped_msg_text_as_string, raw_data, raw_data_length,
+                                                           real_sender_as_hex_string);
+                }
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
+
+            // send message receipt v2 to own relay
+            send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+        }
+        else if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_ANSWER.value)
+        {
+            // we got an "msg receipt" from the relay
+            // Log.i(TAG, "friend_sync_message_v2_cb:TOX_FILE_KIND_MESSAGEV2_ANSWER");
+            final String message_id_hash_as_hex_string = msg_id_as_hex_string_wrapped;
+
+            try
+            {
+                // Log.i(TAG, "friend_sync_message_v2_cb:message_id_hash_as_hex_string=" + message_id_hash_as_hex_string +
+                //            " friendpubkey=" + real_sender_as_hex_string);
+
+                final Message m = orma.selectFromMessage().
+                        msg_id_hashEq(message_id_hash_as_hex_string).
+                        tox_friendpubkeyEq(real_sender_as_hex_string).
+                        directionEq(1).
+                        readEq(false).
+                        toList().get(0);
+
+                if (m != null)
+                {
+                    try
+                    {
+                        long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
+                        long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
+                        m.raw_msgv2_bytes = "";
+                        m.rcvd_timestamp = (msg_wrapped_sec * 1000) + msg_wrapped_ms;
+                        m.read = true;
+                        HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
+                        m.resend_count = 2;
+                        HelperMessage.update_message_in_db_resend_count(m);
+                        HelperMessage.update_single_message(m, true);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+            }
+        }
     }
 
     static void android_tox_callback_friend_read_receipt_message_v2_cb_method(final long friend_number, long ts_sec, byte[] msg_id)

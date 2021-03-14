@@ -316,4 +316,81 @@ public class HelperRelay
             e.printStackTrace();
         }
     }
-}
+
+    static void send_relay_pubkey_to_friend(String relay_public_key_string, String friend_pubkey)
+    {
+        int i = 0;
+        long friend_num = HelperFriend.tox_friend_by_public_key__wrapper(friend_pubkey);
+        byte[] data = HelperGeneric.hex_to_bytes("FF" + relay_public_key_string);
+        data[0] = (byte) CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND.value;
+        // Log.d(TAG, "send_relay_pubkey_to_friend:data=" + data);
+        int result = MainActivity.tox_friend_send_lossless_packet(friend_num, data, TOX_PUBLIC_KEY_SIZE + 1);
+        // Log.d(TAG, "send_relay_pubkey_to_friend:res=" + result);
+    }
+
+    static String get_own_relay_pubkey()
+    {
+        String ret = null;
+
+        try
+        {
+            ret = orma.selectFromRelayListDB().own_relayEq(true).toList().get(0).tox_public_key_string;
+        }
+        catch (Exception e)
+        {
+        }
+
+        return ret;
+    }
+
+    static void send_friend_pubkey_to_relay(String relay_public_key_string, String friend_pubkey)
+    {
+        int i = 0;
+        long friend_num = HelperFriend.tox_friend_by_public_key__wrapper(relay_public_key_string);
+        byte[] data = HelperGeneric.hex_to_bytes("FF" + friend_pubkey);
+        data[0] = (byte) CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY.value;
+        // Log.d(TAG, "send_friend_pubkey_to_relay:data=" + data);
+        int result = MainActivity.tox_friend_send_lossless_packet(friend_num, data, TOX_PUBLIC_KEY_SIZE + 1);
+        // Log.d(TAG, "send_friend_pubkey_to_relay:res=" + result);
+    }
+
+    static boolean is_own_relay(String friend_pubkey)
+    {
+        boolean ret = false;
+
+        try
+        {
+            String own_relay_pubkey = get_own_relay_pubkey();
+
+            if (own_relay_pubkey != null)
+            {
+                if (friend_pubkey.equals(own_relay_pubkey) == true)
+                {
+                    ret = true;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+        }
+
+        return ret;
+    }
+
+    static FriendList get_friend_for_relay(String relay_pubkey)
+    {
+        FriendList ret = null;
+
+        try
+        {
+            String f_pubkey = orma.selectFromRelayListDB().own_relayEq(false).
+                    tox_public_key_stringEq(relay_pubkey).toList().get(0).tox_public_key_string_of_owner;
+            ret = orma.selectFromFriendList().tox_public_key_stringEq(f_pubkey).toList().get(0);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }}

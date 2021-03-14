@@ -30,6 +30,7 @@ import java.util.Date;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
@@ -849,5 +850,95 @@ public class HelperGeneric
         }
 
         return out;
+    }
+
+    static void conference_message_add_from_sync(long conference_number, long peer_number2, String peer_pubkey, int a_TOX_MESSAGE_TYPE, String message, long length, long sent_timestamp_in_ms)
+    {
+        // Log.i(TAG, "conference_message_add_from_sync:cf_num=" + conference_number + " pnum=" + peer_number2 + " msg=" +
+        //            message);
+
+        int res = -1;
+        if (peer_number2 == -1)
+        {
+            res = -1;
+        }
+        else
+        {
+            res = MainActivity.tox_conference_peer_number_is_ours(conference_number, peer_number2);
+        }
+
+        if (res == 1)
+        {
+            // HINT: do not add our own messages, they are already in the DB!
+            // Log.i(TAG, "conference_message_add_from_sync:own peer");
+            return;
+        }
+
+        boolean do_notification = true;
+        boolean do_badge_update = true;
+        String conf_id = "-1";
+        ConferenceDB conf_temp = null;
+
+        try
+        {
+            // TODO: cache me!!
+            conf_temp = orma.selectFromConferenceDB().
+                    tox_conference_numberEq(conference_number).
+                    conference_activeEq(true).toList().get(0);
+            conf_id = conf_temp.conference_identifier;
+            // Log.i(TAG, "conference_message_add_from_sync:conf_id=" + conf_id);
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+
+        try
+        {
+            if (conf_temp.notification_silent)
+            {
+                do_notification = false;
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+
+        ConferenceMessage m = new ConferenceMessage();
+        m.is_new = do_badge_update;
+        // m.tox_friendnum = friend_number;
+        m.tox_peerpubkey = peer_pubkey;
+        m.direction = 0; // msg received
+        m.TOX_MESSAGE_TYPE = 0;
+        m.read = false;
+        m.tox_peername = null;
+        m.conference_identifier = conf_id;
+        m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+        m.sent_timestamp = sent_timestamp_in_ms;
+        m.rcvd_timestamp = System.currentTimeMillis();
+        m.text = message;
+        m.was_synced = true;
+
+        try
+        {
+            m.tox_peername = HelperConference.tox_conference_peer_get_name__wrapper(m.conference_identifier,
+                                                                                    m.tox_peerpubkey);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        {
+            HelperConference.insert_into_conference_message_db(m, true);
+        }
+        else
+        {
+            HelperConference.insert_into_conference_message_db(m, false);
+        }
+
+        HelperConference.update_single_conference_in_friendlist_view(conf_temp);
     }
 }

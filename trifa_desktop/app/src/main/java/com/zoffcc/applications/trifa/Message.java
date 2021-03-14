@@ -231,7 +231,6 @@ public class Message
         return list;
     }
 
-
     public long insert()
     {
         long ret = -1;

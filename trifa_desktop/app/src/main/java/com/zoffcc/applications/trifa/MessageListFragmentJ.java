@@ -67,6 +67,7 @@ import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_send;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
+import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
@@ -484,7 +485,7 @@ public class MessageListFragmentJ extends JPanel
                         };
                         SwingUtilities.invokeLater(myRunnable);
 
-                        //**//stop_self_typing_indicator_s();
+                        stop_self_typing_indicator_s();
                     }
                     else
                     {
@@ -512,7 +513,7 @@ public class MessageListFragmentJ extends JPanel
                         };
                         SwingUtilities.invokeLater(myRunnable);
 
-                        //**//stop_self_typing_indicator_s();
+                        stop_self_typing_indicator_s();
                     }
                 }
             }
@@ -524,6 +525,28 @@ public class MessageListFragmentJ extends JPanel
         }
 
         // Log.i(TAG,"send_message_onclick:---end");
+    }
+
+    static void stop_self_typing_indicator_s()
+    {
+        stop_self_typing_indicator();
+    }
+
+    static void stop_self_typing_indicator()
+    {
+        if (global_typing == 1)
+        {
+            global_typing = 0;  // typing = 0
+            try
+            {
+                Log.i(TAG, "typing:fn#" + get_current_friendnum() + ":stop_self_typing_indicator");
+                tox_self_set_typing(get_current_friendnum(), global_typing);
+            }
+            catch (Exception e)
+            {
+                Log.i(TAG, "typing:fn#" + get_current_friendnum() + ":EE2.b" + e.getMessage());
+            }
+        }
     }
 
     synchronized static void add_message(final Message m)
