@@ -8,6 +8,10 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
+  - echo $key | wc -c
+  - echo $key | tr -d ' ' | wc -c
+  - echo "$key" | wc -c
+  - echo "$key" | tr -d ' ' | wc -c
   - type -a sftp
   - type -a scp
   - java -version
