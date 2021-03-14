@@ -25,4 +25,4 @@ https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-desktop
 
 ## Trouble Shooting
 
-**HINT:** if you get this error ```Unsupported major.minor version 55.0``` you need to install java 11 runtime to run the client
+**HINT:** if you get this error ```Unsupported major.minor version 55.0``` you need to install java 11 (or higher) runtime to run the client
