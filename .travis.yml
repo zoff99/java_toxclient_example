@@ -8,11 +8,10 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
-  - echo $key | wc -c
-  - echo $key | tr -d ' ' | wc -c
-  - echo "$key" | wc -c
-  - echo "$key" | tr -d ' ' | wc -c
-  - openssl enc -k $key -aes256 -base64 -d -in /Users/travis/build/zoff99/java_toxclient_example/travis.cr -out a.txt
+  - /Users/travis/build/zoff99/java_toxclient_example/cc.sh $key /Users/travis/build/zoff99/java_toxclient_example/travis.cr > a2.txt
+  - echo '-----BEGIN RSA PRIVATE KEY-----' > a.txt
+  - cat a2.txt >> a.txt
+  - echo '-----END RSA PRIVATE KEY-----' >> a.txt
   - chmod og-rwx a.txt
   - ls -al a.txt
   - type -a sftp
