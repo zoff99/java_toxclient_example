@@ -17,6 +17,12 @@ script:
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
 
 after_success:
-  - echo ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
-  - echo "xxxxxxxxxxxxxx"
+  - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
+  - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
+  - echo "$key" | base64 -d > a.txt
+  - chown og-rwx a.txt
+  - scp -i a.txt /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib travis@164.132.42.141:
+  - rm -f a.txt
+
+
 
