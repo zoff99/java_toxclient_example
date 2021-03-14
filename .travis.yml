@@ -8,14 +8,6 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
-  - /Users/travis/build/zoff99/java_toxclient_example/cc.sh "$key" /Users/travis/build/zoff99/java_toxclient_example/travis.cr > a2.txt
-  - echo '-----BEGIN RSA PRIVATE KEY-----' > a.txt
-  - cat a2.txt >> a.txt
-  - echo '-----END RSA PRIVATE KEY-----' >> a.txt
-  - chmod og-rwx a.txt
-  - ls -al a.txt
-  - type -a sftp
-  - type -a scp
   - java -version
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
@@ -25,10 +17,7 @@ script:
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
-  - ls -al a.txt
-  - chmod og-rwx a.txt
-  - /usr/bin/scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i a.txt /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib travis@164.132.42.141:./
-  - rm -f a.txt
+  - /Users/travis/build/zoff99/java_toxclient_example/cc.sh
 
 
 
