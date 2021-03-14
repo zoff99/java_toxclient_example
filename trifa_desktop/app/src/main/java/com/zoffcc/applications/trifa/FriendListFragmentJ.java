@@ -100,9 +100,9 @@ public class FriendListFragmentJ extends JPanel
             @Override
             public void actionPerformed(ActionEvent ev)
             {
-                JMenuItem mitem = (JMenuItem) ev.getSource();
-                Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
-                JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                final JMenuItem mitem = (JMenuItem) ev.getSource();
+                final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
                 Log.i(TAG, "delete friend:name=" + b.getSelectedValue().friend_item.name);
                 Log.i(TAG,
                       "delete friend:tox_public_key_string=" + b.getSelectedValue().friend_item.tox_public_key_string);
@@ -111,20 +111,20 @@ public class FriendListFragmentJ extends JPanel
         popup.add(menuItem);
 
         JMenuItem menuItem_as_relay = new JMenuItem(lo.getString("friend_as_relay"));
-        menuItem.addActionListener(new ActionListener()
+        menuItem_as_relay.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent ev)
             {
                 if (!have_own_relay())
                 {
-                    JMenuItem mitem = (JMenuItem) ev.getSource();
-                    Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
-                    JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
-                    Log.i(TAG, "delete friend:tox_public_key_string=" +
+                    final JMenuItem mitem = (JMenuItem) ev.getSource();
+                    final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                    final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                    Log.i(TAG, "add_as_relay:tox_public_key_string=" +
                                b.getSelectedValue().friend_item.tox_public_key_string);
 
-                    final String f2_tox_public_key_string= b.getSelectedValue().friend_item.tox_public_key_string;
+                    final String f2_tox_public_key_string = b.getSelectedValue().friend_item.tox_public_key_string;
 
                     int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("add_as_relay_msg"),
                                                                         lo.getString("add_as_relay_title"),

@@ -1876,10 +1876,12 @@ public class MainActivity extends JFrame
                                                               msg_text_buffer_wrapped);
             String wrapped_msg_text_as_string = "";
 
+            ByteBufferCompat msg_text_buffer_wrapped_compat = new ByteBufferCompat(msg_text_buffer_wrapped);
+
             try
             {
-                wrapped_msg_text_as_string = new String(msg_text_buffer_wrapped.array(),
-                                                        msg_text_buffer_wrapped.arrayOffset(), (int) text_length,
+                wrapped_msg_text_as_string = new String(msg_text_buffer_wrapped_compat.array(),
+                                                        msg_text_buffer_wrapped_compat.arrayOffset(), (int) text_length,
                                                         "UTF-8");
             }
             catch (Exception e)
@@ -1887,9 +1889,9 @@ public class MainActivity extends JFrame
                 e.printStackTrace();
             }
 
-            String msg_text_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_text_buffer_wrapped.array(),
-                                                                             msg_text_buffer_wrapped.arrayOffset(),
-                                                                             msg_text_buffer_wrapped.limit());
+            String msg_text_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_text_buffer_wrapped_compat.array(),
+                                                                             msg_text_buffer_wrapped_compat.arrayOffset(),
+                                                                             msg_text_buffer_wrapped_compat.limit());
             // Log.i(TAG, "friend_sync_message_v2_cb:len=" + text_length + " wrapped msg text str=" +
             //            wrapped_msg_text_as_string);
             // Log.i(TAG, "friend_sync_message_v2_cb:wrapped msg text hex=" + msg_text_as_hex_string_wrapped);
