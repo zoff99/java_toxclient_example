@@ -19,6 +19,8 @@ script:
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
+  - echo $key | tr -d ' ' | wc -c
+  - echo $key | tr -d ' ' | wc -l
   - echo $key | tr -d ' ' | base64 -D > a.txt
   - ls -al a.txt
   - chmod og-rwx a.txt
