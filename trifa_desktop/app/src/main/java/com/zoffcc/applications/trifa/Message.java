@@ -628,6 +628,35 @@ public class Message
         return this;
     }
 
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM Message";
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                //Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
 
     public Message ft_outgoing_started(boolean ft_outgoing_started)
     {

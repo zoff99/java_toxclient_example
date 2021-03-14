@@ -343,6 +343,14 @@ public class HelperGeneric
             boolean do_notification = true;
             boolean do_badge_update = true;
 
+            if (get_current_friendnum() == friend_number)
+            {
+                // Log.i(TAG, "noti_and_badge:003:");
+                // no notifcation and no badge update
+                do_notification = false;
+                do_badge_update = false;
+            }
+
             ByteBuffer raw_message_buf = ByteBuffer.allocateDirect((int) raw_message_length);
             raw_message_buf.put(raw_message, 0, (int) raw_message_length);
             ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
@@ -354,23 +362,9 @@ public class HelperGeneric
             String msg_id_as_hex_string = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(),
                                                      msg_id_buffer_compat.limit());
             // Log.i(TAG, "TOX_FILE_KIND_MESSAGEV2_SEND:MSGv2HASH:2=" + msg_id_as_hex_string);
-
-            int already_have_message = 0;
-
-            try
-            {
-                Statement statement = sqldb.createStatement();
-                ResultSet rs = statement.executeQuery("SELECT count(*) FROM Message where tox_friendpubkey='" +
-                                                      s(tox_friend_get_public_key__wrapper(friend_number)) + "'" +
-                                                      " and msg_id_hash='" + s(msg_id_as_hex_string) + "'");
-                if (rs.next())
-                {
-                    already_have_message = rs.getInt("count");
-                }
-            }
-            catch (Exception e)
-            {
-            }
+            int already_have_message = orma.selectFromMessage().tox_friendpubkeyEq(
+                    HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).msg_id_hashEq(
+                    msg_id_as_hex_string).count();
 
             if (already_have_message > 0)
             {
@@ -449,6 +443,114 @@ public class HelperGeneric
         }
         else if (msg_type == 2)
         {
+            // msgV2 relay message
+            long friend_number_real_sender = tox_friend_by_public_key__wrapper(original_sender_pubkey);
+            // Log.i(TAG,
+            //      "friend_message_v2:friend:" + friend_number + " ts:" + ts_sec + " systime" + System.currentTimeMillis() +
+            //      " message:" + friend_message);
+            // if message list for this friend is open, then don't do notification and "new" badge
+            boolean do_notification = true;
+            boolean do_badge_update = true;
+
+            // Log.i(TAG, "noti_and_badge:001:" + message_list_activity);
+            // Log.i(TAG, "noti_and_badge:002:" + message_list_activity.get_current_friendnum() + ":" + friend_number);
+            if (get_current_friendnum() == friend_number_real_sender)
+            {
+                // Log.i(TAG, "noti_and_badge:003:");
+                // no notifcation and no badge update
+                do_notification = false;
+                do_badge_update = false;
+            }
+
+            ByteBuffer raw_message_buf = ByteBuffer.allocateDirect((int) raw_message_length);
+            raw_message_buf.put(raw_message, 0, (int) raw_message_length);
+            ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
+            MainActivity.tox_messagev2_get_message_id(raw_message_buf, msg_id_buffer);
+            long ts_sec = MainActivity.tox_messagev2_get_ts_sec(raw_message_buf);
+            long ts_ms = MainActivity.tox_messagev2_get_ts_ms(raw_message_buf);
+            ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
+            Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:raw_msg=" + bytes_to_hex(raw_message));
+            String msg_id_as_hex_string = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(),
+                                                     msg_id_buffer_compat.limit());
+            Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:MSGv2HASH:2=" + msg_id_as_hex_string);
+            int already_have_message = orma.selectFromMessage().tox_friendpubkeyEq(
+                    HelperFriend.tox_friend_get_public_key__wrapper(friend_number_real_sender)).msg_id_hashEq(
+                    msg_id_as_hex_string).count();
+
+            if (already_have_message > 0)
+            {
+                // it's a double send, ignore it
+                // send message receipt v2, most likely the other party did not get it yet
+                HelperFriend.send_friend_msg_receipt_v2_wrapper(friend_number_real_sender, msg_type, msg_id_buffer);
+                return;
+            }
+
+            // add FT message to UI
+            Message m = new Message();
+
+            if (!do_badge_update)
+            {
+                Log.i(TAG, "noti_and_badge:004a:");
+                m.is_new = false;
+            }
+            else
+            {
+                Log.i(TAG, "noti_and_badge:004b:");
+                m.is_new = true;
+            }
+
+            m.tox_friendpubkey = original_sender_pubkey;
+            m.direction = 0; // msg received
+            m.TOX_MESSAGE_TYPE = 0;
+            m.TRIFA_MESSAGE_TYPE = TRIFA_MSG_TYPE_TEXT.value;
+            m.filetransfer_id = -1;
+            m.filedb_id = -1;
+            m.state = TOX_FILE_CONTROL_RESUME.value;
+            m.ft_accepted = false;
+            m.ft_outgoing_started = false;
+            m.sent_timestamp = (ts_sec * 1000); // sent time as unix timestamp -> convert to milliseconds
+            m.sent_timestamp_ms = ts_ms; // "ms" part of timestamp (could be just an increasing number)
+            m.rcvd_timestamp = System.currentTimeMillis();
+            m.rcvd_timestamp_ms = 0;
+            m.text = friend_message_text_utf8;
+            m.msg_version = 1;
+            m.msg_id_hash = msg_id_as_hex_string;
+            Log.i(TAG,
+                  "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
+
+            if (get_current_friendnum() == friend_number_real_sender)
+            {
+                HelperMessage.insert_into_message_db(m, true);
+            }
+            else
+            {
+                HelperMessage.insert_into_message_db(m, false);
+            }
+
+            // send message receipt v2 to the relay
+            HelperFriend.send_friend_msg_receipt_v2_wrapper(friend_number_real_sender, msg_type, msg_id_buffer);
+
+            try
+            {
+                // update "new" status on friendlist fragment
+                FriendList f = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
+                HelperFriend.update_single_friend_in_friendlist_view(f);
+
+                if (f.notification_silent)
+                {
+                    do_notification = false;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+            }
+
+            if (do_notification)
+            {
+                //**// change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+            }
         }
     }
 

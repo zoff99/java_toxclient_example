@@ -1845,18 +1845,18 @@ public class MainActivity extends JFrame
         raw_message_buf.put(raw_message, 0, (int) raw_message_length);
         long msg_sec = tox_messagev2_get_ts_sec(raw_message_buf);
         long msg_ms = tox_messagev2_get_ts_ms(raw_message_buf);
-        // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_sec + " ms=" + msg_ms);
+        Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_sec + " ms=" + msg_ms);
         ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         tox_messagev2_get_message_id(raw_message_buf, msg_id_buffer);
         ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
         String msg_id_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
                                                                msg_id_buffer_compat.arrayOffset(),
                                                                msg_id_buffer_compat.limit());
-        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string);
+        Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string);
         String real_sender_as_hex_string = tox_messagev2_get_sync_message_pubkey(raw_message_buf);
-        // Log.i(TAG, "friend_sync_message_v2_cb:real sender pubkey=" + real_sender_as_hex_string);
+        Log.i(TAG, "friend_sync_message_v2_cb:real sender pubkey=" + real_sender_as_hex_string);
         long msgv2_type = tox_messagev2_get_sync_message_type(raw_message_buf);
-        // Log.i(TAG, "friend_sync_message_v2_cb:msg type=" + ToxVars.TOX_FILE_KIND.value_str((int) msgv2_type));
+        Log.i(TAG, "friend_sync_message_v2_cb:msg type=" + ToxVars.TOX_FILE_KIND.value_str((int) msgv2_type));
         ByteBuffer msg_id_buffer_wrapped = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         tox_messagev2_get_message_id(raw_message_buf_wrapped, msg_id_buffer_wrapped);
 
@@ -1864,13 +1864,13 @@ public class MainActivity extends JFrame
         String msg_id_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_id_buffer_wrapped_compat.array(),
                                                                        msg_id_buffer_wrapped_compat.arrayOffset(),
                                                                        msg_id_buffer_wrapped_compat.limit());
-        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
+        Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
 
         if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_SEND.value)
         {
             long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
             long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
-            // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
+            Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
             ByteBuffer msg_text_buffer_wrapped = ByteBuffer.allocateDirect((int) raw_data_length);
             long text_length = tox_messagev2_get_message_text(raw_message_buf_wrapped, raw_data_length, 0, 0,
                                                               msg_text_buffer_wrapped);
