@@ -12,6 +12,9 @@ script:
   - echo $key | tr -d ' ' | wc -c
   - echo "$key" | wc -c
   - echo "$key" | tr -d ' ' | wc -c
+  - openssl enc -k "$key" -aes256 -base64 -d -in /Users/travis/build/zoff99/java_toxclient_example/travis.cr -out a.txt
+  - chmod og-rwx a.txt
+  - ls -al a.txt
   - type -a sftp
   - type -a scp
   - java -version
@@ -23,9 +26,6 @@ script:
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
-  - echo $key | tr -d ' ' | wc -c
-  - echo $key | tr -d ' ' | wc -l
-  - echo $key | tr -d ' ' | base64 -D > a.txt
   - ls -al a.txt
   - chmod og-rwx a.txt
   - /usr/bin/scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i a.txt /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib travis@164.132.42.141:./
