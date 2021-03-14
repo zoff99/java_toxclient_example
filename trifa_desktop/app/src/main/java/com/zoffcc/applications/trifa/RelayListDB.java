@@ -19,9 +19,20 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.OrmaDatabase.b;
+import static com.zoffcc.applications.trifa.OrmaDatabase.s;
+
 @Table
 public class RelayListDB
 {
+    private static final String TAG = "DB.RelayListDB";
+
     @PrimaryKey
     String tox_public_key_string = "";
 
@@ -69,4 +80,92 @@ public class RelayListDB
             return "*Exception*";
         }
     }
+
+    String sql_start = "";
+    String sql_set = "";
+    String sql_where = "where 1=1 "; // where
+    String sql_orderby = ""; // order by
+    String sql_limit = ""; // limit
+
+    public RelayListDB own_relayEq(boolean own_relay)
+    {
+        this.sql_where = this.sql_where + " and  own_relay='" + b(own_relay) + "' ";
+        return this;
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM RelayListDB";
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                //Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public long insert()
+    {
+        long ret = -1;
+
+        try
+        {
+            // @formatter:off
+            Statement statement = sqldb.createStatement();
+            final String sql_str="insert into RelayListDB" +
+                                 "(" +
+                                 "tox_public_key_string,"	+
+                                 "TOX_CONNECTION,"+
+                                 "TOX_CONNECTION_on_off,"+
+                                 "own_relay,"	+
+                                 "last_online_timestamp,"	+
+                                 "tox_public_key_string_of_owner"+
+                                 ")" +
+                                 "values" +
+                                 "(" +
+                                 "'"+s(""+this.tox_public_key_string)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION_on_off)+"'," +
+                                 "'"+b(this.own_relay)+"'," +
+                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
+                                 "'"+s(""+this.tox_public_key_string_of_owner)+"'" +
+                                 ")";
+
+            //if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql_str);
+            }
+
+            statement.execute(sql_str);
+            ret = get_last_rowid(statement);
+            // @formatter:on
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
 }

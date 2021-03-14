@@ -303,4 +303,10 @@ public class ConferenceDB
         this.sql_set = this.sql_set + " name='" + s(name) + "' ";
         return this;
     }
+
+    public ConferenceDB tox_conference_numberNotEq(int tox_conference_number)
+    {
+        this.sql_where = this.sql_where + " and tox_conference_number<>'" + s(tox_conference_number) + "' ";
+        return this;
+    }
 }

@@ -269,5 +269,20 @@ public class OrmaDatabase
     {
         return m.insert();
     }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM RelayListDB ...}.
+     */
+    public RelayListDB selectFromRelayListDB()
+    {
+        RelayListDB ret = new RelayListDB();
+        ret.sql_start = "SELECT * FROM RelayListDB";
+        return ret;
+    }
+
+    public long insertIntoRelayListDB(RelayListDB f)
+    {
+        return f.insert();
+    }
 }
 

@@ -98,6 +98,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thr
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
@@ -1054,6 +1055,8 @@ public class MainActivity extends JFrame
 
     public static native String tox_self_get_status_message();
 
+    public static native int tox_friend_send_lossless_packet(long friend_number, byte[] data, int data_length);
+
     public static native int tox_file_control(long friend_number, long file_number, int a_TOX_FILE_CONTROL);
 
     public static native int tox_hash(ByteBuffer hash_buffer, ByteBuffer data_buffer, long data_length);
@@ -1624,6 +1627,22 @@ public class MainActivity extends JFrame
 
     static void android_tox_callback_friend_lossless_packet_cb_method(long friend_number, byte[] data, long length)
     {
+        // Log.i(TAG, "friend_lossless_packet_cb:fn=" + friend_number + " len=" + length + " data=" + bytes_to_hex(data));
+
+        if (length > 0)
+        {
+            if (data[0] == (byte) CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND.value)
+            {
+                if (length == (TOX_PUBLIC_KEY_SIZE + 1))
+                {
+                    // Log.i(TAG, "friend_lossless_packet_cb:recevied CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND");
+                    String relay_pubkey = HelperGeneric.bytes_to_hex(data).substring(2);
+                    // Log.i(TAG, "friend_lossless_packet_cb:recevied pubkey:" + relay_pubkey);
+                    HelperFriend.add_friend_to_system(relay_pubkey.toUpperCase(), true,
+                                                      HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
+                }
+            }
+        }
     }
 
     static void android_tox_callback_friend_status_cb_method(long friend_number, int a_TOX_USER_STATUS)

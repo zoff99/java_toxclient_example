@@ -526,4 +526,18 @@ public class FriendList
         this.sql_where = this.sql_where + " and last_online_timestamp_real='" + s(last_online_timestamp_real) + "' ";
         return this;
     }
+
+    public FriendList is_relay(boolean is_relay)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " is_relay='" + b(is_relay) + "' ";
+        return this;
+    }
 }

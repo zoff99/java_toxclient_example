@@ -30,6 +30,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
+import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static java.awt.Font.PLAIN;
 
@@ -76,7 +77,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             e.printStackTrace();
         }
 
-        if (((CombinedFriendsAndConferences) value).is_friend)
+        if (((CombinedFriendsAndConferences) value).is_friend) // --- friend ---
         {
             FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
 
@@ -110,7 +111,14 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
                 status.setForeground(Color.GRAY);
             }
 
-            type.setText(" ");
+            if (get_relay_for_friend(f.tox_public_key_string)!=null)
+            {
+                type.setText("*");
+            }
+            else
+            {
+                type.setText(" ");
+            }
             type.setBackground(SEE_THRU);
             type.setForeground(Color.BLACK);
         }

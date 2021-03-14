@@ -34,6 +34,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -46,14 +47,22 @@ import javax.swing.event.ListSelectionListener;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.setConfName;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
+import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_conferences_own_relay;
+import static com.zoffcc.applications.trifa.HelperRelay.send_all_friend_pubkeys_to_relay;
+import static com.zoffcc.applications.trifa.HelperRelay.send_relay_pubkey_to_all_friends;
+import static com.zoffcc.applications.trifa.HelperRelay.set_friend_as_own_relay_in_db;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ONE_HOUR_IN_MS;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
+import static javax.swing.JOptionPane.YES_OPTION;
 
 public class FriendListFragmentJ extends JPanel
 {
@@ -85,7 +94,7 @@ public class FriendListFragmentJ extends JPanel
                                                                     popup.getForeground());
         popup.setBorder(labelBorder);
 
-        JMenuItem menuItem = new JMenuItem(MainActivity.lo.getString("delete_friend"));
+        JMenuItem menuItem = new JMenuItem(lo.getString("delete_friend"));
         menuItem.addActionListener(new ActionListener()
         {
             @Override
@@ -100,6 +109,61 @@ public class FriendListFragmentJ extends JPanel
             }
         });
         popup.add(menuItem);
+
+        JMenuItem menuItem_as_relay = new JMenuItem(lo.getString("friend_as_relay"));
+        menuItem.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ev)
+            {
+                if (!have_own_relay())
+                {
+                    JMenuItem mitem = (JMenuItem) ev.getSource();
+                    Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                    JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                    Log.i(TAG, "delete friend:tox_public_key_string=" +
+                               b.getSelectedValue().friend_item.tox_public_key_string);
+
+                    final String f2_tox_public_key_string= b.getSelectedValue().friend_item.tox_public_key_string;
+
+                    int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("add_as_relay_msg"),
+                                                                        lo.getString("add_as_relay_title"),
+                                                                        YES_NO_OPTION);
+                    if (selected_answer == YES_OPTION)
+                    {
+                        try
+                        {
+                            if (set_friend_as_own_relay_in_db(f2_tox_public_key_string))
+                            {
+                                // load all friends into data list ---
+                                Log.i(TAG, "onMenuItemClick:6");
+                                try
+                                {
+                                    // reload friendlist
+                                    add_all_friends_clear(200);
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+
+                                Log.i(TAG, "onMenuItemClick:7");
+                                // load all friends into data list ---
+                            }
+
+                            send_all_friend_pubkeys_to_relay(f2_tox_public_key_string);
+                            send_relay_pubkey_to_all_friends(f2_tox_public_key_string);
+                            invite_to_all_conferences_own_relay(f2_tox_public_key_string);
+                        }
+                        catch (Exception e3)
+                        {
+                            e3.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+        popup.add(menuItem_as_relay);
 
         friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
         {

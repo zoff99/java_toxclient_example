@@ -133,7 +133,20 @@ public class TRIFAGlobals
             this.value = value;
         }
 
-
     }
 
+
+    public static enum CONTROL_PROXY_MESSAGE_TYPE
+    {
+        CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY(175), CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND(
+            176), CONTROL_PROXY_MESSAGE_TYPE_ALL_MESSAGES_SENT(177), CONTROL_PROXY_MESSAGE_TYPE_PROXY_KILLSWITCH(
+            178), CONTROL_PROXY_MESSAGE_TYPE_NOTIFICATION_TOKEN(179);
+
+        public int value;
+
+        private CONTROL_PROXY_MESSAGE_TYPE(int value)
+        {
+            this.value = value;
+        }
+    }
 }
