@@ -8,6 +8,7 @@ jobs:
 
 script:
   - id -a;pwd;ls -al
+  - nc
   - java -version
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
