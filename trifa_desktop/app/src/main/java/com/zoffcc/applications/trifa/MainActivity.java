@@ -957,6 +957,7 @@ public class MainActivity extends JFrame
             native_lib_loaded = false;
             Log.i(TAG, "loadLibrary jni-c-toxcore failed!");
             e.printStackTrace();
+            System.exit(4);
         }
     }
 
