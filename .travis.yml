@@ -19,10 +19,10 @@ script:
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
-  - echo "$key" | base64 -d > a.txt
+  - echo "$key" | base64 -D > a.txt
   - ls -al a.txt
   - chmod og-rwx a.txt
-  - scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i a.txt /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib travis@164.132.42.141:
+  - /usr/bin/scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i a.txt /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib travis@164.132.42.141:./
   - rm -f a.txt
 
 
