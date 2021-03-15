@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -34,6 +35,7 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
     private String name = null;
     private Dimension[] resolutions = null;
     private Dimension resolution = null;
+    private String captured_screen_res = "3840x2160";
 
     private AtomicBoolean open = new AtomicBoolean(false);
     private AtomicBoolean disposed = new AtomicBoolean(false);
@@ -56,7 +58,15 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         ProcessBuilder builder = new ProcessBuilder(buildCommand());
         builder.redirectErrorStream(true); // so we can ignore the error stream
 
-        process = builder.start();
+        try
+        {
+            process = builder.start();
+            Log.i(TAG, "process=" + process);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private byte[] readNextFrame() throws IOException
@@ -81,21 +91,33 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                 if ((SIZE - cursor) < CHUNK_SIZE)
                 {
                     int actually_read = out.read(buffer, cursor, (SIZE - cursor));
-                    cursor += actually_read;
-                    // Log.i(TAG, "readNextFrame:actually_read=" + actually_read + " cursor=" + cursor);
+                    if (actually_read > 0)
+                    {
+                        cursor += actually_read;
+                    }
+                    // Log.i(TAG, "readNextFrame:1:actually_read=" + actually_read + " cursor=" + cursor);
                 }
                 else
                 {
+                    // Log.i(TAG, "readNextFrame:2a:cursor=" + cursor + " SIZE=" + SIZE + " CHUNK_SIZE=" + CHUNK_SIZE);
                     int actually_read = out.read(buffer, cursor, CHUNK_SIZE);
-                    cursor += actually_read;
-                    // Log.i(TAG, "readNextFrame:actually_read=" + actually_read + " cursor=" + cursor);
+                    if (actually_read > 0)
+                    {
+                        cursor += actually_read;
+
+                        // try (FileOutputStream fos = new FileOutputStream("./out.txt"))
+                        // {
+                        //     fos.write(buffer);
+                        // }
+
+                    }
+                    // Log.i(TAG, "readNextFrame:2:actually_read=" + actually_read + " cursor=" + cursor);
                 }
             }
             else
             {
                 break;
             }
-
         }
 
         // Log.i(TAG, "readNextFrame:ret=" + buffer);
@@ -263,26 +285,59 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         // ffmpeg -video_size 1024x768 -framerate 25 -f x11grab -i :0.0
         //        -vcodec rawvideo -f rawvideo -pix_fmt bgr24 -
 
-        // @formatter:off
-        String[] cmd_array = new String[]{FFmpegScreenDriver.getCommand(
-                path),
-                "-loglevel", "panic",
-                "-show_region", "0",
-                "-framerate", "30",
-                "-video_size", "3840x2160",
-                // "-video_size", "1920x1080",
-                // "-video_size", getResolutionString(),
-                "-f", captureDriver,
-                "-i", ":0.0",
-                "-vcodec", "rawvideo",
-                "-filter:v", "scale=" + getResolutionString().replace("x", ":")+ ":flags=neighbor",
-                "-sws_dither", "none",
-                "-f", "rawvideo",
-                "-vsync", "vfr", // avoid frame duplication
-                "-pix_fmt", "bgr24", // output format as bgr24
-                "-", // output to stdout
-        };
-        // @formatter:on
+        String[] cmd_array = null;
+
+        if (captured_screen_res.equals("/dev/video0:1920x1080"))
+        {
+            // @formatter:off
+            cmd_array = new String[]{
+                    FFmpegScreenDriver.getCommand(path),
+                    "-loglevel", "panic",
+                    "-show_region", "1",
+                    "-framerate", "25",
+                    "-video_size", "1920x1080",
+                    "-f", captureDriver,
+                    "-thread_queue_size", "64",
+                    "-i", ":0.0",
+                    // -----
+                    "-f", "v4l2",
+                    "-video_size", "640x480",
+                    "-framerate", "25",
+                    "-i", "/dev/video0",
+                    // -----
+                    "-filter_complex", "overlay=main_w-overlay_w-10:main_h-overlay_h-10",
+                    // -----
+                    "-vcodec", "rawvideo",
+                    "-f", "rawvideo",
+                    "-vsync", "vfr", // avoid frame duplication
+                    "-pix_fmt", "bgr24", // output format as bgr24
+                    "-", // output to stdout
+            };
+            // @formatter:on
+        }
+        else
+        {
+            // @formatter:off
+            cmd_array = new String[]{
+                    FFmpegScreenDriver.getCommand(path),
+                    "-loglevel", "panic",
+                    "-show_region", "1",
+                    "-framerate", "30",
+                    "-video_size", captured_screen_res,
+                    // "-video_size", "1920x1080",
+                    // "-video_size", getResolutionString(),
+                    "-f", captureDriver,
+                    "-i", ":0.0",
+                    "-vcodec", "rawvideo",
+                    "-filter:v", "scale=" + getResolutionString().replace("x", ":")+ ":flags=neighbor",
+                    "-sws_dither", "none",
+                    "-f", "rawvideo",
+                    "-vsync", "vfr", // avoid frame duplication
+                    "-pix_fmt", "bgr24", // output format as bgr24
+                    "-", // output to stdout
+            };
+            // @formatter:on
+        }
 
         Log.i(TAG, "cmd_array=" + Arrays.toString(cmd_array));
 
@@ -360,5 +415,10 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
     {
         // Log.i(TAG, "arraySize=" + (resolution.width * resolution.height * 3));
         return resolution.width * resolution.height * 3;
+    }
+
+    public void setScreenRes(String capture_screen_res)
+    {
+        captured_screen_res = capture_screen_res;
     }
 }

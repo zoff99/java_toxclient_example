@@ -21,6 +21,16 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
     static final String TAG = "ffmpeg";
     private static final Logger LOG = LoggerFactory.getLogger(FFmpegScreenDriver.class);
     private String path = "";
+    public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_4k = 0;
+    public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_1080p = 1;
+    public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_720p = 2;
+    public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_CAMOVERLAY_1080p = 3;
+    private int ffmpeg_screengrab_screen_res_used = 0;
+
+    public FFmpegScreenDriver(int wanted_screen_res)
+    {
+        ffmpeg_screengrab_screen_res_used = wanted_screen_res;
+    }
 
     @Override
     public List<WebcamDevice> getDevices()
@@ -28,6 +38,26 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
         List<WebcamDevice> devices;
         devices = getUnixDevices();
         return devices;
+    }
+
+    public String get_capture_screen_res()
+    {
+        if (ffmpeg_screengrab_screen_res_used == FFMPEG_SCREEN_GRAB_SCREEN_RES_4k)
+        {
+            return "3840x2160";
+        }
+        else if (ffmpeg_screengrab_screen_res_used == FFMPEG_SCREEN_GRAB_SCREEN_RES_1080p)
+        {
+            return "1920x1080";
+        }
+        else if (ffmpeg_screengrab_screen_res_used == FFMPEG_SCREEN_GRAB_SCREEN_RES_CAMOVERLAY_1080p)
+        {
+            return "/dev/video0:1920x1080";
+        }
+        else // ffmpeg_screengrab_screen_res_used == 2
+        {
+            return "1280x720";
+        }
     }
 
     private List<WebcamDevice> getUnixDevices()
@@ -38,7 +68,10 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
         String line = null;
         BufferedReader br = null;
 
-        devices.add(new FFmpegScreenDevice("/dev/null", "Screen", "640x480 1280x720 1920x1080"));
+        FFmpegScreenDevice ffsd = new FFmpegScreenDevice("/dev/null", "Screen", "640x480 1280x720 1920x1080");
+        ffsd.setScreenRes(get_capture_screen_res());
+        devices.add(ffsd);
+
         return devices;
     }
 

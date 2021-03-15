@@ -103,7 +103,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     final static String DRIVER_OFF = "off";
     final static String DRIVER_DEFAULT = "default";
     final static String DRIVER_DUMMY = "dummy";
-    final static String DRIVER_SCREENGRAB = "screengrab";
+    final static String DRIVER_SCREENGRAB_4K = "screengrab_4k";
+    final static String DRIVER_SCREENGRAB_1080P = "screengrab_1080p";
+    final static String DRIVER_SCREENGRAB_CAMOVERLAY_1080p = "screengrab_camoverlay_1080p";
+    final static String DRIVER_SCREENGRAB_720P = "screengrab_720p";
 
     public VideoOutFrame()
     {
@@ -142,9 +145,9 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         ButtonPanel.add(VideoCallStopButton);
 
-        final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K"};
+        final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K", "Screengrab 1080p", "Screengrab 720p", "Screengrab 1080p with cam overlay"};
 
-        VideoToggleScreengrab = new JComboBox(VideoToggleScreengrab_items);
+        VideoToggleScreengrab = new JComboBox<>(VideoToggleScreengrab_items);
         VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         VideoToggleScreengrab.setMaximumRowCount(VideoToggleScreengrab_items.length);
         ButtonPanel.add(VideoToggleScreengrab);
@@ -190,7 +193,19 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 }
                 else if (VideoToggleScreengrab.getSelectedIndex() == 3)
                 {
-                    change_webcam_driver(DRIVER_SCREENGRAB, true);
+                    change_webcam_driver(DRIVER_SCREENGRAB_4K, true);
+                }
+                else if (VideoToggleScreengrab.getSelectedIndex() == 4)
+                {
+                    change_webcam_driver(DRIVER_SCREENGRAB_1080P, true);
+                }
+                else if (VideoToggleScreengrab.getSelectedIndex() == 5)
+                {
+                    change_webcam_driver(DRIVER_SCREENGRAB_720P, true);
+                }
+                else if (VideoToggleScreengrab.getSelectedIndex() == 6)
+                {
+                    change_webcam_driver(DRIVER_SCREENGRAB_CAMOVERLAY_1080p, true);
                 }
                 else // == 0 [OFF]
                 {
@@ -849,13 +864,53 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
         }
 
-        if (driver_name.equals(DRIVER_SCREENGRAB))
+        if (driver_name.equals(DRIVER_SCREENGRAB_4K))
         {
             try
             {
-                Log.i(TAG, "DRIVER_SCREENGRAB");
+                Log.i(TAG, "DRIVER_SCREENGRAB_4K");
                 screengrab_active = 1;
-                Webcam.setDriver(new FFmpegScreenDriver());
+                Webcam.setDriver(new FFmpegScreenDriver(FFmpegScreenDriver.FFMPEG_SCREEN_GRAB_SCREEN_RES_4k));
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+        }
+        else if (driver_name.equals(DRIVER_SCREENGRAB_1080P))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_SCREENGRAB_1080P");
+                screengrab_active = 1;
+                Webcam.setDriver(new FFmpegScreenDriver(FFmpegScreenDriver.FFMPEG_SCREEN_GRAB_SCREEN_RES_1080p));
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+        }
+        else if (driver_name.equals(DRIVER_SCREENGRAB_720P))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_SCREENGRAB_720P");
+                screengrab_active = 1;
+                Webcam.setDriver(new FFmpegScreenDriver(FFmpegScreenDriver.FFMPEG_SCREEN_GRAB_SCREEN_RES_720p));
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+        }
+        else if (driver_name.equals(DRIVER_SCREENGRAB_CAMOVERLAY_1080p))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_SCREENGRAB_CAMOVERLAY_1080p");
+                screengrab_active = 1;
+                Webcam.setDriver(
+                        new FFmpegScreenDriver(FFmpegScreenDriver.FFMPEG_SCREEN_GRAB_SCREEN_RES_CAMOVERLAY_1080p));
             }
             catch (Exception e2)
             {
