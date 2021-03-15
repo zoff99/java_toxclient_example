@@ -182,7 +182,7 @@ public class Message
             Statement statement = sqldb.createStatement();
 
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            if (ORMA_TRACE)
+            //if (ORMA_TRACE)
             {
                 Log.i(TAG, "sql=" + sql);
             }
@@ -506,7 +506,7 @@ public class Message
         return this;
     }
 
-    public Message msg_versionEq(int i)
+    public Message msg_versionEq(int msg_version)
     {
         this.sql_where = this.sql_where + " and  msg_version='" + s(msg_version) + "' ";
         return this;
