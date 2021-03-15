@@ -566,9 +566,9 @@ public class TrifaToxService
                                         if (is_friend_online(
                                                 tox_friend_by_public_key__wrapper(m_resend_v2.tox_friendpubkey)) == 0)
                                         {
-                                            Log.i(TAG, "send_pending_1-on-1_messages:v2:NOT_ONLINE:fname=" +
-                                                       get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) +
-                                                       " m=" + m_resend_v2.text);
+                                            //Log.i(TAG, "send_pending_1-on-1_messages:v2:NOT_ONLINE:fname=" +
+                                            //           get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) +
+                                            //           " m=" + m_resend_v2.text);
 
                                             continue;
                                         }
