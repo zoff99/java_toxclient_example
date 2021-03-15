@@ -44,6 +44,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -58,6 +59,7 @@ import javax.swing.JPanel;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.VideoOutFrame1;
+import static com.zoffcc.applications.trifa.MainActivity.crgb2yuv;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_call_control;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame_age;
@@ -98,7 +100,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public static int screengrab_active = 0;
     final static Semaphore semaphore_video_out_convert = new Semaphore(1);
     static int semaphore_video_out_convert_active_threads = 0;
-    static int semaphore_video_out_convert_max_active_threads = 2;
+    static int semaphore_video_out_convert_max_active_threads = 3;
 
     final static String DRIVER_OFF = "off";
     final static String DRIVER_DEFAULT = "default";
@@ -666,51 +668,82 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
     public static byte[] rgb2yuv(BufferedImage bi, int width1, int height1)
     {
+        // Log.i(TAG, "rgb2yuv:000");
+        final long ts0 = System.currentTimeMillis();
+
+        byte[] ret = null;
+
         int w = bi.getWidth();
         int h = bi.getHeight();
-        byte[] ret = new byte[(int) (w * h * 1.5f)];
 
-        try
+        if (1 == 2)
         {
-            boolean s = false;
+            final byte[] buf_rgba = ((DataBufferByte) bi.getData().getDataBuffer()).getData();
 
-            for (int j = 0; j < h; j++)
+            Log.i(TAG, "rgb2yuv:runtime:002:" + (System.currentTimeMillis() - ts0));
+
+            //Log.i(TAG, "buf_rgba.len=" + buf_rgba.length);
+            //Log.i(TAG, "w * h * 4=" + (w * h * 4));
+            //Log.i(TAG, "width1 * height1 * 1.5f=" + (int) (width1 * height1 * 1.5f));
+
+            final java.nio.ByteBuffer rgba_buf = ByteBuffer.allocateDirect(w * h * 4);
+            final java.nio.ByteBuffer yuv_buf = ByteBuffer.allocateDirect((int) (width1 * height1 * 1.5f));
+
+            rgba_buf.put(buf_rgba);
+            // Log.i(TAG, "rgb2yuv:runtime:007:" + (System.currentTimeMillis() - ts0));
+            crgb2yuv(rgba_buf, yuv_buf, width1, height1, w, h);
+            Log.i(TAG, "rgb2yuv:runtime:008:" + (System.currentTimeMillis() - ts0));
+
+            yuv_buf.rewind();
+            ret = new byte[(int) (w * h * 1.5f)];
+            yuv_buf.get(ret);
+        }
+        else // ------------------------
+        {
+            ret = new byte[(int) (w * h * 1.5f)];
+            try
             {
-                for (int i = 0; i < w; i++)
+                final int arraySize = height1 * width1;
+
+                for (int j = 0; j < h; j++)
                 {
-                    int color = bi.getRGB(i, j);
+                    final int j_w = j * width1;
+                    final int factor2 = (j / 2) * (width1 / 2);
+                    final int arr_4 = arraySize / 4;
+                    for (int i = 0; i < w; i++)
+                    {
+                        int color = bi.getRGB(i, j);
 
-                    int alpha = color >> 24 & 0xff;
-                    int R = color >> 16 & 0xff;
-                    int G = color >> 8 & 0xff;
-                    int B = color & 0xff;
+                        // int alpha = color >> 24 & 0xff;
+                        int R = color >> 16 & 0xff;
+                        int G = color >> 8 & 0xff;
+                        int B = color & 0xff;
 
-                    //~ int y = (int) ((0.257 * red) + (0.504 * green) + (0.098 * blue) + 16);
-                    //~ int v = (int) ((0.439 * red) - (0.368 * green) - (0.071 * blue) + 128);
-                    //~ int u = (int) (-(0.148 * red) - (0.291 * green) + (0.439 * blue) + 128);
+                        //~ int y = (int) ((0.257 * red) + (0.504 * green) + (0.098 * blue) + 16);
+                        //~ int v = (int) ((0.439 * red) - (0.368 * green) - (0.071 * blue) + 128);
+                        //~ int u = (int) (-(0.148 * red) - (0.291 * green) + (0.439 * blue) + 128);
 
-                    int Y = (int) (R * .299000 + G * .587000 + B * 0.114000);
-                    int U = (int) (R * -.168736 + G * -.331264 + B * 0.500000 + 128);
-                    int V = (int) (R * .500000 + G * -.418688 + B * -0.081312 + 128);
+                        int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                        int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                        int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
+                        int yLoc = j_w + i;
+                        int uLoc = factor2 + (i / 2) + arraySize;
+                        int vLoc = uLoc + arr_4;
 
-                    int arraySize = height1 * width1;
-                    int yLoc = j * width1 + i;
-                    int uLoc = (j / 2) * (width1 / 2) + i / 2 + arraySize;
-                    int vLoc = (j / 2) * (width1 / 2) + i / 2 + arraySize + arraySize / 4;
-
-                    ret[yLoc] = (byte) Y;
-                    ret[uLoc] = (byte) U;
-                    ret[vLoc] = (byte) V;
-
-                    s = !s;
+                        ret[yLoc] = (byte) Y;
+                        ret[uLoc] = (byte) U;
+                        ret[vLoc] = (byte) V;
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+
+        // Log.i(TAG, "rgb2yuv:runtime:" + (System.currentTimeMillis() - ts0));
 
         return ret;
     }

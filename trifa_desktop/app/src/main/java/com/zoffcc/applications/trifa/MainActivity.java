@@ -996,6 +996,8 @@ public class MainActivity extends JFrame
 
     public static native int jni_iterate_videocall_audio(int delta_new, int want_ms_output, int channels, int sample_rate, int send_emtpy_buffer);
 
+    public static native void crgb2yuv(java.nio.ByteBuffer rgba_buf, java.nio.ByteBuffer yuv_buf, int w_yuv, int h_yuv, int w_rgba, int h_rgba);
+
     public static native void tox_set_do_not_sync_av(int do_not_sync_av);
 
     public static native void tox_set_onion_active(int active);
