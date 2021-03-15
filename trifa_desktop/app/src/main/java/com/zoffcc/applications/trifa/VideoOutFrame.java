@@ -34,6 +34,7 @@ import com.github.sarxos.webcam.ds.ffmpegcli.FFmpegScreenDriver;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -50,6 +51,7 @@ import java.util.concurrent.Semaphore;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -82,7 +84,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     static JButton VideoCallStartButton = null;
     static JButton VideoCallStopButton = null;
     static JPanel ButtonPanel = null;
-    static JButton VideoToggleScreengrab = null;
+    static JComboBox VideoToggleScreengrab = null;
     private static Webcam webcam = null;
     private static BufferedImage IMAGE_FRAME = null;
     private static final String VIDEO_OVERLAY_ASSET_NAME = "video_overlay.png";
@@ -98,6 +100,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     static int semaphore_video_out_convert_active_threads = 0;
     static int semaphore_video_out_convert_max_active_threads = 2;
 
+    final static String DRIVER_OFF = "off";
     final static String DRIVER_DEFAULT = "default";
     final static String DRIVER_DUMMY = "dummy";
     final static String DRIVER_SCREENGRAB = "screengrab";
@@ -112,25 +115,20 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         IMAGE_FRAME = getImage();
 
-        if (screengrab_active == 1)
-        {
-            change_webcam_driver(DRIVER_SCREENGRAB, false);
-        }
-        else if (screengrab_active == 2)
-        {
-            change_webcam_driver(DRIVER_DUMMY, false);
-        }
-        else
-        {
-            change_webcam_driver(DRIVER_DEFAULT, false);
-        }
+        change_webcam_driver(DRIVER_OFF, false);
 
         Webcam.addDiscoveryListener(this);
 
-        picker = new WebcamPicker();
-        picker.addItemListener(this);
-
-        webcam = picker.getSelectedWebcam();
+        if (1 == 2)
+        {
+            picker = new WebcamPicker();
+            picker.addItemListener(this);
+            webcam = picker.getSelectedWebcam();
+        }
+        else
+        {
+            webcam = null;
+        }
 
         ButtonPanel = new JPanel(true);
         ButtonPanel.setLayout(new GridLayout());
@@ -144,8 +142,11 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         ButtonPanel.add(VideoCallStopButton);
 
-        VideoToggleScreengrab = new JButton("toggle Cam / Screen");
+        final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K"};
+
+        VideoToggleScreengrab = new JComboBox(VideoToggleScreengrab_items);
         VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoToggleScreengrab.setMaximumRowCount(VideoToggleScreengrab_items.length);
         ButtonPanel.add(VideoToggleScreengrab);
 
         VideoCallStartButton.setVisible(true);
@@ -177,18 +178,23 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             @Override
             public void actionPerformed(ActionEvent evt)
             {
-                Log.i(TAG, "VideoToggleScreengrab pressed");
-                if (screengrab_active == 1)
+                Log.i(TAG, "VideoToggleScreengrab pressed:index=" + VideoToggleScreengrab.getSelectedIndex());
+
+                if (VideoToggleScreengrab.getSelectedIndex() == 1)
                 {
                     change_webcam_driver(DRIVER_DEFAULT, true);
                 }
-                else if (screengrab_active == 0)
+                else if (VideoToggleScreengrab.getSelectedIndex() == 2)
                 {
                     change_webcam_driver(DRIVER_DUMMY, true);
                 }
-                else
+                else if (VideoToggleScreengrab.getSelectedIndex() == 3)
                 {
                     change_webcam_driver(DRIVER_SCREENGRAB, true);
+                }
+                else // == 0 [OFF]
+                {
+                    change_webcam_driver(DRIVER_OFF, true);
                 }
             }
         });
@@ -225,8 +231,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         }
         else
         {
-            add(picker, BorderLayout.NORTH);
-            picker.setVisible(true);
+            // add(picker, BorderLayout.NORTH);
+            // picker.setVisible(true);
         }
 
         setVisible(true);
@@ -253,6 +259,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStopButton.setVisible(true);
         ButtonPanel.revalidate();
         revalidate();
+        repaint();
     }
 
     @Override
@@ -270,11 +277,25 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             if (e.getItem() != webcam)
             {
                 Log.i(TAG, "webcam=" + webcam);
-                if (webcam != null)
+
+                try
                 {
                     panel.stop();
-                    remove(panel);
+                }
+                catch (Exception e2)
+                {
+                }
 
+                try
+                {
+                    remove(panel);
+                }
+                catch (Exception e2)
+                {
+                }
+
+                if (webcam != null)
+                {
                     webcam.removeWebcamListener(this);
                     webcam.close();
 
@@ -328,6 +349,22 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 }
                 else if ((e.getItem() != null) && (webcam == null))
                 {
+                    try
+                    {
+                        panel.stop();
+                    }
+                    catch (Exception e2)
+                    {
+                    }
+
+                    try
+                    {
+                        remove(panel);
+                    }
+                    catch (Exception e2)
+                    {
+                    }
+
                     webcam = (Webcam) e.getItem();
                     if (screengrab_active == 1)
                     {
@@ -519,18 +556,30 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     @Override
     public void webcamFound(WebcamDiscoveryEvent event)
     {
-        if (picker != null)
+        try
         {
-            picker.addItem(event.getWebcam());
+            if (picker != null)
+            {
+                picker.addItem(event.getWebcam());
+            }
+        }
+        catch (Exception e)
+        {
         }
     }
 
     @Override
     public void webcamGone(WebcamDiscoveryEvent event)
     {
-        if (picker != null)
+        try
         {
-            picker.removeItem(event.getWebcam());
+            if (picker != null)
+            {
+                picker.removeItem(event.getWebcam());
+            }
+        }
+        catch (Exception e)
+        {
         }
     }
 
@@ -549,21 +598,39 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     @Override
     public void windowClosed(WindowEvent windowEvent)
     {
-        webcam.close();
+        try
+        {
+            webcam.close();
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     @Override
     public void windowIconified(WindowEvent windowEvent)
     {
         Log.i(TAG, "webcam viewer paused");
-        panel.pause();
+        try
+        {
+            panel.pause();
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     @Override
     public void windowDeiconified(WindowEvent windowEvent)
     {
         Log.i(TAG, "webcam viewer resumed");
-        panel.resume();
+        try
+        {
+            panel.resume();
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     @Override
@@ -739,20 +806,49 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         {
             try
             {
-                if (webcam != null)
-                {
-                    panel.stop();
-                    VideoOutFrame1.remove(picker);
-                    VideoOutFrame1.remove(panel);
-                    webcam.removeWebcamListener(VideoOutFrame1);
-                    webcam.close();
-                }
+                panel.stop();
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
+                // e2.printStackTrace();
+            }
+            try
+            {
+                VideoOutFrame1.remove(picker);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                VideoOutFrame1.remove(panel);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                webcam.removeWebcamListener(VideoOutFrame1);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                webcam.close();
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
             }
         }
+
         if (driver_name.equals(DRIVER_SCREENGRAB))
         {
             try
@@ -763,7 +859,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
+                // e2.printStackTrace();
             }
         }
         else if (driver_name.equals(DRIVER_DUMMY))
@@ -776,10 +872,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
+                // e2.printStackTrace();
             }
         }
-        else
+        else if (driver_name.equals(DRIVER_DEFAULT))
         {
             try
             {
@@ -789,46 +885,151 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
+                // e2.printStackTrace();
             }
+        }
+        else // DRIVER_OFF ------------
+        {
+            Log.i(TAG, "DRIVER_OFF");
+            screengrab_active = 0;
+
+            try
+            {
+                panel.stop();
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                VideoOutFrame1.remove(picker);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+            try
+            {
+                VideoOutFrame1.remove(panel);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                webcam.removeWebcamListener(VideoOutFrame1);
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+            try
+            {
+                webcam.close();
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+
+
+            EventQueue.invokeLater(() -> {
+                if ((VideoOutFrame1 != null) && (VideoOutFrame1.isShowing()))
+                {
+                    VideoOutFrame1.revalidate();
+                    VideoOutFrame1.repaint();
+                }
+            });
+
+            return;
         }
 
         if (start_cam)
         {
-
             picker = new WebcamPicker();
             picker.addItemListener(VideoOutFrame1);
 
             webcam = picker.getSelectedWebcam();
-            if (screengrab_active == 1)
+            try
             {
-                webcam.setViewSize(
-                        new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+                if (screengrab_active == 1)
+                {
+                    webcam.setViewSize(
+                            new Dimension(width_screengrab, height_screengrab)); //(WebcamResolution.VGA.getSize());
+                }
+                else
+                {
+                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                }
             }
-            else
+            catch (Exception e2)
             {
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
-            }
-            if (screengrab_active != 1)
-            {
-                webcam.setImageTransformer(VideoOutFrame1);
-            }
-            webcam.addWebcamListener(VideoOutFrame1);
-
-            Log.i(TAG, "selected " + webcam.getName());
-
-            panel = new WebcamPanel(webcam, false);
-            panel.setFPSDisplayed(true);
-            panel.setDisplayDebugInfo(true);
-            panel.setImageSizeDisplayed(true);
-            if (screengrab_active != 1)
-            {
-                panel.setMirrored(true);
             }
 
-            VideoOutFrame1.add(picker, BorderLayout.NORTH);
-            VideoOutFrame1.add(panel, BorderLayout.CENTER);
-            VideoOutFrame1.revalidate();
+            try
+            {
+                if (screengrab_active != 1)
+                {
+                    webcam.setImageTransformer(VideoOutFrame1);
+                }
+                webcam.addWebcamListener(VideoOutFrame1);
+            }
+            catch (Exception e2)
+            {
+            }
+
+            try
+            {
+                Log.i(TAG, "selected " + webcam.getName());
+
+                panel = new WebcamPanel(webcam, false);
+            }
+            catch (Exception e2)
+            {
+            }
+
+            try
+            {
+                panel.setFPSDisplayed(true);
+                panel.setDisplayDebugInfo(true);
+                panel.setImageSizeDisplayed(true);
+                if (screengrab_active != 1)
+                {
+                    panel.setMirrored(true);
+                }
+            }
+            catch (Exception e2)
+            {
+            }
+
+            try
+            {
+                VideoOutFrame1.add(picker, BorderLayout.NORTH);
+            }
+            catch (Exception e2)
+            {
+            }
+
+            try
+            {
+                VideoOutFrame1.add(panel, BorderLayout.CENTER);
+            }
+            catch (Exception e2)
+            {
+            }
+
+            try
+            {
+                VideoOutFrame1.revalidate();
+            }
+            catch (Exception e2)
+            {
+            }
 
             Thread t = new Thread()
             {
@@ -836,13 +1037,28 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 @Override
                 public void run()
                 {
-                    panel.start();
+                    try
+                    {
+                        panel.start();
+                    }
+                    catch (Exception e2)
+                    {
+                    }
                 }
             };
+
             t.setName("trifa_cam2");
             t.setDaemon(true);
             t.setUncaughtExceptionHandler(VideoOutFrame1);
             t.start();
         }
+
+        EventQueue.invokeLater(() -> {
+            if ((VideoOutFrame1 != null) && (VideoOutFrame1.isShowing()))
+            {
+                VideoOutFrame1.revalidate();
+                VideoOutFrame1.repaint();
+            }
+        });
     }
 }
