@@ -2036,7 +2036,7 @@ public class MainActivity extends JFrame
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                // e.printStackTrace();
                 send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
             }
         }
