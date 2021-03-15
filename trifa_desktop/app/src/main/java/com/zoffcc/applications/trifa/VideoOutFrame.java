@@ -328,6 +328,9 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     }
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
+
+                    Log.i(TAG, "size2:w=" + width + " h=" + height);
+
                     if (screengrab_active != 1)
                     {
                         webcam.setImageTransformer(this);
@@ -392,6 +395,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     }
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
+                    Log.i(TAG, "size3:w=" + width + " h=" + height);
                     if (screengrab_active != 1)
                     {
                         webcam.setImageTransformer(this);
@@ -1024,6 +1028,18 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
             catch (Exception e2)
             {
+            }
+
+            try
+            {
+                width = webcam.getViewSize().width;
+                height = webcam.getViewSize().height;
+                Log.i(TAG, "size5:w=" + width + " h=" + height);
+            }
+            catch (Exception e2)
+            {
+                width = 640;
+                width = 480;
             }
 
             try
