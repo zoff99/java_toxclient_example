@@ -17,6 +17,7 @@ cp -a \
   assets \
   com \
   org \
+  io \
   i18n \
   \
   bridj-0.7.0.jar \
