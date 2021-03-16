@@ -12,7 +12,6 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -276,16 +275,6 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         Log.i(TAG, "buildCommand");
 
         String captureDriver = FFmpegScreenDriver.getCaptureDriver();
-
-        // String deviceInput = name;
-        if (Platform.isWindows())
-        {
-            // deviceInput = "\"video=" + name + "\"";
-        }
-
-        // ffmpeg -video_size 1024x768 -framerate 25 -f x11grab -i :0.0
-        //        -vcodec rawvideo -f rawvideo -pix_fmt bgr24 -
-
         String[] cmd_array = null;
 
         if (captured_screen_res.equals("/dev/video0:1920x1080"))
@@ -318,24 +307,31 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         }
         else
         {
+            String driver_options1 = "-i";
+            String driver_options2 = ":0.0";
+            if (Platform.isWindows())
+            {
+                // ffmpeg -loglevel panic -show_region 1 -framerate 33 -video_size 1280x720
+                // -f gdigrab -i desktop -vcodec rawvideo -filter:v scale=1920:1080:flags=neighbor
+                // -f rawvideo -vsync vfr -pix_fmt bgr24 video.dat
+                driver_options1 = "-i";
+                driver_options2 = "desktop";
+            }
+
             // @formatter:off
             cmd_array = new String[]{
                     FFmpegScreenDriver.getCommand(path),
                     "-loglevel", "panic",
                     "-show_region", "1",
-                    "-framerate", "33",
+                    "-framerate", "30",
                     "-video_size", captured_screen_res,
-                    // "-video_size", "1920x1080",
-                    // "-video_size", getResolutionString(),
                     "-f", captureDriver,
                     "-threads", "5",
                     "-thread_queue_size", "64",
-                    "-i", ":0.0",
+                    driver_options1, driver_options2,
                     "-vcodec", "rawvideo",
                     "-filter:v", "scale=" + getResolutionString().replace("x", ":")+ ":flags=neighbor",
-                    // "-sws_dither", "none",
                     "-f", "rawvideo",
-                    // "-vsync", "passthrough",
                     "-vsync", "vfr", // avoid frame duplication
                     "-pix_fmt", "bgr24", // output format as bgr24
                     "-", // output to stdout

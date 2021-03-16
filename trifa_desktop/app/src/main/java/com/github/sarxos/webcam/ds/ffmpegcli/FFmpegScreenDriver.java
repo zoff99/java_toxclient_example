@@ -123,7 +123,7 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
         }
         else if (Platform.isWindows())
         {
-            return "dshow";
+            return "gdigrab";
         }
         else if (Platform.isMacOSX())
         {
