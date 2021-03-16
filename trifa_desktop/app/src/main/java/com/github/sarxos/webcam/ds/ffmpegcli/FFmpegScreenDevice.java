@@ -60,6 +60,7 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
 
         try
         {
+            // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
             process = builder.start();
             Log.i(TAG, "process=" + process);
         }
@@ -322,16 +323,19 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     FFmpegScreenDriver.getCommand(path),
                     "-loglevel", "panic",
                     "-show_region", "1",
-                    "-framerate", "30",
+                    "-framerate", "33",
                     "-video_size", captured_screen_res,
                     // "-video_size", "1920x1080",
                     // "-video_size", getResolutionString(),
                     "-f", captureDriver,
+                    "-threads", "5",
+                    "-thread_queue_size", "64",
                     "-i", ":0.0",
                     "-vcodec", "rawvideo",
                     "-filter:v", "scale=" + getResolutionString().replace("x", ":")+ ":flags=neighbor",
-                    "-sws_dither", "none",
+                    // "-sws_dither", "none",
                     "-f", "rawvideo",
+                    // "-vsync", "passthrough",
                     "-vsync", "vfr", // avoid frame duplication
                     "-pix_fmt", "bgr24", // output format as bgr24
                     "-", // output to stdout

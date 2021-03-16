@@ -409,7 +409,7 @@ public class TrifaToxService
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
 
                 Log.i(TAG, "Priority of thread is CUR: " + Thread.currentThread().getPriority());
-                Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+                //Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
                 Thread.currentThread().setName("t_iterate");
                 Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
 

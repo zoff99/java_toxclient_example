@@ -208,12 +208,12 @@ public class VideoInFrame extends JFrame
                     try
                     {
                         Thread.sleep(3000);
-                        int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), 128,
-                                                      8000);
+                        int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), 64,
+                                                      6000);
 
                         int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                     ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,
-                                                    8000);
+                                                    6000);
 
                         int res3 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                     ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_BITRATE_AUTOSET.value,

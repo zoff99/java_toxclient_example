@@ -483,6 +483,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
+
                         try
                         {
                             semaphore_video_out_convert.acquire();
@@ -669,7 +670,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public static byte[] rgb2yuv(BufferedImage bi, int width1, int height1)
     {
         // Log.i(TAG, "rgb2yuv:000");
-        final long ts0 = System.currentTimeMillis();
+        // final long ts0 = System.currentTimeMillis();
 
         byte[] ret = null;
 
@@ -680,7 +681,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         {
             final byte[] buf_rgba = ((DataBufferByte) bi.getData().getDataBuffer()).getData();
 
-            Log.i(TAG, "rgb2yuv:runtime:002:" + (System.currentTimeMillis() - ts0));
+            // Log.i(TAG, "rgb2yuv:runtime:002:" + (System.currentTimeMillis() - ts0));
 
             //Log.i(TAG, "buf_rgba.len=" + buf_rgba.length);
             //Log.i(TAG, "w * h * 4=" + (w * h * 4));
@@ -692,7 +693,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             rgba_buf.put(buf_rgba);
             // Log.i(TAG, "rgb2yuv:runtime:007:" + (System.currentTimeMillis() - ts0));
             crgb2yuv(rgba_buf, yuv_buf, width1, height1, w, h);
-            Log.i(TAG, "rgb2yuv:runtime:008:" + (System.currentTimeMillis() - ts0));
+            // Log.i(TAG, "rgb2yuv:runtime:008:" + (System.currentTimeMillis() - ts0));
 
             yuv_buf.rewind();
             ret = new byte[(int) (w * h * 1.5f)];
@@ -701,41 +702,309 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         else // ------------------------
         {
             ret = new byte[(int) (w * h * 1.5f)];
+            final byte[] ret2 = ret;
             try
             {
                 final int arraySize = height1 * width1;
 
-                for (int j = 0; j < h; j++)
+                final int h0 = 0;
+                final int h1 = (h / 5);
+                final int h2 = 2 * (h / 5);
+                final int h3 = 3 * (h / 5);
+                final int h4 = 4 * (h / 5);
+                final int h5 = h;
+
+                final Thread t1 = new Thread()
                 {
-                    final int j_w = j * width1;
-                    final int factor2 = (j / 2) * (width1 / 2);
-                    final int arr_4 = arraySize / 4;
-                    for (int i = 0; i < w; i++)
+                    @Override
+                    public void run()
                     {
-                        int color = bi.getRGB(i, j);
+                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                        try
+                        {
+                            for (int j = h0; j < h1; j++)
+                            {
+                                final int j_w = j * width1;
+                                final int factor2 = (j / 2) * (width1 / 2);
+                                final int arr_4 = arraySize / 4;
+                                for (int i = 0; i < w; i++)
+                                {
+                                    // final long ts1_1 = System.currentTimeMillis();
+                                    int color = bi.getRGB(i, j);
+                                    //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
-                        // int alpha = color >> 24 & 0xff;
-                        int R = color >> 16 & 0xff;
-                        int G = color >> 8 & 0xff;
-                        int B = color & 0xff;
+                                    // int alpha = color >> 24 & 0xff;
+                                    int R = color >> 16 & 0xff;
+                                    int G = color >> 8 & 0xff;
+                                    int B = color & 0xff;
 
-                        //~ int y = (int) ((0.257 * red) + (0.504 * green) + (0.098 * blue) + 16);
-                        //~ int v = (int) ((0.439 * red) - (0.368 * green) - (0.071 * blue) + 128);
-                        //~ int u = (int) (-(0.148 * red) - (0.291 * green) + (0.439 * blue) + 128);
+                                    // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
+                                    // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
+                                    // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                        int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                        int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                        int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
-                        int yLoc = j_w + i;
-                        int uLoc = factor2 + (i / 2) + arraySize;
-                        int vLoc = uLoc + arr_4;
+                                    // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                        ret[yLoc] = (byte) Y;
-                        ret[uLoc] = (byte) U;
-                        ret[vLoc] = (byte) V;
+                                    int yLoc = j_w + i;
+                                    int uLoc = factor2 + (i / 2) + arraySize;
+                                    int vLoc = uLoc + arr_4;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
+
+                                    ret2[yLoc] = (byte) Y;
+                                    ret2[uLoc] = (byte) U;
+                                    ret2[vLoc] = (byte) V;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:04:" + (System.currentTimeMillis() - ts1_1));
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
-                }
+                };
+                t1.start();
+
+                final Thread t2 = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                        try
+                        {
+                            for (int j = h1; j < h2; j++)
+                            {
+                                final int j_w = j * width1;
+                                final int factor2 = (j / 2) * (width1 / 2);
+                                final int arr_4 = arraySize / 4;
+                                for (int i = 0; i < w; i++)
+                                {
+                                    // final long ts1_1 = System.currentTimeMillis();
+                                    int color = bi.getRGB(i, j);
+                                    //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
+
+                                    // int alpha = color >> 24 & 0xff;
+                                    int R = color >> 16 & 0xff;
+                                    int G = color >> 8 & 0xff;
+                                    int B = color & 0xff;
+
+                                    // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
+                                    // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
+                                    // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
+
+                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
+
+                                    int yLoc = j_w + i;
+                                    int uLoc = factor2 + (i / 2) + arraySize;
+                                    int vLoc = uLoc + arr_4;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
+
+                                    ret2[yLoc] = (byte) Y;
+                                    ret2[uLoc] = (byte) U;
+                                    ret2[vLoc] = (byte) V;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:04:" + (System.currentTimeMillis() - ts1_1));
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                t2.start();
+
+                final Thread t3 = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                        try
+                        {
+                            for (int j = h2; j < h3; j++)
+                            {
+                                final int j_w = j * width1;
+                                final int factor2 = (j / 2) * (width1 / 2);
+                                final int arr_4 = arraySize / 4;
+                                for (int i = 0; i < w; i++)
+                                {
+                                    // final long ts1_1 = System.currentTimeMillis();
+                                    int color = bi.getRGB(i, j);
+                                    //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
+
+                                    // int alpha = color >> 24 & 0xff;
+                                    int R = color >> 16 & 0xff;
+                                    int G = color >> 8 & 0xff;
+                                    int B = color & 0xff;
+
+                                    // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
+                                    // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
+                                    // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
+
+                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
+
+                                    int yLoc = j_w + i;
+                                    int uLoc = factor2 + (i / 2) + arraySize;
+                                    int vLoc = uLoc + arr_4;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
+
+                                    ret2[yLoc] = (byte) Y;
+                                    ret2[uLoc] = (byte) U;
+                                    ret2[vLoc] = (byte) V;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:04:" + (System.currentTimeMillis() - ts1_1));
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                t3.start();
+
+                final Thread t4 = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                        try
+                        {
+                            for (int j = h3; j < h4; j++)
+                            {
+                                final int j_w = j * width1;
+                                final int factor2 = (j / 2) * (width1 / 2);
+                                final int arr_4 = arraySize / 4;
+                                for (int i = 0; i < w; i++)
+                                {
+                                    // final long ts1_1 = System.currentTimeMillis();
+                                    int color = bi.getRGB(i, j);
+                                    //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
+
+                                    // int alpha = color >> 24 & 0xff;
+                                    int R = color >> 16 & 0xff;
+                                    int G = color >> 8 & 0xff;
+                                    int B = color & 0xff;
+
+                                    // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
+                                    // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
+                                    // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
+
+                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
+
+                                    int yLoc = j_w + i;
+                                    int uLoc = factor2 + (i / 2) + arraySize;
+                                    int vLoc = uLoc + arr_4;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
+
+                                    ret2[yLoc] = (byte) Y;
+                                    ret2[uLoc] = (byte) U;
+                                    ret2[vLoc] = (byte) V;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:04:" + (System.currentTimeMillis() - ts1_1));
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                t4.start();
+
+                final Thread t5 = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                        try
+                        {
+                            for (int j = h4; j < h5; j++)
+                            {
+                                final int j_w = j * width1;
+                                final int factor2 = (j / 2) * (width1 / 2);
+                                final int arr_4 = arraySize / 4;
+                                for (int i = 0; i < w; i++)
+                                {
+                                    // final long ts1_1 = System.currentTimeMillis();
+                                    int color = bi.getRGB(i, j);
+                                    //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
+
+                                    // int alpha = color >> 24 & 0xff;
+                                    int R = color >> 16 & 0xff;
+                                    int G = color >> 8 & 0xff;
+                                    int B = color & 0xff;
+
+                                    // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
+                                    // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
+                                    // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
+
+                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
+
+                                    int yLoc = j_w + i;
+                                    int uLoc = factor2 + (i / 2) + arraySize;
+                                    int vLoc = uLoc + arr_4;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
+
+                                    ret2[yLoc] = (byte) Y;
+                                    ret2[uLoc] = (byte) U;
+                                    ret2[vLoc] = (byte) V;
+
+                                    // Log.i(TAG, "rgb2yuv:runtime:04:" + (System.currentTimeMillis() - ts1_1));
+                                }
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                t5.start();
+
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+                t5.join();
+
             }
             catch (Exception e)
             {
@@ -743,7 +1012,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
         }
 
-        // Log.i(TAG, "rgb2yuv:runtime:" + (System.currentTimeMillis() - ts0));
+        // Log.i(TAG, "rgb2yuv:runtime:099:" + (System.currentTimeMillis() - ts0));
 
         return ret;
     }
