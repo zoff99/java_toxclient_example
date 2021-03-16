@@ -211,8 +211,8 @@ public class HelperGeneric
             ByteBufferCompat raw_message_buf_compat = new ByteBufferCompat(raw_message_buf);
             result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(),
                                                     raw_message_buf_compat.arrayOffset(), raw_message_length_int);
-            Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
-                       result.raw_message_buf_hex);
+            //Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
+            //           result.raw_message_buf_hex);
             return result;
         }
         else if (res == -9991)

@@ -113,7 +113,7 @@ public class HelperRelay
                     try
                     {
                         orma.insertIntoRelayListDB(new_relay);
-                        Log.i(TAG, "add_or_update_friend_relay:+ADD friend relay+ owner pubkey=" + friend_pubkey);
+                        // Log.i(TAG, "add_or_update_friend_relay:+ADD friend relay+ owner pubkey=" + friend_pubkey);
                     }
                     catch (Exception e2)
                     {

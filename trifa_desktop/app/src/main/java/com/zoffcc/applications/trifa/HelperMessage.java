@@ -25,6 +25,7 @@ import java.util.List;
 
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
@@ -131,7 +132,10 @@ public class HelperMessage
         {
             statement = sqldb.createStatement();
             final String sql = "select * from Message where id='" + m_id + "'";
-            // Log.i(TAG, "sql=" + sql);
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
             ResultSet rs = statement.executeQuery(sql);
 
             if (rs.next())

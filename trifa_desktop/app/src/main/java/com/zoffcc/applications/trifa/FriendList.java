@@ -170,7 +170,7 @@ public class FriendList
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
             if (ORMA_TRACE)
             {
-                // Log.i(TAG, "sql=" + sql);
+                Log.i(TAG, "sql=" + sql);
             }
 
             ResultSet rs = statement.executeQuery(sql);
@@ -267,7 +267,7 @@ public class FriendList
 
             if (ORMA_TRACE)
             {
-                //Log.i(TAG, "sql=" + sql_str);
+                Log.i(TAG, "sql=" + sql_str);
             }
 
             statement.execute(sql_str);
@@ -295,7 +295,7 @@ public class FriendList
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
             if (ORMA_TRACE)
             {
-                //Log.i(TAG, "sql=" + sql);
+                Log.i(TAG, "sql=" + sql);
             }
 
             ResultSet rs = statement.executeQuery(sql);
@@ -449,7 +449,10 @@ public class FriendList
         {
             Statement statement = sqldb.createStatement();
             final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            // Log.i(TAG, "sql=" + sql);
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
             statement.executeUpdate(sql);
         }
         catch (Exception e2)

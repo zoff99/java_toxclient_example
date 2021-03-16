@@ -182,7 +182,7 @@ public class Message
             Statement statement = sqldb.createStatement();
 
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            //if (ORMA_TRACE)
+            if (ORMA_TRACE)
             {
                 Log.i(TAG, "sql=" + sql);
             }
@@ -640,7 +640,7 @@ public class Message
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
             if (ORMA_TRACE)
             {
-                //Log.i(TAG, "sql=" + sql);
+                Log.i(TAG, "sql=" + sql);
             }
 
             ResultSet rs = statement.executeQuery(sql);
