@@ -6,14 +6,22 @@ jobs:
     - os: osx
       osx_image: xcode8
       sudo: required
+      env: macos=10_12
 
     - os: osx
       osx_image: xcode10.1
       sudo: required
+      env: macos=10_13
+
+    - os: osx
+      osx_image: xcode11.3
+      sudo: required
+      env: macos=10_14_6
 
     - os: osx
       osx_image: xcode12.2
       sudo: required
+      env: macos=10_15_7
 
 script:
   - id -a;pwd;ls -al
@@ -26,6 +34,11 @@ script:
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
-  - echo "no" # cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port
+  - echo "$macos"
+  - if [ "$macos" == "10_12" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_1 ; else ; echo "no" ; fi
+  - if [ "$macos" == "10_13" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_2 ; else ; echo "no" ; fi
+  - if [ "$macos" == "10_14_6" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_3 ; else ; echo "no" ; fi
+  - if [ "$macos" == "10_15_7" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_4 ; else ; echo "no" ; fi
+
 
 
