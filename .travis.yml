@@ -1,9 +1,17 @@
 language: c
 
+compiler:
+  - gcc
+  - clang
+
 jobs:
   include:
     - os: osx
       osx_image: xcode10.1
+      sudo: required
+
+    - os: osx
+      osx_image: xcode12.2
       sudo: required
 
 script:
