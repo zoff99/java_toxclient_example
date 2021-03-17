@@ -81,9 +81,9 @@ public class VideoInFrame extends JFrame
             if (semaphore_video_in_convert_active_threads > semaphore_video_in_convert_max_active_threads)
             {
                 semaphore_video_in_convert.release();
-                Log.i(TAG,
-                      "semaphore_video_in_convert_active_threads:" + semaphore_video_in_convert_active_threads + " " +
-                      semaphore_video_in_convert_max_active_threads);
+                //Log.i(TAG,
+                //      "semaphore_video_in_convert_active_threads:" + semaphore_video_in_convert_active_threads + " " +
+                //      semaphore_video_in_convert_max_active_threads);
                 return;
             }
             semaphore_video_in_convert.release();
@@ -132,7 +132,7 @@ public class VideoInFrame extends JFrame
                             }
                         }
                     }
-                    Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
+                    // Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
 
                     if (Callstate.state != 0)
                     {
