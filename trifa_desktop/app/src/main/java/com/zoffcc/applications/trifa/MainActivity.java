@@ -1383,7 +1383,13 @@ public class MainActivity extends JFrame
             //            " AudioSelectOutBox.sourceDataLine.getFormat().getChannels()=" +
             //            AudioSelectOutBox.sourceDataLine.getFormat().getChannels());
 
-
+            final int can_write_bytes_without_blocking = AudioSelectOutBox.sourceDataLine.available();
+            if (want_bytes > can_write_bytes_without_blocking)
+            {
+                // HINT: for now we just abandon the audio data, since writing here would block all ToxAV
+                return;
+            }
+            // HINT: this may block!!
             int actual_written_bytes = AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
             // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
             //           actual_written_bytes);

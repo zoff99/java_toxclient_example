@@ -119,7 +119,9 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                 // Log.i(TAG, "t_audio_rec:003:Callstate.state" + Callstate.state);
                                 if (Callstate.state != 0)
                                 {
-                                    // Log.i(TAG, "t_audio_rec:003a");
+                                    // Log.i(TAG, "t_audio_rec:003a")
+
+                                    // HINT: this may block. but it's ok it will not block any Tox or UI threads
                                     numBytesRead = targetDataLine.read(data, 0, data.length);
                                     sample_count = ((numBytesRead / 2) / CHANNELS);
 

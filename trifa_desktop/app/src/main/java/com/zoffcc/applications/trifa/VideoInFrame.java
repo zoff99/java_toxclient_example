@@ -21,8 +21,10 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -45,6 +47,10 @@ public class VideoInFrame extends JFrame
     public static int height = 480;
     static byte[] imageInByte = null;
     static BufferedImage imageIn = null;
+
+    final static Semaphore semaphore_video_in_convert = new Semaphore(1);
+    static int semaphore_video_in_convert_active_threads = 0;
+    static int semaphore_video_in_convert_max_active_threads = 3;
 
     public VideoInFrame()
     {
@@ -69,9 +75,21 @@ public class VideoInFrame extends JFrame
 
     public static void new_video_in_frame(ByteBuffer vbuf, int w, int h)
     {
-        if (!video_in_frame.isValid())
+        try
         {
-            return;
+            semaphore_video_in_convert.acquire();
+            if (semaphore_video_in_convert_active_threads > semaphore_video_in_convert_max_active_threads)
+            {
+                semaphore_video_in_convert.release();
+                Log.i(TAG,
+                      "semaphore_video_in_convert_active_threads:" + semaphore_video_in_convert_active_threads + " " +
+                      semaphore_video_in_convert_max_active_threads);
+                return;
+            }
+            semaphore_video_in_convert.release();
+        }
+        catch (Exception e)
+        {
         }
 
         try
@@ -87,6 +105,16 @@ public class VideoInFrame extends JFrame
                 @Override
                 public void run()
                 {
+                    try
+                    {
+                        semaphore_video_in_convert.acquire();
+                        semaphore_video_in_convert_active_threads++;
+                        semaphore_video_in_convert.release();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+
                     for (int j = 0; j < h; j++)
                     {
                         for (int i = 0; i < w; i++)
@@ -104,15 +132,34 @@ public class VideoInFrame extends JFrame
                             }
                         }
                     }
-                    // Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
-                    ImageIcon i = new ImageIcon(imageIn);
-                    if (i != null)
+                    Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
+
+                    if (Callstate.state != 0)
                     {
-                        if (Callstate.state != 0)
-                        {
-                            video_in_frame.setIcon(i);
-                            video_in_frame.repaint();
-                        }
+                        final ImageIcon i = new ImageIcon(imageIn);
+                        EventQueue.invokeLater(() -> {
+                            try
+                            {
+                                if (i != null)
+                                {
+                                    video_in_frame.setIcon(i);
+                                    video_in_frame.repaint();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        });
+                    }
+
+                    try
+                    {
+                        semaphore_video_in_convert.acquire();
+                        semaphore_video_in_convert_active_threads--;
+                        semaphore_video_in_convert.release();
+                    }
+                    catch (Exception e)
+                    {
                     }
                 }
             };
