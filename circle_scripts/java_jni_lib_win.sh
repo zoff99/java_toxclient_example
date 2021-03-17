@@ -47,6 +47,12 @@ git clone https://github.com/zoff99/ToxAndroidRefImpl
 cd /root/work/ToxAndroidRefImpl/jni-c-toxcore/
 pwd
 ls -al
+
+
+if [ "$1""x" == "localx" ]; then
+    cp -av /c-toxcore/jni-c-toxcore.c jni-c-toxcore.c
+fi
+
 ## ---------------------------
 
 echo "JAVADIR1------------------"

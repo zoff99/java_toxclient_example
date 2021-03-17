@@ -267,7 +267,11 @@ fi
 
 cd "$_SRC_"
 
-git clone https://github.com/zoff99/c-toxcore c-toxcore
+if [ "$1""x" == "localx" ]; then
+    cp -av /c-toxcore ./
+else
+    git clone https://github.com/zoff99/c-toxcore c-toxcore
+fi
 cd c-toxcore/
 git checkout "zoff99/zoxcore_local_fork"
 
@@ -284,6 +288,8 @@ cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
 # C_COMPILER=$ARCH-w64-mingw32-gcc
 # CXX_COMPILER=$ARCH-w64-mingw32-g++
 # RC_COMPILER=$ARCH-w64-mingw32-windres
+
+# CFLAGS=" -O2 -g -DMIN_LOGGER_LEVEL=LOGGER_LEVEL_DEBUG -DUSE_STDERR_LOGGER=1 -DLOG_ALL_MUTEX_LOCK_UNLOCK_CALLS=1" \
 
 
 autoreconf -fi
