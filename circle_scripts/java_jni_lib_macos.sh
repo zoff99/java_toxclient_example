@@ -123,6 +123,10 @@ if [ -e /usr/bin/nasm ]; then
     echo "-------- DONE --------"
 else
 
+if [ "$1""x" == "norunx" ]; then
+    exit 0
+fi
+
 cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/java_ref_client/app/src/main/java/ || exit 1
 cp -av libjni-c-toxcore.jnilib /Users/runner/work/java_toxclient_example/java_toxclient_example/trifa_desktop/app/src/main/java/ || exit 1
 

@@ -4,6 +4,10 @@ os: osx
 jobs:
   include:
     - os: osx
+      osx_image: xcode8
+      sudo: required
+
+    - os: osx
       osx_image: xcode10.1
       sudo: required
 
@@ -17,7 +21,7 @@ script:
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
-  - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
+  - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh norun
 
 after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
