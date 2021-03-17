@@ -6,6 +6,8 @@
 
 **CircleCI:** [![CircleCI](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master.png?style=badge)](https://circleci.com/gh/zoff99/java_toxclient_example/tree/master)
 [![Android CI](https://github.com/zoff99/java_toxclient_example/workflows/MacOS%20CI/badge.svg)](https://github.com/zoff99/java_toxclient_example/actions?query=workflow%3A%22MacOS+CI%22)
+[![Android CI](https://github.com/zoff99/java_toxclient_example/workflows/Nightly/badge.svg)](https://github.com/zoff99/java_toxclient_example/actions?query=workflow%3A%22Nightly%22)
+**Travis:** [![Travis Build Status](https://travis-ci.com/zoff99/java_toxclient_example.svg?branch=master)](https://travis-ci.com/zoff99/java_toxclient_example)
 
 ## Installation & starting the App [Linux, Windows and MacOS]
 
