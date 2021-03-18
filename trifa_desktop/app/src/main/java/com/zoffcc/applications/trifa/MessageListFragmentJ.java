@@ -670,7 +670,7 @@ public class MessageListFragmentJ extends JPanel
     {
         try
         {
-            Iterator it = messagelistitems_model.elements().asIterator();
+            Iterator<Message> it = messagelistitems_model.elements().asIterator();
 
             while (it.hasNext())
             {
