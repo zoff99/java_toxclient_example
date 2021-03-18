@@ -298,8 +298,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     "-filter_complex",
                       "[0:v] setpts=PTS-STARTPTS [screen];" +
                       "[1:v] setpts=PTS-STARTPTS, scale=320x240 [cam];" +
-                      "[screen][cam]overlay=main_w-overlay_w-10:main_h-overlay_h-10",
-                    //  "overlay=main_w-overlay_w-10:main_h-overlay_h-10",
+                      "[cam] pad=w=10+iw:h=10+ih:x=5:y=5:color=0x0000FF88 [camwborder];" +
+                      "[screen][camwborder]overlay=main_w-overlay_w-10:main_h-overlay_h-10",
                     // -----
                     "-vcodec", "rawvideo",
                     "-f", "rawvideo",
