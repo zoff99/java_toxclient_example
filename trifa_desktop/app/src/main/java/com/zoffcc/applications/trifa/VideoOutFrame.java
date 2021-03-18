@@ -236,7 +236,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             webcam.addWebcamListener(this);
             panel = new WebcamPanel(webcam, false);
             panel.setFPSDisplayed(true);
-            panel.setDisplayDebugInfo(true);
+            panel.setDisplayDebugInfo(false);
             panel.setImageSizeDisplayed(true);
             if (screengrab_active != 1)
             {
@@ -343,7 +343,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
                     panel = new WebcamPanel(webcam, false);
                     panel.setFPSDisplayed(true);
-                    panel.setDisplayDebugInfo(true);
+                    panel.setDisplayDebugInfo(false);
                     panel.setImageSizeDisplayed(true);
                     if (screengrab_active != 1)
                     {
@@ -408,7 +408,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
                     panel = new WebcamPanel(webcam, false);
                     panel.setFPSDisplayed(true);
-                    panel.setDisplayDebugInfo(true);
+                    panel.setDisplayDebugInfo(false);
                     panel.setImageSizeDisplayed(true);
                     if (screengrab_active != 1)
                     {
@@ -1369,7 +1369,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             try
             {
                 panel.setFPSDisplayed(true);
-                panel.setDisplayDebugInfo(true);
+                panel.setDisplayDebugInfo(false);
                 panel.setImageSizeDisplayed(true);
                 if (screengrab_active != 1)
                 {
