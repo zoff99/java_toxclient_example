@@ -31,10 +31,11 @@ jobs:
 
       - name: change path for java version
         run: |
-             setx PATH "C:\Program Files\Java\jdk-11.0.10+9\bin;%PATH%"
+             setx PATH "C:\Program Files\Java\jdk-11.0.10+9\bin;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\"
              java -version
              javac -version
              echo %PATH%
+        shell: cmd
 
       # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
 
