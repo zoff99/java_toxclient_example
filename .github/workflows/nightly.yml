@@ -1,9 +1,9 @@
 name: Nightly
 
 on:
-#  push:
-#    paths-ignore:
-#     - 'README.md'
+  push:
+    paths-ignore:
+     - 'README.md'
   schedule:
     - cron:  '0 0 * * *'
 
@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      - name: Display the OS Version
+        run: ver
+             systeminfo | findstr /C:"OS"
+        shell: cmd
+
       - name: Display the path
         run: echo %PATH%
         shell: cmd
@@ -25,8 +30,17 @@ jobs:
         run: set -x ; "$JAVA_HOME_11_X64/bin/java.exe" -version
         shell: bash
 
+      - name: change path for java version
+        run: set -x ; setx path "%path%;$JAVA_HOME_11_X64\bin" ; java -version ; javac -version
+        shell: bash
+
+      # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
+
       - name: java compile
         run: |
+             setx path "%path%;$JAVA_HOME_11_X64\bin"
+             java -version
+             javac -version
              cd trifa_desktop\app\src\main\java\
              dir
              do_compile.bat
