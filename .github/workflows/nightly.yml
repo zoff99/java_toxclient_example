@@ -30,7 +30,7 @@ jobs:
         shell: bash
 
       - name: change path for java version
-        run: set -x ; setx path "%path%;$JAVA_HOME_11_X64\bin" ; java -version ; javac -version
+        run: set -x ; setx path "$JAVA_HOME_11_X64\bin;%path%" ; java -version ; javac -version ; echo %PATH%
         shell: bash
 
       # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
@@ -38,6 +38,7 @@ jobs:
       - name: java compile
         run: |
              setx path "$JAVA_HOME_11_X64\bin;%path%"
+             echo %PATH%
              java -version
              javac -version
              cd trifa_desktop\app\src\main\java\
