@@ -37,7 +37,7 @@ jobs:
 
       - name: java compile
         run: |
-             setx path "%path%;$JAVA_HOME_11_X64\bin"
+             setx path "$JAVA_HOME_11_X64\bin;%path%"
              java -version
              javac -version
              cd trifa_desktop\app\src\main\java\
