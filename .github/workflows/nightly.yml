@@ -18,8 +18,7 @@ jobs:
       - uses: actions/checkout@v1
 
       - name: Display the OS Version
-        run: ver
-             systeminfo | findstr /C:"OS"
+        run: systeminfo | findstr /C:"OS"
         shell: cmd
 
       - name: Display the path
