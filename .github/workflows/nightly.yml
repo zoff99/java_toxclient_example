@@ -31,28 +31,31 @@ jobs:
 
       - name: change path for java version
         run: |
-             setx PATH "C:\Program Files\Java\jdk-11.0.10+9\bin;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\"
              java -version
              javac -version
-             echo %PATH%
         shell: cmd
 
       # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
 
       - name: java compile
         run: |
-             echo %PATH%
+             export PATH="$JAVA_HOME_11_X64\bin"":$PATH"
+             echo $PATH
              java -version
              javac -version
              cd trifa_desktop\app\src\main\java\
              dir
              do_compile.bat
-        shell: cmd
+        shell: bash
 
       - name: java run
         run: |
+             export PATH="$JAVA_HOME_11_X64\bin"":$PATH"
+             echo $PATH
+             java -version
+             javac -version
              cd trifa_desktop\app\src\main\java\
              dir
              START /B "C:\Program Files\Java\jdk-11.0.10+9\bin\java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
-        shell: cmd
+        shell: bash
 
