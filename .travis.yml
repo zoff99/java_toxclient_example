@@ -28,6 +28,7 @@ script:
   - java -version
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
+  - shasum --help || exit 0
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh norun
 
@@ -39,6 +40,7 @@ after_success:
   - echo "no" # if [ "$macos" == "10_13" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_2 ; else echo "no" ; fi
   - echo "no" # if [ "$macos" == "10_14_6" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_3 ; else echo "no" ; fi
   - echo "no" # if [ "$macos" == "10_15_7" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_4 ; else echo "no" ; fi
+  - shasum -a 256 /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
 
 
 
