@@ -440,7 +440,7 @@ public class TrifaToxService
                     {
                         if ((last_resend_pending_messages_ms + (20 * 1000)) < System.currentTimeMillis())
                         {
-                            Log.i(TAG, "send_pending_1-on-1_messages ============================================");
+                            // Log.i(TAG, "send_pending_1-on-1_messages ============================================");
                             last_resend_pending_messages_ms = System.currentTimeMillis();
 
                             // loop through all pending outgoing 1-on-1 text messages --------------
@@ -532,7 +532,7 @@ public class TrifaToxService
 
                         if ((last_resend_pending_messages2_ms + (60 * 1000)) < System.currentTimeMillis())
                         {
-                            Log.i(TAG, "send_pending_1-on-1_messages 2 ============================================");
+                            // Log.i(TAG, "send_pending_1-on-1_messages 2 ============================================");
                             last_resend_pending_messages2_ms = System.currentTimeMillis();
 
 
@@ -551,10 +551,10 @@ public class TrifaToxService
                                         orderBySent_timestampAsc().
                                         toList();
 
-                                if (m_v1 != null)
-                                {
-                                    Log.i(TAG, "send_pending_1-on-1_messages:v2:count=" + m_v1.size());
-                                }
+                               // if (m_v1 != null)
+                               // {
+                                    // Log.i(TAG, "send_pending_1-on-1_messages:v2:count=" + m_v1.size());
+                               // }
 
                                 if ((m_v1 != null) && (m_v1.size() > 0))
                                 {
@@ -573,9 +573,9 @@ public class TrifaToxService
                                             continue;
                                         }
 
-                                        Log.i(TAG, "send_pending_1-on-1_messages:v2:id=" + m_resend_v2.id + " fname=" +
-                                                   get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) + " m=" +
-                                                   m_resend_v2.text);
+                                        //Log.i(TAG, "send_pending_1-on-1_messages:v2:id=" + m_resend_v2.id + " fname=" +
+                                        //           get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) + " m=" +
+                                        //           m_resend_v2.text);
 
                                         // m_resend_v2.raw_msgv2_bytes
 
