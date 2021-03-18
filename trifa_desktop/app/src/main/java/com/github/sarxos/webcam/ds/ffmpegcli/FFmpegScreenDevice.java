@@ -295,7 +295,11 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     "-framerate", "25",
                     "-i", "/dev/video0",
                     // -----
-                    "-filter_complex", "overlay=main_w-overlay_w-10:main_h-overlay_h-10",
+                    "-filter_complex",
+                      "[0:v] setpts=PTS-STARTPTS [screen];" +
+                      "[1:v] setpts=PTS-STARTPTS, scale=320x240 [cam];" +
+                      "[screen][cam]overlay=main_w-overlay_w-10:main_h-overlay_h-10",
+                    //  "overlay=main_w-overlay_w-10:main_h-overlay_h-10",
                     // -----
                     "-vcodec", "rawvideo",
                     "-f", "rawvideo",
