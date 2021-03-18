@@ -4,13 +4,15 @@ on:
   push:
     paths-ignore:
      - 'README.md'
-    #tags:
-    # - tags/*
+    tags:
+     - tags/*
   pull_request:
     paths-ignore:
      - 'README.md'
-    #tags:
-    # - tags/*
+    tags:
+     - tags/*
+  schedule:
+    - cron:  '0 0 * * *'
 
 defaults:
   run:
