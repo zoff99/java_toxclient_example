@@ -42,7 +42,7 @@ jobs:
 
       - name: java compile
         run: |
-             set JAVA_HOME=C:\Program Files\Java\jdk-11.0.10+9
+             set JAVA_HOME=%JAVA_HOME_11_X64%
              set Path=%JAVA_HOME%\bin;%Path%
              java -version
              javac -version
@@ -55,13 +55,13 @@ jobs:
 
       - name: java run
         run: |
-             set JAVA_HOME=C:\Program Files\Java\jdk-11.0.10+9
+             set JAVA_HOME=%JAVA_HOME_11_X64%
              set Path=%JAVA_HOME%\bin;%Path%
              java -version
              javac -version
              where java.exe
              cd trifa_desktop\app\src\main\java\
              dir
-             START /B "C:\Program Files\Java\jdk-11.0.10+9\bin\java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
+             START /B "java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
         shell: cmd
 
