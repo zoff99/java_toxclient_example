@@ -30,15 +30,17 @@ jobs:
         shell: bash
 
       - name: change path for java version
-        run: setx path "%JAVA_HOME_11_X64%\bin;%path%" ; java -version ; javac -version ; echo %PATH%
-        shell: cmd
+        run: |
+             for /f "usebackq tokens=2,*" %A in (`reg query HKCU\Environment /v PATH`) do set my_user_path=%B
+             setx PATH "C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe;%my_user_path%"
+             java -version
+             javac -version
+             echo %PATH%
 
       # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
 
       - name: java compile
         run: |
-             echo %JAVA_HOME_11_X64%
-             setx path "%JAVA_HOME_11_X64%\bin;%path%"
              echo %PATH%
              java -version
              javac -version
