@@ -30,14 +30,15 @@ jobs:
         shell: bash
 
       - name: change path for java version
-        run: set -x ; setx path "$JAVA_HOME_11_X64\bin;%path%" ; java -version ; javac -version ; echo %PATH%
-        shell: bash
+        run: setx path "%JAVA_HOME_11_X64%\bin;%path%" ; java -version ; javac -version ; echo %PATH%
+        shell: cmd
 
       # C:\Program Files\Java\jdk-11.0.10+9/bin/java.exe
 
       - name: java compile
         run: |
-             setx path "$JAVA_HOME_11_X64\bin;%path%"
+             echo %JAVA_HOME_11_X64%
+             setx path "%JAVA_HOME_11_X64%\bin;%path%"
              echo %PATH%
              java -version
              javac -version
