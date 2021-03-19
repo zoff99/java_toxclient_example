@@ -168,7 +168,11 @@ echo
 cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8
 echo
 echo
-screencapture -T 1 -x -t png /Users/runner/screen101.png
+
+screencapture -T 1 -x -t png /Users/runner/screen101.png &
+sudo killall NotificationCenter &
+screencapture -x -t png /Users/runner/screen102.png
+screencapture -x -t png /Users/runner/screen103.png
 
 
 fi
