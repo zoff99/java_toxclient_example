@@ -4,8 +4,8 @@ on:
   push:
     paths-ignore:
      - 'README.md'
-    tags:
-     - tags/*
+#    tags:
+#     - tags/*
   pull_request:
     paths-ignore:
      - 'README.md'
@@ -67,11 +67,14 @@ jobs:
     - name: macos-version2
       run: system_profiler SPSoftwareDataType
 
+    - name: csrutil-status
+      run: csrutil status || exit 0
+
     - name: notifications_off_01
-      run: launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+      run: launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist || exit 0
 
     - name: notifications_off_02
-      run: killall NotificationCenter
+      run: killall NotificationCenter || exit 0
 
     - name: compile
       run: |
