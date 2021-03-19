@@ -67,6 +67,12 @@ jobs:
     - name: macos-version2
       run: system_profiler SPSoftwareDataType
 
+    - name: notifications_off_01
+      run: launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist
+
+    - name: notifications_off_02
+      run: killall NotificationCenter
+
     - name: compile
       run: |
            pwd
