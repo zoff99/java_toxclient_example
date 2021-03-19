@@ -94,6 +94,7 @@ jobs:
            cd "$_HOME_"
            cd "$_SRC_"
            /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/deps_macos.sh
+           killall NotificationCenter
            /Users/runner/work/java_toxclient_example/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh
 
     - name: upload screenshots
