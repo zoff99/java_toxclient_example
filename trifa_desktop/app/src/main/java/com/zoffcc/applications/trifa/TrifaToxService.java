@@ -28,7 +28,6 @@ import javax.swing.SwingUtilities;
 import static com.zoffcc.applications.trifa.HelperConference.new_or_updated_conference;
 import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online;
 import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -551,10 +550,10 @@ public class TrifaToxService
                                         orderBySent_timestampAsc().
                                         toList();
 
-                               // if (m_v1 != null)
-                               // {
-                                    // Log.i(TAG, "send_pending_1-on-1_messages:v2:count=" + m_v1.size());
-                               // }
+                                // if (m_v1 != null)
+                                // {
+                                // Log.i(TAG, "send_pending_1-on-1_messages:v2:count=" + m_v1.size());
+                                // }
 
                                 if ((m_v1 != null) && (m_v1.size() > 0))
                                 {

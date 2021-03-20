@@ -31,10 +31,13 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.VideoInFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
+import static com.zoffcc.applications.trifa.VideoOutFrame.VideoCallStopButton;
 import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 
 /*
@@ -45,6 +48,10 @@ import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 public class VideoInFrame extends JFrame
 {
     private static final String TAG = "trifa.VideoInFrame";
+
+    static String Videoinframe_title_prefix = "TRIfA - Video in";
+    static String Videoinframe_title_part1 = " - [";
+    static String Videoinframe_title_part2 = "]";
 
     static JPictureBox video_in_frame = null;
     static JPanel wrapperPanel = null;
@@ -59,7 +66,7 @@ public class VideoInFrame extends JFrame
 
     public VideoInFrame()
     {
-        super("TRIfA - Video in");
+        super(Videoinframe_title_prefix);
 
         setSize(width / 2, height / 2);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -279,10 +286,49 @@ public class VideoInFrame extends JFrame
             };
             t_set_bitrates.start();
         }
+
+        EventQueue.invokeLater(() -> {
+            try
+            {
+                VideoInFrame1.setTitle(Videoinframe_title_prefix + Videoinframe_title_part1 +
+                                       get_friend_name_from_pubkey(Callstate.friend_pubkey) + Videoinframe_title_part2);
+            }
+            catch (Exception e)
+            {
+                VideoInFrame1.setTitle(Videoinframe_title_prefix + Videoinframe_title_part1 + "*unknown caller*" +
+                                       Videoinframe_title_part2);
+            }
+
+            try
+            {
+                VideoCallStopButton.setBackground(Color.RED);
+            }
+            catch (Exception e)
+            {
+            }
+        });
     }
 
     static void on_call_ended_actions()
     {
+        EventQueue.invokeLater(() -> {
+            try
+            {
+                VideoInFrame1.setTitle(Videoinframe_title_prefix);
+            }
+            catch (Exception e)
+            {
+            }
+
+            try
+            {
+                VideoCallStopButton.setBackground(Color.LIGHT_GRAY.brighter());
+            }
+            catch (Exception e)
+            {
+            }
+        });
+
         Callstate.reset_values();
 
         // TODO: clear videoIn Window contents
