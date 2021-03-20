@@ -20,7 +20,12 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Desktop;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.security.MessageDigest;
+
+import static com.zoffcc.applications.trifa.TrifaSetPatternActivity.bytesToString;
 
 public class HelperOSFile
 {
@@ -70,6 +75,30 @@ public class HelperOSFile
             {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static String sha256sum_of_file(String filename_with_path)
+    {
+        try
+        {
+            byte[] buffer = new byte[8192];
+            int count;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filename_with_path));
+            while ((count = bis.read(buffer)) > 0)
+            {
+                digest.update(buffer, 0, count);
+            }
+            bis.close();
+
+            byte[] hash = digest.digest();
+            return (bytesToString(hash));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 }

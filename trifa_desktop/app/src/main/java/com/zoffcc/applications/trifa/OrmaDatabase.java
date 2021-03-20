@@ -6,11 +6,14 @@ import java.io.FileReader;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static com.zoffcc.applications.trifa.HelperOSFile.sha256sum_of_file;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 
 public class OrmaDatabase
 {
     private static final String TAG = "trifa.OrmaDatabase";
+
+    private static final String CREATE_DB_FILE_SHA256SUM = "GE/avgqgDL4L1v35QvL2DIXdFMVOVKm8Ic8hG7v1BeA=";
 
     public OrmaDatabase()
     {
@@ -79,8 +82,18 @@ public class OrmaDatabase
         try
         {
             String asset_filename = "." + File.separator + "assets" + File.separator + "main.db.txt";
-            String create_db_sqls = readSQLFileAsString(asset_filename);
-            run_multi_sql(create_db_sqls);
+            String sha256sum_of_create_db_file = sha256sum_of_file(asset_filename);
+            Log.i(TAG, "create_db:sha256sum_of_create_db_file=" + sha256sum_of_create_db_file);
+            if (sha256sum_of_create_db_file.equals(CREATE_DB_FILE_SHA256SUM))
+            {
+                String create_db_sqls = readSQLFileAsString(asset_filename);
+                run_multi_sql(create_db_sqls);
+            }
+            else
+            {
+                Log.i(TAG, "create_db:input file sha256 hash does not match!");
+                System.exit(5);
+            }
         }
         catch (Exception e)
         {
