@@ -12,7 +12,49 @@ defaults:
     shell: bash
 
 jobs:
-  windows-compile:
+  macos-test-run:
+    runs-on: macos-10.15
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Display the OS Version1
+      run: sw_vers -productVersion
+
+    - name: Display the OS Version2
+      run: system_profiler SPSoftwareDataType
+
+    - name: display java version
+      run:  |
+            type java
+            java -version || exit 0
+            /usr/libexec/java_home -V
+            /usr/libexec/java_home -v 11
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            java -version
+            $JAVA_HOME/bin/java -version
+            $JAVA_HOME/bin/javac -version
+
+    - name: java compile
+      run:  |
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            export PATH="$JAVA_HOME/bin:$PATH"
+            java -version
+            javac -version
+            cd trifa_desktop/app/src/main/java/
+            ./do_compile.sh
+
+    - name: java run
+      run:  |
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            export PATH="$JAVA_HOME/bin:$PATH"
+            java -version
+            javac -version
+            cd trifa_desktop/app/src/main/java/
+            ./do_run.sh > trifa.log 2>&1 &
+            cat trifa.log
+            cat trifa.log | grep "MainActivity:MyToxID:"
+
+  windows-test-run:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
@@ -68,5 +110,4 @@ jobs:
              cat trifa.log | find "MainActivity:MyToxID:"
         shell: cmd
 
-#            START /B "java.exe" -Djava.library.path="." -classpath ".;sqlite-jdbc-3.32.3.2.jar;webcam-capture-0.3.12.jar;bridj-0.7.0.jar;slf4j-api-1.7.2.jar;flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity
 
