@@ -40,6 +40,11 @@ import static com.zoffcc.applications.trifa.MainActivity.set_JNI_audio_buffer;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_audio_send_frame;
 import static java.awt.Font.PLAIN;
 
+/*
+ *
+ *  This selects the Audio Recording Device, and sends outgoing Audio to toxcore
+ *
+ */
 public class AudioSelectInBox extends JComboBox implements ItemListener, LineListener
 {
     private static final String TAG = "trifa.AudioSelectInBox";

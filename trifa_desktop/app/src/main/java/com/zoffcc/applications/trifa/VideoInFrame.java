@@ -37,6 +37,11 @@ import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
 import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 
+/*
+ *
+ * This Plays incoming Video
+ *
+ */
 public class VideoInFrame extends JFrame
 {
     private static final String TAG = "trifa.VideoInFrame";
