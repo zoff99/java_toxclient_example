@@ -21,6 +21,7 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.concurrent.Semaphore;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -35,12 +36,21 @@ import static com.zoffcc.applications.trifa.AudioFrame.audio_out_select;
 import static com.zoffcc.applications.trifa.MainActivity.jni_iterate_videocall_audio;
 import static java.awt.Font.PLAIN;
 
+/*
+ *
+ *  This selects the Audio Playback Device, and iterates (processes to be ready to play) incoming Audio
+ *
+ */
 public class AudioSelectOutBox extends JComboBox implements ItemListener, LineListener
 {
     private static final String TAG = "trifa.AudioSelectOutBox";
 
     static SourceDataLine sourceDataLine = null;
     static AudioFormat audioformat = null;
+
+    final static Semaphore semaphore_audio_out_convert = new Semaphore(1);
+    static int semaphore_audio_out_convert_active_threads = 0;
+    static int semaphore_audio_out_convert_max_active_threads = 1;
 
     static int SAMPLE_RATE = 48000;
     static int SAMPLE_SIZE_BIT = 16;
@@ -121,7 +131,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                                     // Log.i(TAG, "t_audio_play:jni_iterate_videocall_audio");
                                     if (res == -1)
                                     {
-                                        Thread.sleep(5);
+                                        Thread.sleep(1);
                                         jni_iterate_videocall_audio(0, sleep_millis, CHANNELS, SAMPLE_RATE, 1);
                                     }
 
@@ -137,7 +147,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                                         sleep_millis_current = sleep_millis + 5;
                                     }
 
-                                    Thread.sleep(sleep_millis_current - 1, (1000000 - 300)); // sleep
+                                    Thread.sleep(sleep_millis_current); // sleep
                                 }
                                 else
                                 {

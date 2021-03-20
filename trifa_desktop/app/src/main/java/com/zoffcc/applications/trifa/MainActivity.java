@@ -82,6 +82,9 @@ import javax.swing.text.StyleContext;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_active_threads;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_max_active_threads;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.current_conf_id;
 import static com.zoffcc.applications.trifa.HelperConference.get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
@@ -1375,8 +1378,8 @@ public class MainActivity extends JFrame
         try
         {
             _recBuffer.rewind();
-            int want_bytes = (int) (sample_count * 2 * channels);
-            byte[] audio_out_byte_buffer = new byte[want_bytes];
+            final int want_bytes = (int) (sample_count * 2 * channels);
+            final byte[] audio_out_byte_buffer = new byte[want_bytes];
             _recBuffer.get(audio_out_byte_buffer, 0, want_bytes);
             // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:1:" + want_bytes +
             //            " sample_count=" + sample_count + " channels=" + channels +
@@ -1384,38 +1387,83 @@ public class MainActivity extends JFrame
             //            AudioSelectOutBox.sourceDataLine.getFormat().getChannels());
 
             final int can_write_bytes_without_blocking = AudioSelectOutBox.sourceDataLine.available();
-            if (want_bytes > can_write_bytes_without_blocking)
+            if (can_write_bytes_without_blocking < 2)
             {
                 // HINT: for now we just abandon the audio data, since writing here would block all ToxAV
+                Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:audio play would block:want_bytes=" +
+                           want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking);
                 return;
             }
-            // HINT: this may block!!
-            int actual_written_bytes = AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
-            //           actual_written_bytes);
 
-            float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
-            if (sample_count > 0)
+            try
             {
-                float vu_value = audio_vu(audio_out_byte_buffer, (int) sample_count);
-                if (vu_value > AUDIO_VU_MIN_VALUE)
+                semaphore_audio_out_convert.acquire();
+                if (semaphore_audio_out_convert_active_threads > semaphore_audio_out_convert_max_active_threads)
                 {
-                    global_audio_out_vu = vu_value;
+                    semaphore_audio_out_convert.release();
+                    return;
                 }
-                else
-                {
-                    global_audio_out_vu = 0;
-                }
+                semaphore_audio_out_convert.release();
+            }
+            catch (Exception e)
+            {
             }
 
-            final float global_audio_out_vu_ = global_audio_out_vu;
             final Thread t_audio_bar_set_play = new Thread()
             {
                 @Override
                 public void run()
                 {
+                    try
+                    {
+                        semaphore_audio_out_convert.acquire();
+                        semaphore_audio_out_convert_active_threads++;
+                        semaphore_audio_out_convert.release();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+
+                    // HINT: this acutally plays incoming Audio
+                    // HINT: this may block!!
+                    try
+                    {
+                        AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
+                        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
+                        //           actual_written_bytes);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+
+                    float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
+                    if (sample_count > 0)
+                    {
+                        float vu_value = audio_vu(audio_out_byte_buffer, (int) sample_count);
+                        if (vu_value > AUDIO_VU_MIN_VALUE)
+                        {
+                            global_audio_out_vu = vu_value;
+                        }
+                        else
+                        {
+                            global_audio_out_vu = 0;
+                        }
+                    }
+
+                    final float global_audio_out_vu_ = global_audio_out_vu;
+
                     // Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
                     set_audio_out_bar_level((int) global_audio_out_vu_);
+
+                    try
+                    {
+                        semaphore_audio_out_convert.acquire();
+                        semaphore_audio_out_convert_active_threads--;
+                        semaphore_audio_out_convert.release();
+                    }
+                    catch (Exception e)
+                    {
+                    }
                 }
             };
             t_audio_bar_set_play.start();
