@@ -61,7 +61,7 @@ jobs:
              javac -version
              where java.exe
              cd trifa_desktop\app\src\main\java\
-             START /B CMD /C CALL "do_run.bat"
+             START /B CMD /C CALL "do_run.bat" >trifa.log 2>&1
              timeout /t 30 /nobreak
         shell: cmd
 
