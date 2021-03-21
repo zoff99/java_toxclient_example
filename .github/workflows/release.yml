@@ -3,6 +3,8 @@ name: Release CI
 on:
   release:
     types: [published, edited]
+  workflow_dispatch
+
 
 defaults:
   run:
