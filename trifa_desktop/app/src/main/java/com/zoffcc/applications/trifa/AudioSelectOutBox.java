@@ -52,9 +52,11 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
     static int semaphore_audio_out_convert_active_threads = 0;
     static int semaphore_audio_out_convert_max_active_threads = 1;
 
-    static int SAMPLE_RATE = 48000;
+    final static int SAMPLE_RATE_DEFAULT = 48000;
+    final static int CHANNELS_DEFAULT = 2;
+    static int SAMPLE_RATE = SAMPLE_RATE_DEFAULT;
+    static int CHANNELS = CHANNELS_DEFAULT;
     static int SAMPLE_SIZE_BIT = 16;
-    static int CHANNELS = 2;
     public final static int n_buf_iterate_ms = 40; // fixed ms interval for audio play (call and groups)
 
     public AudioSelectOutBox()
@@ -116,16 +118,15 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                     try
                     {
                         //Log.i(TAG, "t_audio_play:001");
-                        if (sourceDataLine != null)
+                        if (Callstate.state != 0)
                         {
                             // Log.i(TAG, "t_audio_play:002:sourceDataLine.isOpen=" + sourceDataLine.isOpen() +
                             //           " sourceDataLine.isActive=" + sourceDataLine.isActive());
-                            if (sourceDataLine.isOpen())
+                            if (sourceDataLine != null)
                             {
                                 // Log.i(TAG, "t_audio_play:003:Callstate.state=" + Callstate.state);
-                                if (Callstate.state != 0)
+                                if (sourceDataLine.isOpen())
                                 {
-
                                     d1 = System.currentTimeMillis();
                                     res = jni_iterate_videocall_audio(0, sleep_millis, CHANNELS, SAMPLE_RATE, 0);
                                     // Log.i(TAG, "t_audio_play:jni_iterate_videocall_audio");
@@ -225,8 +226,10 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
         change_device(audio_out_select.getSelectedItem().toString());
     }
 
-    public static void change_device(String device_description)
+    public synchronized static void change_device(String device_description)
     {
+        Log.i(TAG, "change_device:001");
+
         Mixer.Info[] mixerInfo;
         mixerInfo = AudioSystem.getMixerInfo();
 
@@ -304,9 +307,19 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                     }
 
                     sourceDataLine.addLineListener(audio_out_select);
+                    sourceDataLine.flush();
                     sourceDataLine.open(audioformat);
                     sourceDataLine.start();
                     Log.i(TAG, "getBufferSize=" + sourceDataLine.getBufferSize());
+
+                    if (sourceDataLine.isRunning())
+                    {
+                        Log.i(TAG, "isRunning:2:TRUE");
+                    }
+                    else
+                    {
+                        Log.i(TAG, "isRunning:2:**false**");
+                    }
                 }
                 catch (SecurityException se1)
                 {
@@ -321,6 +334,8 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                 break;
             }
         }
+
+        Log.i(TAG, "change_device:099");
     }
 
     @Override

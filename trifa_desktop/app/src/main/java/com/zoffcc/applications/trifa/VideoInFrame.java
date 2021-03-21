@@ -31,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.change_audio_format;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.VideoInFrame1;
@@ -330,6 +331,9 @@ public class VideoInFrame extends JFrame
         });
 
         Callstate.reset_values();
+
+        // reset audio play format
+        change_audio_format((int) AudioSelectOutBox.SAMPLE_RATE_DEFAULT, AudioSelectOutBox.CHANNELS_DEFAULT);
 
         // TODO: clear videoIn Window contents
         int w = 10;

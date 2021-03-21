@@ -53,16 +53,17 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
     static TargetDataLine targetDataLine = null;
     static AudioFormat audioformat = null;
 
-    final int SAMPLE_RATE = 48000;
-    final int SAMPLE_SIZE_BIT = 16;
-    final int CHANNELS = 2;
+    final int AUDIO_REC_SAMPLE_RATE = 48000;
+    final int AUDIO_REC_CHANNELS = 2;
+    final int AUDIO_REC_SAMPLE_SIZE_BIT = 16;
 
     public AudioSelectInBox()
     {
         super();
         setFont(new java.awt.Font("monospaced", PLAIN, 7));
 
-        audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
+        audioformat = new AudioFormat(AUDIO_REC_SAMPLE_RATE, AUDIO_REC_SAMPLE_SIZE_BIT, AUDIO_REC_CHANNELS, true,
+                                      false);
         reload_device_list(this);
         addItemListener(this);
         final Thread t_audio_rec = new Thread()
@@ -77,8 +78,8 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 int numBytesRead = 0;
 
                 int frameduration_ms = 40;
-                int sample_count2 = ((SAMPLE_RATE * frameduration_ms) / 1000);
-                int want_numBytesRead = sample_count2 * CHANNELS * 2;
+                int sample_count2 = ((AUDIO_REC_SAMPLE_RATE * frameduration_ms) / 1000);
+                int want_numBytesRead = sample_count2 * AUDIO_REC_CHANNELS * 2;
 
                 byte[] data = new byte[want_numBytesRead];
                 ByteBuffer _recBuffer = ByteBuffer.allocateDirect(want_numBytesRead);
@@ -128,7 +129,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
                                     // HINT: this may block. but it's ok it will not block any Tox or UI threads
                                     numBytesRead = targetDataLine.read(data, 0, data.length);
-                                    sample_count = ((numBytesRead / 2) / CHANNELS);
+                                    sample_count = ((numBytesRead / 2) / AUDIO_REC_CHANNELS);
 
                                     // Log.i(TAG, "sample_count=" + sample_count + " sample_count2=" + sample_count2 +
                                     //           " frameduration_ms=" + frameduration_ms + " want_numBytesRead=" +
@@ -142,7 +143,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
                                     audio_send_res = toxav_audio_send_frame(
                                             tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), sample_count,
-                                            CHANNELS, SAMPLE_RATE);
+                                            AUDIO_REC_CHANNELS, AUDIO_REC_SAMPLE_RATE);
 
                                     // Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
 

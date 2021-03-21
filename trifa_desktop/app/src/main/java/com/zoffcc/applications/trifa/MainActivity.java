@@ -1365,9 +1365,10 @@ public class MainActivity extends JFrame
 
         if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS))
         {
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1");
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1:" + sampling_rate + " " +
+                       AudioSelectOutBox.SAMPLE_RATE);
             AudioSelectOutBox.change_audio_format((int) sampling_rate, channels);
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:2");
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:2");
         }
 
         if (sample_count == 0)
@@ -1391,7 +1392,8 @@ public class MainActivity extends JFrame
             {
                 // HINT: for now we just abandon the audio data, since writing here would block all ToxAV
                 Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:audio play would block:want_bytes=" +
-                           want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking);
+                           want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking + " " + sampling_rate +
+                           " " + AudioSelectOutBox.SAMPLE_RATE);
                 return;
             }
 
@@ -1474,6 +1476,12 @@ public class MainActivity extends JFrame
         }
     }
 
+    static void android_toxav_callback_audio_receive_frame_pts_cb_method(long friend_number, long sample_count, int channels, long sampling_rate, long pts)
+    {
+        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001:0");
+        android_toxav_callback_audio_receive_frame_cb_method(friend_number, sample_count, channels, sampling_rate);
+    }
+
     static void android_toxav_callback_video_receive_frame_pts_cb_method(long friend_number, long frame_width_px, long frame_height_px, long ystride, long ustride, long vstride, long pts)
     {
         if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) != friend_number)
@@ -1489,12 +1497,6 @@ public class MainActivity extends JFrame
     {
         Log.i(TAG, "android_toxav_callback_video_receive_frame_h264_cb_method");
         // HINT: Disabled. this is now handled by c-toxcore. how nice.
-    }
-
-    static void android_toxav_callback_audio_receive_frame_pts_cb_method(long friend_number, long sample_count, int channels, long sampling_rate, long pts)
-    {
-        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:001:0");
-        android_toxav_callback_audio_receive_frame_cb_method(friend_number, sample_count, channels, sampling_rate);
     }
 
     static void android_toxav_callback_group_audio_receive_frame_cb_method(long conference_number, long peer_number, long sample_count, int channels, long sampling_rate)
