@@ -163,7 +163,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.11";
+    static final String Version = "1.0.12";
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
