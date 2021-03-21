@@ -84,7 +84,10 @@ public class OrmaDatabase
             String asset_filename = "." + File.separator + "assets" + File.separator + "main.db.txt";
             String sha256sum_of_create_db_file = sha256sum_of_file(asset_filename);
             Log.i(TAG, "create_db:sha256sum_of_create_db_file=" + sha256sum_of_create_db_file);
-            if (sha256sum_of_create_db_file.equals(CREATE_DB_FILE_SHA256SUM))
+            // TODO: on some windows systems the checksum does not seem to match?
+            // maybe "\r\n" or the file is not read as UTF-8 ?
+            if ((sha256sum_of_create_db_file.equals(CREATE_DB_FILE_SHA256SUM)) ||
+                (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS))
             {
                 String create_db_sqls = readSQLFileAsString(asset_filename);
                 run_multi_sql(create_db_sqls);
