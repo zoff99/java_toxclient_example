@@ -154,6 +154,8 @@ import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.setup_video_in_resolution;
+import static com.zoffcc.applications.trifa.VideoOutFrame.VideoInBitRate_text;
+import static com.zoffcc.applications.trifa.VideoOutFrame.VideoOutBitRate_text;
 import static java.awt.Font.PLAIN;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
@@ -1529,12 +1531,14 @@ public class MainActivity extends JFrame
         else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE.value)
         {
             Callstate.video_in_bitrate = comm_number;
+            EventQueue.invokeLater(() -> VideoInBitRate_text.setText("" + Callstate.video_bitrate));
             // Log.i(TAG,
             //      "android_toxav_callback_call_comm_cb_method:TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE:" + comm_number);
         }
         else if (a_TOXAV_CALL_COMM_INFO == TOXAV_CALL_COMM_ENCODER_CURRENT_BITRATE.value)
         {
             Callstate.video_bitrate = comm_number;
+            EventQueue.invokeLater(() -> VideoOutBitRate_text.setText("" + Callstate.video_bitrate));
             // Log.i(TAG,
             //      "android_toxav_callback_call_comm_cb_method:TOXAV_CALL_COMM_ENCODER_CURRENT_BITRATE:" + comm_number);
         }

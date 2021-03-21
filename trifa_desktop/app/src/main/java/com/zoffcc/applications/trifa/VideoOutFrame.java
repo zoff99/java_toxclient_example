@@ -51,23 +51,30 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.VideoOutFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.crgb2yuv;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_call_control;
+import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_video_send_frame_age;
 import static com.zoffcc.applications.trifa.MainActivity.video_buffer_2;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.count_video_frame_received;
@@ -77,7 +84,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.last_video_frame_sent;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static java.awt.Font.PLAIN;
 
-public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler, WebcamImageTransformer
+public class VideoOutFrame extends JFrame implements ItemListener, WindowListener, WebcamListener, WebcamDiscoveryListener, Thread.UncaughtExceptionHandler, WebcamImageTransformer, ChangeListener
 {
     private static final String TAG = "trifa.VideoOutFrame";
 
@@ -85,8 +92,13 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     private static WebcamPanel panel = null;
     static JButton VideoCallStartButton = null;
     static JButton VideoCallStopButton = null;
+    static JPanel ButtonPanels_Panel = null;
     static JPanel ButtonPanel = null;
+    static JPanel ButtonPanel_2 = null;
     static JComboBox VideoToggleScreengrab = null;
+    static JSlider VideoOutBitRate = null;
+    static JButton VideoOutBitRate_text = null;
+    static JButton VideoInBitRate_text = null;
     private static Webcam webcam = null;
     private static BufferedImage IMAGE_FRAME = null;
     private static final String VIDEO_OVERLAY_ASSET_NAME = "video_overlay.png";
@@ -114,7 +126,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     {
         super("TRIfA - Camera");
 
-        setSize(width / 2, height / 2);
+        setSize(width / 2, (int) ((height * 1.3f) / 2.0f));
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
 
@@ -135,9 +147,21 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             webcam = null;
         }
 
+        ButtonPanel_2 = new JPanel(true);
+        ButtonPanel_2.setLayout(new GridLayout());
+
+        VideoOutBitRate = new JSlider();
+        VideoOutBitRate.setPaintTicks(true);
+        VideoOutBitRate.setSnapToTicks(true);
+        VideoOutBitRate.setMinimum(0);
+        VideoOutBitRate.setMaximum(10000);
+        VideoOutBitRate.setMajorTickSpacing(1000);
+        VideoOutBitRate.setMinorTickSpacing(200);
+        VideoOutBitRate.addChangeListener(this);
+        ButtonPanel_2.add(VideoOutBitRate);
+
         ButtonPanel = new JPanel(true);
         ButtonPanel.setLayout(new GridLayout());
-        add(ButtonPanel, BorderLayout.SOUTH);
 
         VideoCallStartButton = new JButton("start Video Call");
         VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
@@ -157,6 +181,21 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStartButton.setVisible(true);
         VideoCallStopButton.setVisible(true);
         VideoToggleScreengrab.setVisible(true);
+
+        VideoOutBitRate_text = new JButton("0");
+        VideoOutBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+
+        VideoInBitRate_text = new JButton("0");
+        VideoInBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+
+        ButtonPanels_Panel = new JPanel(true);
+        ButtonPanels_Panel.setLayout(new BoxLayout(ButtonPanels_Panel, BoxLayout.PAGE_AXIS));
+        ButtonPanels_Panel.add(ButtonPanel);
+        ButtonPanels_Panel.add(ButtonPanel_2);
+        ButtonPanels_Panel.add(VideoOutBitRate_text);
+        ButtonPanels_Panel.add(VideoInBitRate_text);
+
+        add(ButtonPanels_Panel, BorderLayout.SOUTH);
 
         VideoCallStartButton.addActionListener(new ActionListener()
         {
@@ -271,10 +310,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             t.start();
         }
 
-        ButtonPanel.setVisible(true);
+        ButtonPanels_Panel.setVisible(true);
         VideoCallStartButton.setVisible(true);
         VideoCallStopButton.setVisible(true);
-        ButtonPanel.revalidate();
+        ButtonPanels_Panel.revalidate();
         revalidate();
         repaint();
     }
@@ -1341,7 +1380,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             catch (Exception e2)
             {
                 width = 640;
-                width = 480;
+                height = 480;
             }
 
             try
@@ -1426,6 +1465,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             t.start();
         }
 
+        Log.i(TAG, "change_webcam_driver:w=" + width + " h=" + height);
+
         EventQueue.invokeLater(() -> {
             if ((VideoOutFrame1 != null) && (VideoOutFrame1.isShowing()))
             {
@@ -1433,5 +1474,58 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 VideoOutFrame1.repaint();
             }
         });
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent changeEvent)
+    {
+        JSlider source = (JSlider) changeEvent.getSource();
+        if (source == VideoOutBitRate)
+        {
+            if (!source.getValueIsAdjusting())
+            {
+
+                final int vbitrate_wanted = source.getValue();
+
+                final Thread t_set_video_out_bitrate = new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            if (vbitrate_wanted == 0)
+                            {
+                                toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                 ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_BITRATE_AUTOSET.value,
+                                                 1);
+                            }
+                            else
+                            {
+                                int res1 = toxav_bit_rate_set(
+                                        tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                        NORMAL_GLOBAL_AUDIO_BITRATE, vbitrate_wanted);
+
+                                int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                            ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,
+                                                            vbitrate_wanted);
+
+                                int res3 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                            ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_BITRATE_AUTOSET.value,
+                                                            0);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Log.i(TAG, "stateChanged:EE01:" + e.getMessage());
+                        }
+                    }
+                };
+                t_set_video_out_bitrate.start();
+            }
+            EventQueue.invokeLater(() -> {
+                VideoOutBitRate_text.setText("" + source.getValue());
+            });
+        }
     }
 }

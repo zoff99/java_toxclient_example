@@ -48,8 +48,8 @@ public class TRIFAGlobals
     final static int NORMAL_GLOBAL_VIDEO_BITRATE = 2100;
     final static int LOWER_GLOBAL_VIDEO_BITRATE = 250;
 
-    final static int HIGHER_GLOBAL_AUDIO_BITRATE = 64;
-    final static int NORMAL_GLOBAL_AUDIO_BITRATE = 32;
+    final static int HIGHER_GLOBAL_AUDIO_BITRATE = 128;
+    final static int NORMAL_GLOBAL_AUDIO_BITRATE = 64;
     final static int LOWER_GLOBAL_AUDIO_BITRATE = 8;
 
     static int GLOBAL_VIDEO_BITRATE = NORMAL_GLOBAL_VIDEO_BITRATE; // this works nice: 2500;

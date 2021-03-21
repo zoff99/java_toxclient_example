@@ -38,7 +38,9 @@ import static com.zoffcc.applications.trifa.MainActivity.VideoInFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.VideoOutFrame.VideoCallStopButton;
+import static com.zoffcc.applications.trifa.VideoOutFrame.VideoOutBitRate_text;
 import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
 
 /*
@@ -268,8 +270,8 @@ public class VideoInFrame extends JFrame
                     try
                     {
                         Thread.sleep(3000);
-                        int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), 64,
-                                                      6000);
+                        int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                                      NORMAL_GLOBAL_AUDIO_BITRATE, 6000);
 
                         int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                     ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,
@@ -278,6 +280,11 @@ public class VideoInFrame extends JFrame
                         int res3 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                     ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_BITRATE_AUTOSET.value,
                                                     0);
+
+                        EventQueue.invokeLater(() -> {
+                            VideoOutBitRate_text.setText("" + 6000);
+                        });
+
                     }
                     catch (Exception e)
                     {
