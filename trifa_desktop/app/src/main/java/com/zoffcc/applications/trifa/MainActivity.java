@@ -29,7 +29,9 @@ import java.awt.DisplayMode;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Taskbar;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -255,10 +257,47 @@ public class MainActivity extends JFrame
     {
         super("TRIfA - Desktop - " + Version + "   ");
 
-        // HINT: show proper name in MacOS Menubar
-        // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+        try
+        {
+            // com.apple.eawt.Application.setDockIconImage(icon); // Dock icon
+            Image image = Toolkit.getDefaultToolkit().getImage("trifa_icon.png");
+
+            //this is new since JDK 9
+            final Taskbar taskbar = Taskbar.getTaskbar();
+
+            try
+            {
+                // set icon for mac os (and other systems which do support this method)
+                taskbar.setIconImage(image);
+            }
+            catch (final UnsupportedOperationException e)
+            {
+                Log.i(TAG, "The os does not support: 'taskbar.setIconImage'");
+            }
+            catch (final SecurityException e)
+            {
+                Log.i(TAG, "There was a security exception for: 'taskbar.setIconImage'");
+            }
+
+            //set icon for windows os (and other systems which do support this method)
+            setIconImage(image);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            // HINT: show proper name in MacOS Menubar
+            // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         MainFrame = this;
 
@@ -784,6 +823,18 @@ public class MainActivity extends JFrame
     public static void main(String[] args)
     {
         System.out.println("Version:" + Version);
+
+        try
+        {
+            // HINT: show proper name in MacOS Menubar
+            // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         // // how to change locale ---------------
         // Locale.setDefault(Locale.GERMAN);
