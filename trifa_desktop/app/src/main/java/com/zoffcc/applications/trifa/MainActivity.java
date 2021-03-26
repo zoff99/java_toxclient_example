@@ -254,6 +254,12 @@ public class MainActivity extends JFrame
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
+
+        // HINT: show proper name in MacOS Menubar
+        // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+
         MainFrame = this;
 
         VideoInFrame1 = new VideoInFrame();
