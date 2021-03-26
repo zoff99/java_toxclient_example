@@ -64,6 +64,9 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
         audioformat = new AudioFormat(AUDIO_REC_SAMPLE_RATE, AUDIO_REC_SAMPLE_SIZE_BIT, AUDIO_REC_CHANNELS, true,
                                       false);
+
+        setRenderer(new AudioSelectionRenderer());
+
         reload_device_list(this);
         addItemListener(this);
         final Thread t_audio_rec = new Thread()
@@ -218,7 +221,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                     if (currentMixer.isLineSupported(targetDLInfo))
                     {
                         // Log.i(TAG, "ADD:" + cnt);
-                        a.addItem(mixerInfo[cnt].getDescription());
+                        a.addItem(mixerInfo[cnt]);
                     }
                 }
 
@@ -231,7 +234,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                     if (!currentMixer.isLineSupported(targetDLInfo))
                     {
                         // Log.i(TAG, "ADD:+++:" + cnt);
-                        a.addItem(mixerInfo[cnt].getDescription());
+                        a.addItem(mixerInfo[cnt]);
                     }
                 }
             }
@@ -239,103 +242,109 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
         t.start();
     }
 
-    public void change_device(String device_description)
+    public void change_device(Mixer.Info i)
     {
         Mixer.Info[] mixerInfo;
         mixerInfo = AudioSystem.getMixerInfo();
 
-        Log.i(TAG, "select audio in:" + device_description);
+        Log.i(TAG, "select audio in:" + i.getDescription());
 
-        for (int cnt = 0; cnt < mixerInfo.length; cnt++)
+        try
         {
-            // Log.i(TAG, "select audio in:?:" + mixerInfo[cnt].getDescription());
-            Mixer currentMixer = AudioSystem.getMixer(mixerInfo[cnt]);
-            if (mixerInfo[cnt].getDescription().equals(device_description))
+            for (int cnt = 0; cnt < mixerInfo.length; cnt++)
             {
-                Log.i(TAG, "select audio in:" + "sel:" + cnt);
-
-                if (targetDataLine != null)
+                // Log.i(TAG, "select audio in:?:" + mixerInfo[cnt].getDescription());
+                Mixer currentMixer = AudioSystem.getMixer(mixerInfo[cnt]);
+                if (mixerInfo[cnt].getDescription().equals(i.getDescription()))
                 {
+                    Log.i(TAG, "select audio in:" + "sel:" + cnt);
+
+                    if (targetDataLine != null)
+                    {
+                        try
+                        {
+                            targetDataLine.flush();
+                        }
+                        catch (Exception e2)
+                        {
+                            e2.printStackTrace();
+                        }
+
+                        try
+                        {
+                            targetDataLine.stop();
+                        }
+
+                        catch (Exception e2)
+                        {
+                            e2.printStackTrace();
+                        }
+
+                        try
+                        {
+                            targetDataLine.close();
+                            Log.i(TAG, "select audio in:" + "close old line");
+                        }
+                        catch (Exception e2)
+                        {
+                            e2.printStackTrace();
+                        }
+                    }
+
+                    DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioformat);
                     try
                     {
+                        if (currentMixer.isLineSupported(dataLineInfo))
+                        {
+                            Log.i(TAG, "linesupported:TRUE");
+                        }
+                        else
+                        {
+                            Log.i(TAG, "linesupported:**false**");
+                        }
+
+                        if (dataLineInfo.isFormatSupported(audioformat))
+                        {
+                            Log.i(TAG, "linesupported:TRUE");
+                        }
+                        else
+                        {
+                            Log.i(TAG, "linesupported:**false**");
+                        }
+
+                        targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
+
+                        if (targetDataLine.isRunning())
+                        {
+                            Log.i(TAG, "isRunning:TRUE");
+                        }
+                        else
+                        {
+                            Log.i(TAG, "isRunning:**false**");
+                        }
+
+                        targetDataLine.addLineListener(this);
+                        targetDataLine.open(audioformat);
                         targetDataLine.flush();
+                        targetDataLine.start();
+                        Log.i(TAG, "getBufferSize=" + targetDataLine.getBufferSize());
                     }
-                    catch (Exception e2)
+                    catch (SecurityException se1)
                     {
-                        e2.printStackTrace();
+                        se1.printStackTrace();
+                        Log.i(TAG, "select audio in:EE3:" + se1.getMessage());
                     }
-
-                    try
+                    catch (Exception e1)
                     {
-                        targetDataLine.stop();
+                        e1.printStackTrace();
+                        Log.i(TAG, "select audio in:EE2:" + e1.getMessage());
                     }
-
-                    catch (Exception e2)
-                    {
-                        e2.printStackTrace();
-                    }
-
-                    try
-                    {
-                        targetDataLine.close();
-                        Log.i(TAG, "select audio in:" + "close old line");
-                    }
-                    catch (Exception e2)
-                    {
-                        e2.printStackTrace();
-                    }
+                    break;
                 }
-
-                DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioformat);
-                try
-                {
-                    if (currentMixer.isLineSupported(dataLineInfo))
-                    {
-                        Log.i(TAG, "linesupported:TRUE");
-                    }
-                    else
-                    {
-                        Log.i(TAG, "linesupported:**false**");
-                    }
-
-                    if (dataLineInfo.isFormatSupported(audioformat))
-                    {
-                        Log.i(TAG, "linesupported:TRUE");
-                    }
-                    else
-                    {
-                        Log.i(TAG, "linesupported:**false**");
-                    }
-
-                    targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
-
-                    if (targetDataLine.isRunning())
-                    {
-                        Log.i(TAG, "isRunning:TRUE");
-                    }
-                    else
-                    {
-                        Log.i(TAG, "isRunning:**false**");
-                    }
-
-                    targetDataLine.addLineListener(this);
-                    targetDataLine.open(audioformat);
-                    targetDataLine.flush();
-                    targetDataLine.start();
-                    Log.i(TAG, "getBufferSize=" + targetDataLine.getBufferSize());
-                }
-                catch (SecurityException se1)
-                {
-                    se1.printStackTrace();
-                    Log.i(TAG, "select audio in:EE3:" + se1.getMessage());
-                }
-                catch (Exception e1)
-                {
-                    e1.printStackTrace();
-                    Log.i(TAG, "select audio in:EE2:" + e1.getMessage());
-                }
-                break;
             }
+        }
+        catch (Exception e)
+        {
         }
     }
 
@@ -348,7 +357,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             Log.i(TAG, "******** START **********");
             Log.i(TAG, "*************************");
             Log.i(TAG, "input: " + e.paramString());
-            change_device(e.getItem().toString());
+            change_device((Mixer.Info) e.getItem());
             Log.i(TAG, "*************************");
             Log.i(TAG, "********  END  **********");
             Log.i(TAG, "*************************");

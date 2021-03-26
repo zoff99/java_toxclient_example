@@ -64,6 +64,9 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
         super();
         setFont(new java.awt.Font("monospaced", PLAIN, 7));
         audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
+
+        setRenderer(new AudioSelectionRenderer());
+
         reload_device_list(this);
         addItemListener(this);
 
@@ -195,7 +198,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                     if (currentMixer.isLineSupported(sourceDLInfo))
                     {
                         // Log.i(TAG, "ADD:" + cnt);
-                        a.addItem(mixerInfo[cnt].getDescription());
+                        a.addItem(mixerInfo[cnt]);
                     }
                 }
 
@@ -208,7 +211,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                     if (!currentMixer.isLineSupported(sourceDLInfo))
                     {
                         // Log.i(TAG, "ADD:+++:" + cnt);
-                        a.addItem(mixerInfo[cnt].getDescription());
+                        a.addItem(mixerInfo[cnt]);
                     }
                 }
             }
@@ -223,23 +226,23 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
         SAMPLE_RATE = sample_rate;
         CHANNELS = channels;
         audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
-        change_device(audio_out_select.getSelectedItem().toString());
+        change_device((Mixer.Info) audio_out_select.getSelectedItem());
     }
 
-    public synchronized static void change_device(String device_description)
+    public synchronized static void change_device(Mixer.Info i)
     {
         Log.i(TAG, "change_device:001");
 
         Mixer.Info[] mixerInfo;
         mixerInfo = AudioSystem.getMixerInfo();
 
-        Log.i(TAG, "select audio out:" + device_description);
+        Log.i(TAG, "select audio out:" + i.getDescription());
 
         for (int cnt = 0; cnt < mixerInfo.length; cnt++)
         {
             // Log.i(TAG, "select audio in:?:" + mixerInfo[cnt].getDescription());
             Mixer currentMixer = AudioSystem.getMixer(mixerInfo[cnt]);
-            if (mixerInfo[cnt].getDescription().equals(device_description))
+            if (mixerInfo[cnt].getDescription().equals(i.getDescription()))
             {
                 Log.i(TAG, "select audio out:" + "sel:" + cnt);
 
@@ -347,7 +350,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
             Log.i(TAG, "******** START **********");
             Log.i(TAG, "*************************");
             Log.i(TAG, "output: " + e.paramString());
-            change_device(e.getItem().toString());
+            change_device((Mixer.Info) e.getItem());
             Log.i(TAG, "*************************");
             Log.i(TAG, "********  END  **********");
             Log.i(TAG, "*************************");
