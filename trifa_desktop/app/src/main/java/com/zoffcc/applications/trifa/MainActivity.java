@@ -259,6 +259,19 @@ public class MainActivity extends JFrame
 
         try
         {
+            // HINT: show proper name in MacOS Menubar
+            // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
             // com.apple.eawt.Application.setDockIconImage(icon); // Dock icon
             Image image = Toolkit.getDefaultToolkit().getImage("trifa_icon.png");
 
@@ -281,18 +294,6 @@ public class MainActivity extends JFrame
 
             //set icon for windows os (and other systems which do support this method)
             setIconImage(image);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        try
-        {
-            // HINT: show proper name in MacOS Menubar
-            // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
         }
         catch (Exception e)
         {
@@ -828,8 +829,8 @@ public class MainActivity extends JFrame
         {
             // HINT: show proper name in MacOS Menubar
             // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
         }
         catch (Exception e)
         {
