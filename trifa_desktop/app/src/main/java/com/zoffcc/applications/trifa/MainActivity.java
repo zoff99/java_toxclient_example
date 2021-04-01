@@ -28,6 +28,8 @@ import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -192,6 +194,7 @@ public class MainActivity extends JFrame
     static VideoOutFrame VideoOutFrame1 = null;
     static AudioFrame AudioFrame1 = null;
 
+    static EmojiFrame EmojiFrame1 = null;
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
@@ -200,7 +203,7 @@ public class MainActivity extends JFrame
     static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
     static JPanel MessageTextInputPanel;
-    static JTextArea sendTextField;
+    static JTextArea messageInputTextField;
     static JButton sendButton;
     static JButton attachmentButton;
     static JButton FriendAddButton;
@@ -305,6 +308,7 @@ public class MainActivity extends JFrame
         VideoInFrame1 = new VideoInFrame();
         VideoOutFrame1 = new VideoOutFrame();
         AudioFrame1 = new AudioFrame();
+        EmojiFrame1 = new EmojiFrame();
 
         setLayout(new FlowLayout());
         setSize(600, 400);
@@ -373,8 +377,8 @@ public class MainActivity extends JFrame
 
         MessageTextInputPanel = new JPanel(true);
 
-        sendTextField = new JTextArea();
-        sendTextField.setFont(new java.awt.Font("default", PLAIN, 9));
+        messageInputTextField = new JTextArea();
+        messageInputTextField.setFont(new java.awt.Font("default", PLAIN, 9));
 
         sendButton = new JButton(lo.getString("send_button_text"));
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
@@ -449,10 +453,10 @@ public class MainActivity extends JFrame
         MessageTextInputPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         MessageTextInputPanel.setLayout(new BoxLayout(MessageTextInputPanel, BoxLayout.X_AXIS));
 
-        MessageTextInputPanel.add(sendTextField);
-        sendTextField.setEditable(true);
+        MessageTextInputPanel.add(messageInputTextField);
+        messageInputTextField.setEditable(true);
 
-        sendTextField.addKeyListener(new KeyAdapter()
+        messageInputTextField.addKeyListener(new KeyAdapter()
         {
             @Override
             public void keyPressed(KeyEvent e)
@@ -462,7 +466,7 @@ public class MainActivity extends JFrame
                     if (e.isShiftDown())
                     {
                         Log.i(TAG, "SHIFT Enter pressed");
-                        sendTextField.append("\n");
+                        messageInputTextField.append("\n");
                         return;
                     }
                     Log.i(TAG, "Enter key pressed");
@@ -547,7 +551,7 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
-        sendTextField.getDocument().addDocumentListener(new DocumentListener()
+        messageInputTextField.getDocument().addDocumentListener(new DocumentListener()
         {
 
             @Override
@@ -659,12 +663,12 @@ public class MainActivity extends JFrame
             {
                 try
                 {
-                    while (!sendTextField.isValid())
+                    while (!messageInputTextField.isValid())
                     {
                         Thread.sleep(10);
                     }
 
-                    while (!sendTextField.isShowing())
+                    while (!messageInputTextField.isShowing())
                     {
                         Thread.sleep(10);
                     }
@@ -674,7 +678,7 @@ public class MainActivity extends JFrame
                         @Override
                         public void run()
                         {
-                            sendTextField.requestFocus();
+                            messageInputTextField.requestFocus();
                             // sendTextField.revalidate();
                         }
                     };
@@ -1002,6 +1006,30 @@ public class MainActivity extends JFrame
                  ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
 
             tox_service_fg.tox_thread_start_fg();
+        }
+
+
+        try
+        {
+            File file = new File("assets/NotoColorEmoji.ttf");
+            // File file = new File("assets/OpenMoji.ttf");
+            // File file = new File("assets/OpenSansEmoji.ttf");
+            Font font = Font.createFont(Font.TRUETYPE_FONT, file);
+
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            if (!ge.registerFont(font))
+            {
+                Log.i(TAG, "FONT:NotoColorEmoji could not be registered");
+            }
+
+            //for (Font ft : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts())
+            //{
+            // Log.i(TAG, "FONT::" + ft.getFamily() + "::" + ft.getFontName() + "::" + ft.getName());
+            //}
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
         new MainActivity();

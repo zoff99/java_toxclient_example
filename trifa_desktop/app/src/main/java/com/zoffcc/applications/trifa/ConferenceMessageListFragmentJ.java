@@ -53,7 +53,7 @@ import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
-import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
+import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
@@ -153,8 +153,8 @@ public class ConferenceMessageListFragmentJ extends JPanel
             if (is_conference_active(current_conf_id))
             {
                 // send typed message to friend
-                msg = sendTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
-                                                                          sendTextField.getText().length()));
+                msg = messageInputTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
+                                                                                  messageInputTextField.getText().length()));
 
                 try
                 {
@@ -194,7 +194,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
                                 {
                                     try
                                     {
-                                        sendTextField.setText("");
+                                        messageInputTextField.setText("");
                                     }
                                     catch (Exception e)
                                     {

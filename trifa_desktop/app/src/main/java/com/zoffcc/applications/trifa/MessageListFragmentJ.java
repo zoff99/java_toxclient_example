@@ -63,7 +63,7 @@ import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
-import static com.zoffcc.applications.trifa.MainActivity.sendTextField;
+import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_send;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
@@ -421,8 +421,8 @@ public class MessageListFragmentJ extends JPanel
             {
                 // send typed message to friend
 
-                msg = sendTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
-                                                                          sendTextField.getText().length()));
+                msg = messageInputTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
+                                                                                  messageInputTextField.getText().length()));
 
                 Message m = new Message();
                 m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friendnum);
@@ -476,7 +476,7 @@ public class MessageListFragmentJ extends JPanel
                             {
                                 try
                                 {
-                                    sendTextField.setText("");
+                                    messageInputTextField.setText("");
                                 }
                                 catch (Exception e)
                                 {
@@ -504,7 +504,7 @@ public class MessageListFragmentJ extends JPanel
                             {
                                 try
                                 {
-                                    sendTextField.setText("");
+                                    messageInputTextField.setText("");
                                 }
                                 catch (Exception e)
                                 {

@@ -163,7 +163,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 6));
         m_date_time.setIconTextGap(0);
 
-        m_text.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        m_text.setFont(new java.awt.Font("default", PLAIN, 9));
 
         // m_date_time.setBorder(new LineBorder(Color.GREEN));
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);

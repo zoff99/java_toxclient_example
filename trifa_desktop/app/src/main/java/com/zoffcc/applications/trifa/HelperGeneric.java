@@ -22,6 +22,7 @@ package com.zoffcc.applications.trifa;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -182,6 +183,14 @@ public class HelperGeneric
         ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         // use msg V2 API Call
         long t_sec = (System.currentTimeMillis() / 1000);
+        try
+        {
+            Log.i(TAG,"MMMMMM:"+message+" "+message.length()+" "+message.getBytes("UTF-8"));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
         long res = MainActivity.tox_util_friend_send_message_v2(friendnum_to_use, a_TOX_MESSAGE_TYPE, t_sec, message,
                                                                 message.length(), raw_message_buf,
                                                                 raw_message_length_buf, msg_id_buffer);
