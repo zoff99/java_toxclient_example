@@ -1027,7 +1027,7 @@ public class MainActivity extends JFrame
 
         try
         {
-            File file = new File("assets/NotoColorEmoji.ttf");
+            File file = new File("assets/NotoEmoji-Regular.ttf");
             // File file = new File("assets/OpenMoji.ttf");
             // File file = new File("assets/OpenSansEmoji.ttf");
             Font font = Font.createFont(Font.TRUETYPE_FONT, file);
@@ -1035,7 +1035,11 @@ public class MainActivity extends JFrame
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             if (!ge.registerFont(font))
             {
-                Log.i(TAG, "FONT:NotoColorEmoji could not be registered");
+                Log.i(TAG, "FONT:NotoEmoji-Regular could not be registered");
+            }
+            else
+            {
+                Log.i(TAG, "FONT:NotoEmoji-Regular *REGISTERED*");
             }
 
             //for (Font ft : GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts())
