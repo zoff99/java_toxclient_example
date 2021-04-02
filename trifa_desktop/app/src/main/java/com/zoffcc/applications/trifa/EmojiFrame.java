@@ -22,6 +22,7 @@ package com.zoffcc.applications.trifa;
 import com.kevinnovate.jemojitable.EmojiTable;
 import com.vdurmont.emoji.Emoji;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -35,8 +36,8 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
 {
     private static final String TAG = "trifa.EmojiFrame";
 
-    public static int width = 300;
-    public static int height = 300;
+    public static int width = 500;
+    public static int height = 60;
 
     public EmojiFrame()
     {
@@ -46,9 +47,9 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         // HINT: for some reason "columnCount" needs to be exactly "8"
-        EmojiTable table = new EmojiTable(8, new java.awt.Font("default", PLAIN, 18), true);
+        EmojiTable table = new EmojiTable(8, new java.awt.Font("default", PLAIN, 14), true);
 
-        table.setRowHeight(22);
+        table.setRowHeight(19);
         table.setDoubleClickListener(this);
 
         JPanel panel1 = new JPanel(true);
@@ -57,6 +58,7 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
         scrollPane1.setViewportView(table);
 
         panel1.add(scrollPane1);
+        scrollPane1.setPreferredSize(new Dimension(width,height));
         this.add(panel1);
         this.pack();
         this.setVisible(true);
