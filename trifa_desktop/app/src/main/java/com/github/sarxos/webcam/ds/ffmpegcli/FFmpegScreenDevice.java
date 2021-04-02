@@ -318,6 +318,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
             String driver_options4 = "0";
             String driver_options5 = "-follow_mouse";
             String driver_options6 = "centered";
+            String driver_options7 = "-show_region";
+            String driver_options8 = "1";
             if (Platform.isWindows())
             {
                 // ffmpeg -loglevel panic -show_region 1 -framerate 33 -video_size 1280x720
@@ -329,13 +331,26 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                 driver_options4 = "";
                 driver_options5 = "";
                 driver_options6 = "";
+                driver_options7 = "";
+                driver_options8 = "";
+            }
+            else if (Platform.isMacOSX())
+            {
+                driver_options1 = "-i";
+                driver_options2 = "default:none";
+                driver_options3 = "";
+                driver_options4 = "";
+                driver_options5 = "";
+                driver_options6 = "";
+                driver_options7 = "-show_region";
+                driver_options8 = "1";
             }
 
             // @formatter:off
             cmd_array = new String[]{
                     FFmpegScreenDriver.getCommand(path),
                     "-loglevel", "panic",
-                    "-show_region", "1",
+                    driver_options7, driver_options8,
                     "-framerate", "30",
                     "-video_size", captured_screen_res,
                     "-f", captureDriver,
