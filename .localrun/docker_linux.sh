@@ -124,8 +124,13 @@ cd /workspace/data/jni-c-toxcore/ || exit 1
 
 ls -al
 
-../circle_scripts/deps_linux.sh || exit 1
-../circle_scripts/java_jni_lib_linux.sh || exit 1
+if [ "$1""x" == "localx" ]; then
+    ../circle_scripts/deps_linux.sh local || exit 1
+    ../circle_scripts/java_jni_lib_linux.sh local || exit 1
+else
+    ../circle_scripts/deps_linux.sh || exit 1
+    ../circle_scripts/java_jni_lib_linux.sh || exit 1
+fi
 
 
 #------------------------
@@ -133,6 +138,25 @@ ls -al
 
 ' > $_HOME_/"$system_to_build_for"/script/run.sh
 
+if [ "$1""x" == "localx" ]; then
+    echo " ******* LOCAL *******"
+    echo " ******* LOCAL *******"
+    echo " ******* LOCAL *******"
+    docker run -ti --rm \
+      -v $_HOME_/"$system_to_build_for"/artefacts:/artefacts \
+      -v $_HOME_/"$system_to_build_for"/script:/script \
+      -v $_HOME_/"$system_to_build_for"/workspace:/workspace \
+      -v $_HOME_/"$system_to_build_for"/c-toxcore:/c-toxcore \
+      --net=host \
+     "$system_to_build_for_orig" \
+     /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh local"
+     if [ $? -ne 0 ]; then
+        echo "** ERROR **:$system_to_build_for_orig"
+        exit 1
+     else
+        echo "--SUCCESS--:$system_to_build_for_orig"
+     fi
+else
     docker run -ti --rm \
       -v $_HOME_/"$system_to_build_for"/artefacts:/artefacts \
       -v $_HOME_/"$system_to_build_for"/script:/script \
@@ -146,6 +170,6 @@ ls -al
      else
         echo "--SUCCESS--:$system_to_build_for_orig"
      fi
-
+fi
 done
 

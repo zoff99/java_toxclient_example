@@ -266,7 +266,11 @@ fi
 
 cd "$_SRC_"
 
-git clone https://github.com/zoff99/c-toxcore c-toxcore
+if [ "$1""x" == "localx" ]; then
+    cp -av /c-toxcore ./
+else
+    git clone https://github.com/zoff99/c-toxcore c-toxcore
+fi
 cd c-toxcore/
 git checkout "zoff99/zoxcore_local_fork"
 
