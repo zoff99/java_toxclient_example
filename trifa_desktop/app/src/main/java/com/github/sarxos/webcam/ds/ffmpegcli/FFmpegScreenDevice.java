@@ -331,8 +331,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                 driver_options4 = "";
                 driver_options5 = "";
                 driver_options6 = "";
-                driver_options7 = "";
-                driver_options8 = "";
+                driver_options7 = "-show_region";
+                driver_options8 = "1";
             }
             else if (Platform.isMacOSX())
             {
