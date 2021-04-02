@@ -287,6 +287,7 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     "-framerate", "25",
                     "-video_size", "1920x1080",
                     "-f", captureDriver,
+                    "-follow_mouse", "centered",
                     "-thread_queue_size", "64",
                     "-i", ":0.0",
                     // -----
