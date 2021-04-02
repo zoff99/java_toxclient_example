@@ -36,10 +36,10 @@ after_success:
   - ls -al /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - sha256sum /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
   - echo "$macos"
-  - echo "no" # if [ "$macos" == "10_11" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_1 ; else echo "no" ; fi
-  - echo "no" # if [ "$macos" == "10_13" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_2 ; else echo "no" ; fi
-  - echo "no" # if [ "$macos" == "10_14_6" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_3 ; else echo "no" ; fi
-  - echo "no" # if [ "$macos" == "10_15_7" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_4 ; else echo "no" ; fi
+  - if [ "$macos" == "10_11" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_1 ; else echo "no" ; fi
+  - if [ "$macos" == "10_13" ]   ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_2 ; else echo "no" ; fi
+  - if [ "$macos" == "10_14_6" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_3 ; else echo "no" ; fi
+  - if [ "$macos" == "10_15_7" ] ; then cat /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib | nc $ipa $port_4 ; else echo "no" ; fi
   - shasum -a 256 /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
 
 
