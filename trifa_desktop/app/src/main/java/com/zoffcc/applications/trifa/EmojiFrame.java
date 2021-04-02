@@ -24,10 +24,12 @@ import com.vdurmont.emoji.Emoji;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static java.awt.Font.PLAIN;
@@ -58,10 +60,27 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
         scrollPane1.setViewportView(table);
 
         panel1.add(scrollPane1);
-        scrollPane1.setPreferredSize(new Dimension(width,height));
+        scrollPane1.setPreferredSize(new Dimension(width, height));
         this.add(panel1);
         this.pack();
         this.setVisible(true);
+
+        // scrollPane1.getVerticalScrollBar().setValue(200);
+
+        try
+        {
+            JViewport viewport = (JViewport) table.getParent();
+            // HINT: row 16 seems to be the regular smileys
+            Rectangle rect = table.getCellRect(16 - 3, 0, true);
+            Rectangle r2 = viewport.getVisibleRect();
+            table.scrollRectToVisible(new Rectangle(rect.x, rect.y, (int) r2.getWidth(), (int) r2.getHeight()));
+            this.revalidate();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
