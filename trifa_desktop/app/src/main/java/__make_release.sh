@@ -40,8 +40,8 @@ cp -a \
   trifa.desktop \
   trifa_icon.png \
   \
-  release/
+  release/ || exit 1
 
 
-
+cd release && zip -r trifa_desktop_1.0.xx.zip *
 
