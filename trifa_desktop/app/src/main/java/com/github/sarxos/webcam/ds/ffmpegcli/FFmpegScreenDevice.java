@@ -315,6 +315,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
             String driver_options2 = ":0.0";
             String driver_options3 = "-draw_mouse";
             String driver_options4 = "0";
+            String driver_options5 = "-follow_mouse";
+            String driver_options6 = "centered";
             if (Platform.isWindows())
             {
                 // ffmpeg -loglevel panic -show_region 1 -framerate 33 -video_size 1280x720
@@ -324,6 +326,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                 driver_options2 = "desktop";
                 driver_options3 = "";
                 driver_options4 = "";
+                driver_options5 = "";
+                driver_options6 = "";
             }
 
             // @formatter:off
@@ -334,6 +338,7 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     "-framerate", "30",
                     "-video_size", captured_screen_res,
                     "-f", captureDriver,
+                    driver_options5, driver_options6,
                     driver_options3, driver_options4,
                     "-threads", "5",
                     "-thread_queue_size", "64",
