@@ -740,6 +740,10 @@ public class MainActivity extends JFrame
         final Rectangle bounds3 = VideoOutFrame1.getBounds();
         AudioFrame1.setLocation(bounds3.x, bounds3.y + bounds3.height);
 
+        EmojiFrame1.setLocationRelativeTo(null);
+        final Rectangle bounds4 = EmojiFrame1.getBounds();
+        EmojiFrame1.setLocation(bounds.x, bounds.y + bounds.height);
+
         EventQueue.invokeLater(() -> {
             this.toFront();
             this.revalidate();
