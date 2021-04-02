@@ -896,9 +896,6 @@ public class MainActivity extends JFrame
             {
                 Log.i(TAG, "look_and_feel:" + i + ":" + UIManager.getInstalledLookAndFeels()[i].getName());
             }
-
-            // Set System L&F
-            // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         catch (Exception e)
         {
@@ -907,9 +904,24 @@ public class MainActivity extends JFrame
 
         try
         {
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            try
+            {
+                if (args[0].equalsIgnoreCase("sys"))
+                {
+                    // Set System L&F
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
+                else
+                {
+                    UIManager.setLookAndFeel(new FlatLightLaf());
+                }
+            }
+            catch (Exception ex1)
+            {
+                UIManager.setLookAndFeel(new FlatLightLaf());
+            }
         }
-        catch (Exception ex)
+        catch (Exception ex2)
         {
             System.err.println("Failed to initialize LaF");
         }
