@@ -56,6 +56,19 @@ public class TrifaSetPatternActivity
         }
     }
 
+    public static String filter_out_specials_2(String in)
+    {
+        try
+        {
+            return in.replaceAll("[^ a-zA-Z0-9]", "_");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return in;
+        }
+    }
+
     public static String bytesToString(byte[] bytes)
     {
         return Base64.getEncoder().encodeToString(bytes);

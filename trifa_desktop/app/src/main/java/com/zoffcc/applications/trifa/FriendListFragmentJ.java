@@ -337,7 +337,7 @@ public class FriendListFragmentJ extends JPanel
 
                     if (fl != null)
                     {
-                        Log.i(TAG, "add_all_friends_clear:fl.size=" + fl.size());
+                        // Log.i(TAG, "add_all_friends_clear:fl.size=" + fl.size());
                         if (fl.size() > 0)
                         {
                             int i = 0;
@@ -366,7 +366,7 @@ public class FriendListFragmentJ extends JPanel
 
                     if (fl2 != null)
                     {
-                        Log.i(TAG, "add_all_friends_clear:fl.size=" + fl2.size());
+                        // Log.i(TAG, "add_all_friends_clear:fl.size=" + fl2.size());
                         if (fl2.size() > 0)
                         {
                             int i = 0;

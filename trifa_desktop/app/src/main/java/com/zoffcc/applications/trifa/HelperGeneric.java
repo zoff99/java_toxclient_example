@@ -31,6 +31,7 @@ import java.util.Date;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
@@ -318,10 +319,10 @@ public class HelperGeneric
                 //**// FriendList f = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
                 //**// HelperFriend.update_single_friend_in_friendlist_view(f);
 
-                //**//if (f.notification_silent)
-                {
-                    do_notification = false;
-                }
+                //if (f.notification_silent)
+                //{
+                //    do_notification = false;
+                //}
             }
             catch (Exception e)
             {
@@ -332,6 +333,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+                displayMessage("new Message");
             }
         }
         else if (msg_type == 1)
@@ -440,6 +442,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+                displayMessage("new Message");
             }
         }
         else if (msg_type == 2)
@@ -551,6 +554,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**// change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
+                displayMessage("new Message");
             }
         }
     }

@@ -98,6 +98,8 @@ import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
+import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
+import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.add_outgoing_file;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
@@ -304,6 +306,8 @@ public class MainActivity extends JFrame
         }
 
         MainFrame = this;
+
+        init_system_tray();
 
         VideoInFrame1 = new VideoInFrame();
         VideoOutFrame1 = new VideoOutFrame();
@@ -3142,6 +3146,7 @@ public class MainActivity extends JFrame
         if (do_notification)
         {
             // change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.conference_identifier);
+            displayMessage("new Group Message");
         }
     }
 
