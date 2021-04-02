@@ -432,8 +432,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
         return resolution.width * resolution.height * 3;
     }
 
-    public void setScreenRes(String capture_screen_res)
+    public void setScreenRes(String wanted_capture_screen_res)
     {
-        captured_screen_res = capture_screen_res;
+        captured_screen_res = wanted_capture_screen_res;
     }
 }
