@@ -49,7 +49,7 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         // HINT: for some reason "columnCount" needs to be exactly "8"
-        EmojiTable table = new EmojiTable(8, new java.awt.Font("default", PLAIN, 14), true);
+        EmojiTable table = new EmojiTable(8, new java.awt.Font("Twitter Color Emoji", PLAIN, 14), true);
 
         table.setRowHeight(19);
         table.setDoubleClickListener(this);

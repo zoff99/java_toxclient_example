@@ -1033,9 +1033,11 @@ public class MainActivity extends JFrame
 
         try
         {
-            File file = new File("assets/NotoEmoji-Regular.ttf");
+            // File file = new File("assets/NotoEmoji-Regular.ttf");
             // File file = new File("assets/OpenMoji.ttf");
             // File file = new File("assets/OpenSansEmoji.ttf");
+            // File file = new File("assets/TwitterColorEmoji-SVGinOT.ttf");
+            File file = new File("assets/TwitterColorEmoji-SVGinOT-OSX.ttf");
             Font font = Font.createFont(Font.TRUETYPE_FONT, file);
 
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
