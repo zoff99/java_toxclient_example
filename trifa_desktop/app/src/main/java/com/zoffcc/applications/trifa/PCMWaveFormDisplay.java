@@ -41,7 +41,7 @@ public class PCMWaveFormDisplay extends JPanel
         super();
 
         pcm_values = new ArrayList<>();
-
+        setDoubleBuffered(true);
         addComponentListener(new ComponentAdapter()
         {
             @Override
