@@ -48,6 +48,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
     static SourceDataLine sourceDataLine = null;
     static AudioFormat audioformat = null;
+    static PCMWaveFormDisplay pcm_wave_play = null;
 
     final static Semaphore semaphore_audio_out_convert = new Semaphore(1);
     static int semaphore_audio_out_convert_active_threads = 0;

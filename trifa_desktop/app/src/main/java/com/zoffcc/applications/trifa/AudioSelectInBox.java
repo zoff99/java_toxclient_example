@@ -53,6 +53,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
     static TargetDataLine targetDataLine = null;
     static AudioFormat audioformat = null;
+    static PCMWaveFormDisplay pcm_wave_rec = null;
 
     final int AUDIO_REC_SAMPLE_RATE = 48000;
     final int AUDIO_REC_CHANNELS = 2;
@@ -162,6 +163,15 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                         else
                                         {
                                             global_audio_out_vu = 0;
+                                        }
+                                    }
+
+                                    if (sample_count > 1)
+                                    {
+                                        for (int i = 0; i < sample_count; i = i + 2)
+                                        {
+                                            short s = (short) ((data[i] & 0xff) | (data[i + 1] << 8));
+                                            pcm_wave_rec.add_pcm((int) s);
                                         }
                                     }
 

@@ -31,6 +31,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import static com.zoffcc.applications.trifa.AudioSelectInBox.pcm_wave_rec;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.pcm_wave_play;
 import static java.awt.Font.PLAIN;
 
 public class AudioFrame extends JFrame
@@ -83,12 +85,24 @@ public class AudioFrame extends JFrame
         audio_out_bar.setPreferredSize(new Dimension(5, 1));
         audio_out_bar.setSize(5, 1);
 
+        pcm_wave_rec = new PCMWaveFormDisplay();
+        pcm_wave_rec.setPreferredSize(new Dimension(200, 100));
+
+        pcm_wave_play = new PCMWaveFormDisplay();
+        pcm_wave_play.setPreferredSize(new Dimension(200, 100));
+
+        JPanel dummy = new JPanel();
+        dummy.setPreferredSize(new Dimension(200, 2));
+
         audio_panel.add(audio_in_text);
         audio_panel.add(audio_in_panel);
         audio_panel.add(audio_in_bar);
         audio_panel.add(audio_out_text);
         audio_panel.add(audio_out_panel);
         audio_panel.add(audio_out_bar);
+        audio_panel.add(pcm_wave_rec);
+        audio_panel.add(dummy);
+        audio_panel.add(pcm_wave_play);
 
         audio_in_select = new AudioSelectInBox();
         audio_in_panel.add(audio_in_refesh);
