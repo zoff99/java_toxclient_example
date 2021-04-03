@@ -34,8 +34,10 @@ import static com.zoffcc.applications.trifa.AudioFrame.reset_audio_bars;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.change_audio_format;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__audio_play_volume_percent;
 import static com.zoffcc.applications.trifa.MainActivity.VideoInFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
+import static com.zoffcc.applications.trifa.MainActivity.set_audio_play_volume_percent;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
@@ -315,6 +317,18 @@ public class VideoInFrame extends JFrame
             {
             }
         });
+
+        try
+        {
+            set_audio_play_volume_percent(PREF__audio_play_volume_percent);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        // reset audio play format
+        change_audio_format((int) AudioSelectOutBox.SAMPLE_RATE_DEFAULT, AudioSelectOutBox.CHANNELS_DEFAULT);
     }
 
     static void on_call_ended_actions()
