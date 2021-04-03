@@ -52,7 +52,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
     final static Semaphore semaphore_audio_out_convert = new Semaphore(1);
     static int semaphore_audio_out_convert_active_threads = 0;
-    static int semaphore_audio_out_convert_max_active_threads = 1;
+    static int semaphore_audio_out_convert_max_active_threads = 2;
     final static Semaphore semaphore_audio_device_changes = new Semaphore(1);
 
 
