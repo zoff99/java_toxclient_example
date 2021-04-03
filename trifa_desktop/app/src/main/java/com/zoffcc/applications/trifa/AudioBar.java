@@ -21,6 +21,7 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -31,6 +32,12 @@ public class AudioBar extends JPanel
     private int cur_value = 0;
     private final int yellow_value = 75;
     private final int red_value = 85;
+
+    AudioBar()
+    {
+        super();
+        setDoubleBuffered(true);
+    }
 
     @Override
     public void paint(Graphics g)
