@@ -237,6 +237,7 @@ public class MainActivity extends JFrame
     static boolean PREF__auto_accept_image = true;
     static boolean PREF__auto_accept_video = true;
     static boolean PREF__auto_accept_all_upto = true;
+    static int PREF__audio_play_volume_percent = 100;
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
@@ -1500,14 +1501,27 @@ public class MainActivity extends JFrame
             //            " AudioSelectOutBox.sourceDataLine.getFormat().getChannels()=" +
             //            AudioSelectOutBox.sourceDataLine.getFormat().getChannels());
 
-            final int can_write_bytes_without_blocking = AudioSelectOutBox.sourceDataLine.available();
-            if (can_write_bytes_without_blocking < 2)
+            if (1 == 1 + 1)
             {
-                // HINT: for now we just abandon the audio data, since writing here would block all ToxAV
-                Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:audio play would block:want_bytes=" +
-                           want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking + " " + sampling_rate +
-                           " " + AudioSelectOutBox.SAMPLE_RATE);
-                return;
+                int can_write_bytes_without_blocking = AudioSelectOutBox.sourceDataLine.available();
+                if (can_write_bytes_without_blocking < 2)
+                {
+                    Log.i(TAG,
+                          "android_toxav_callback_audio_receive_frame_cb_method:1:audio play would block:want_bytes=" +
+                          want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking + " " + sampling_rate +
+                          " " + AudioSelectOutBox.SAMPLE_RATE);
+
+                    can_write_bytes_without_blocking = AudioSelectOutBox.sourceDataLine.available();
+                    if (can_write_bytes_without_blocking < 2)
+                    {
+                        // HINT: for now we just abandon the audio data, since writing here would block all ToxAV
+                        Log.i(TAG,
+                              "android_toxav_callback_audio_receive_frame_cb_method:2:audio play would block:want_bytes=" +
+                              want_bytes + " can_write_bytes=" + can_write_bytes_without_blocking + " " +
+                              sampling_rate + " " + AudioSelectOutBox.SAMPLE_RATE);
+                    }
+                    return;
+                }
             }
 
             try
@@ -1522,74 +1536,71 @@ public class MainActivity extends JFrame
             }
             catch (Exception e)
             {
+                e.printStackTrace();
             }
 
-            final Thread t_audio_bar_set_play = new Thread()
-            {
-                @Override
-                public void run()
+            final Thread t_audio_bar_set_play = new Thread(() -> {
+                try
                 {
-                    try
-                    {
-                        semaphore_audio_out_convert.acquire();
-                        semaphore_audio_out_convert_active_threads++;
-                        semaphore_audio_out_convert.release();
-                    }
-                    catch (Exception e)
-                    {
-                    }
+                    semaphore_audio_out_convert.acquire();
+                    semaphore_audio_out_convert_active_threads++;
+                    semaphore_audio_out_convert.release();
+                }
+                catch (Exception e)
+                {
+                }
 
-                    // HINT: this acutally plays incoming Audio
-                    // HINT: this may block!!
-                    try
-                    {
-                        AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
-                        // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
-                        //           actual_written_bytes);
-                    }
-                    catch (Exception e)
-                    {
-                    }
+                // HINT: this acutally plays incoming Audio
+                // HINT: this may block!!
+                try
+                {
+                    AudioSelectOutBox.sourceDataLine.write(audio_out_byte_buffer, 0, want_bytes);
+                    // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:2:" +
+                    //           actual_written_bytes);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
 
-                    float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
-                    if (sample_count > 0)
+                float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
+                if (sample_count > 0)
+                {
+                    float vu_value = audio_vu(audio_out_byte_buffer, (int) sample_count);
+                    if (vu_value > AUDIO_VU_MIN_VALUE)
                     {
-                        float vu_value = audio_vu(audio_out_byte_buffer, (int) sample_count);
-                        if (vu_value > AUDIO_VU_MIN_VALUE)
-                        {
-                            global_audio_out_vu = vu_value;
-                        }
-                        else
-                        {
-                            global_audio_out_vu = 0;
-                        }
+                        global_audio_out_vu = vu_value;
                     }
-
-                    final float global_audio_out_vu_ = global_audio_out_vu;
-
-                    // Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
-                    set_audio_out_bar_level((int) global_audio_out_vu_);
-
-                    if (sample_count > 1)
+                    else
                     {
-                        for (int i = 0; i < sample_count; i = i + 2)
-                        {
-                            short s = (short) ((audio_out_byte_buffer[i] & 0xff) | (audio_out_byte_buffer[i + 1] << 8));
-                            pcm_wave_play.add_pcm((int) s);
-                        }
-                    }
-
-                    try
-                    {
-                        semaphore_audio_out_convert.acquire();
-                        semaphore_audio_out_convert_active_threads--;
-                        semaphore_audio_out_convert.release();
-                    }
-                    catch (Exception e)
-                    {
+                        global_audio_out_vu = 0;
                     }
                 }
-            };
+
+                final float global_audio_out_vu_ = global_audio_out_vu;
+
+                // Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
+                set_audio_out_bar_level((int) global_audio_out_vu_);
+
+                if (sample_count > 1)
+                {
+                    for (int i = 0; i < sample_count; i = i + 2)
+                    {
+                        short s = (short) ((audio_out_byte_buffer[i] & 0xff) | (audio_out_byte_buffer[i + 1] << 8));
+                        pcm_wave_play.add_pcm((int) s);
+                    }
+                }
+
+                try
+                {
+                    semaphore_audio_out_convert.acquire();
+                    semaphore_audio_out_convert_active_threads--;
+                    semaphore_audio_out_convert.release();
+                }
+                catch (Exception e)
+                {
+                }
+            });
             t_audio_bar_set_play.start();
         }
         catch (Exception e)

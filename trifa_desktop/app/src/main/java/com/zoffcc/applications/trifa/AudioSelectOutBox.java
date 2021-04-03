@@ -53,13 +53,15 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
     final static Semaphore semaphore_audio_out_convert = new Semaphore(1);
     static int semaphore_audio_out_convert_active_threads = 0;
     static int semaphore_audio_out_convert_max_active_threads = 1;
+    final static Semaphore semaphore_audio_device_changes = new Semaphore(1);
+
 
     final static int SAMPLE_RATE_DEFAULT = 48000;
-    final static int CHANNELS_DEFAULT = 2;
+    final static int CHANNELS_DEFAULT = 1;
     static int SAMPLE_RATE = SAMPLE_RATE_DEFAULT;
     static int CHANNELS = CHANNELS_DEFAULT;
     static int SAMPLE_SIZE_BIT = 16;
-    public final static int n_buf_iterate_ms = 40; // fixed ms interval for audio play (call and groups)
+    public final static int n_buf_iterate_ms = 60; // fixed ms interval for audio play (call and groups)
 
     public AudioSelectOutBox()
     {
@@ -233,21 +235,33 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
     public static void change_audio_format(int sample_rate, int channels)
     {
+        Log.i(TAG, "AA::OUT::change_audio_format:001:" + sample_rate + " " + channels);
         Log.i(TAG, "change_audio_format:sample_rate=" + sample_rate + " SAMPLE_RATE=" + SAMPLE_RATE + " channels=" +
                    channels + " CHANNELS=" + CHANNELS);
         SAMPLE_RATE = sample_rate;
         CHANNELS = channels;
-        audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
         change_device((Mixer.Info) audio_out_select.getSelectedItem());
+        Log.i(TAG, "AA::OUT::change_audio_format:099");
     }
 
     public synchronized static void change_device(Mixer.Info i)
     {
+        try
+        {
+            semaphore_audio_device_changes.acquire();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "AA::OUT::change_device:001:" + i.getDescription() + " " + SAMPLE_RATE + " " + CHANNELS);
+
+        audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
+
         Log.i(TAG, "change_device:001");
 
-
         Log.i(TAG, "select audio out:" + i.getDescription());
-
 
         // Log.i(TAG, "select audio in:?:" + mixerInfo[cnt].getDescription());
         Mixer currentMixer = AudioSystem.getMixer(i);
@@ -258,7 +272,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
         {
             try
             {
-                sourceDataLine.flush();
+                sourceDataLine.stop();
             }
             catch (Exception e2)
             {
@@ -267,7 +281,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
             try
             {
-                sourceDataLine.stop();
+                sourceDataLine.flush();
             }
             catch (Exception e2)
             {
@@ -283,6 +297,8 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
             {
                 e2.printStackTrace();
             }
+
+            sourceDataLine = null;
         }
 
         DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, audioformat);
@@ -319,7 +335,6 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
             }
 
             sourceDataLine.addLineListener(audio_out_select);
-            sourceDataLine.flush();
             sourceDataLine.open(audioformat);
             sourceDataLine.start();
             Log.i(TAG, "getBufferSize=" + sourceDataLine.getBufferSize());
@@ -344,8 +359,10 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
             Log.i(TAG, "select audio out:EE2:" + e1.getMessage());
         }
 
-
         Log.i(TAG, "change_device:099");
+
+        semaphore_audio_device_changes.release();
+        Log.i(TAG, "AA::OUT::change_device:099");
     }
 
     @Override

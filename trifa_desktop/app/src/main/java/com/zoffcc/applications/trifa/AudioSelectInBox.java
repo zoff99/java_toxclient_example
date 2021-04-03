@@ -36,6 +36,7 @@ import javax.swing.JComboBox;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.audio_in_select;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_in_bar_level;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_device_changes;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_audio_buffer;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_audio_send_frame;
@@ -264,8 +265,18 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
         t.start();
     }
 
-    public void change_device(Mixer.Info i)
+    public synchronized void change_device(Mixer.Info i)
     {
+        try
+        {
+            semaphore_audio_device_changes.acquire();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "AA::IN::change_device:001:" + i.getDescription());
         Log.i(TAG, "select audio in:" + i.getDescription());
 
         try
@@ -277,7 +288,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             {
                 try
                 {
-                    targetDataLine.flush();
+                    targetDataLine.stop();
                 }
                 catch (Exception e2)
                 {
@@ -286,9 +297,8 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
                 try
                 {
-                    targetDataLine.stop();
+                    targetDataLine.flush();
                 }
-
                 catch (Exception e2)
                 {
                     e2.printStackTrace();
@@ -303,6 +313,8 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 {
                     e2.printStackTrace();
                 }
+
+                targetDataLine = null;
             }
 
             DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioformat);
@@ -340,7 +352,6 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
                 targetDataLine.addLineListener(this);
                 targetDataLine.open(audioformat);
-                targetDataLine.flush();
                 targetDataLine.start();
                 Log.i(TAG, "getBufferSize=" + targetDataLine.getBufferSize());
             }
@@ -357,7 +368,11 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
         }
         catch (Exception e)
         {
+            e.printStackTrace();
         }
+
+        semaphore_audio_device_changes.release();
+        Log.i(TAG, "AA::IN::change_device:099");
     }
 
     @Override
