@@ -97,9 +97,9 @@ public class TRIFAGlobals
     final static long AVATAR_SELF_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
 
     // ---- lookup cache ----
-    static Map<String, java.io.FileInputStream> cache_ft_fis = new HashMap<String, java.io.FileInputStream>();
-    static Map<String, java.io.FileOutputStream> cache_ft_fos = new HashMap<String, java.io.FileOutputStream>();
-    static Map<String, java.io.FileOutputStream> cache_ft_fos_normal = new HashMap<String, java.io.FileOutputStream>();
+    // static Map<String, java.io.FileInputStream> cache_ft_fis = new HashMap<String, java.io.FileInputStream>();
+    // static Map<String, java.io.FileOutputStream> cache_ft_fos = new HashMap<String, java.io.FileOutputStream>();
+    // static Map<String, java.io.FileOutputStream> cache_ft_fos_normal = new HashMap<String, java.io.FileOutputStream>();
     // ---- lookup cache ----
 
     static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES = 1000000L; // 1000 kBytes // update FT and progress bars every XX bytes

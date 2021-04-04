@@ -227,6 +227,18 @@ public class MessageListFragmentJ extends JPanel
                                                     file_id_buffer, ft.file_name, ft.file_name.length());
                                             // TODO: handle errors from tox_file_send() here -------
 
+                                            // @formatter:off
+                                            Log.D(TAG,
+                                                  "DEBUG_FT:OUT:file_chunk_request:file_number=" +
+                                                  file_number +
+                                                  " fn=" + tox_friend_by_public_key__wrapper(element.tox_friendpubkey) +
+                                                  " filetransfer_id=" + element.filetransfer_id+
+                                                  " pk="+element.tox_friendpubkey+
+                                                  " path_name="+ft.path_name+
+                                                  " file_name=" + ft.file_name
+                                            );
+                                            // @formatter:on
+
                                             Log.i(TAG, "MM2MM:9:new filenum=" + file_number);
 
                                             // update the tox file number in DB -----------
@@ -319,14 +331,14 @@ public class MessageListFragmentJ extends JPanel
                                     Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
                                 }
                             }
-                            else if (element.direction == 1)
-                            {
-                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
-                                {
-                                    run_file(element.filename_fullpath);
-                                    Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
-                                }
-                            }
+                            //else if (element.direction == 1)
+                            //{
+                            //    if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                            //    {
+                            //        run_file(element.filename_fullpath);
+                            //        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                            //    }
+                            //}
                         }
                         else
                         {

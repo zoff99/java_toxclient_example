@@ -392,15 +392,6 @@ public class HelperFiletransfer
         }
     }
 
-    static void update_filetransfer_db_fos_open(final Filetransfer f)
-    {
-        orma.updateFiletransfer().
-                tox_public_key_stringEq(f.tox_public_key_string).
-                file_numberEq(f.file_number).
-                fos_open(f.fos_open).
-                execute();
-    }
-
     public static void set_filetransfer_for_message_from_friendnum_and_filenum(long friend_number, long file_number, long ft_id)
     {
         try

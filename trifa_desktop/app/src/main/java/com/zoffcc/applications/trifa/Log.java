@@ -47,6 +47,18 @@ public final class Log
     }
 
     /**
+     * Dummy, does nothing
+     *
+     * @param tag
+     * @param msg
+     * @return
+     */
+    public static int D(String tag, String msg)
+    {
+        return 0;
+    }
+
+    /**
      * Send a {@link #VERBOSE} log message.
      *
      * @param tag Used to identify the source of a log message.  It usually identifies
