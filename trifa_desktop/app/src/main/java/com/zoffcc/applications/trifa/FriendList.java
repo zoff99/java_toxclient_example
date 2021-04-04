@@ -543,4 +543,10 @@ public class FriendList
         this.sql_set = this.sql_set + " is_relay='" + b(is_relay) + "' ";
         return this;
     }
+
+    public FriendList get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
 }
