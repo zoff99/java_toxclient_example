@@ -35,6 +35,12 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Taskbar;
 import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -52,6 +58,7 @@ import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -76,6 +83,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -382,6 +390,7 @@ public class MainActivity extends JFrame
         MessagePanel_Info = new MessageListFragmentJInfo();
         MessagePanel = new MessageListFragmentJ();
         MessagePanel.setCurrentPK(null);
+
         MessagePanelConferences = new ConferenceMessageListFragmentJ();
 
         MessageTextInputPanel = new JPanel(true);
@@ -390,6 +399,39 @@ public class MainActivity extends JFrame
         messageInputTextField.setFont(new java.awt.Font("default", PLAIN, 9));
         Action action = messageInputTextField.getActionMap().get("paste-from-clipboard");
         messageInputTextField.getActionMap().put("paste-from-clipboard", new ProxyPasteAction(action));
+        messageInputTextField.setTransferHandler(new ImageTransferHandler(messageInputTextField));
+        //messageInputTextField.setDropMode(DropMode.INSERT);
+        //messageInputTextField.setDragEnabled(true);
+        //messageInputTextField.setDropTarget(new DropTarget(messageInputTextField, new FileDropTargetListener()));
+
+        new FileDrop(null, messageInputTextField, /*dragBorder,*/ new FileDrop.Listener()
+        {
+            public void filesDropped(java.io.File[] files)
+            {
+                for (int i = 0; i < files.length; i++)
+                {
+                    try
+                    {
+                        if (message_panel_displayed == 1)
+                        {
+                            if (get_current_friendnum() != -1)
+                            {
+                                Log.i(TAG, "FFF:" + files[i].getCanonicalPath());
+                                Log.i(TAG, "FFF:" + files[i].getAbsoluteFile().getParent() + " " +
+                                           files[i].getAbsoluteFile().getName());
+                                // send file
+                                add_outgoing_file(files[i].getAbsoluteFile().getParent(),
+                                                  files[i].getAbsoluteFile().getName());
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
 
         sendButton = new JButton(lo.getString("send_button_text"));
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
@@ -3386,6 +3428,127 @@ public class MainActivity extends JFrame
             }
         }
 
+    }
+
+    public class ImageTransferHandler extends TransferHandler
+    {
+        private final DataFlavor FILE_FLAVOR = DataFlavor.javaFileListFlavor;
+        private JComponent drop_component = null;
+
+        public ImageTransferHandler(JComponent component)
+        {
+            drop_component = component;
+            Log.i(TAG, "drag_n_drop:001");
+        }
+
+        public boolean importData(JComponent c, Transferable t)
+        {
+            Log.i(TAG, "drag_n_drop:002");
+            if (transferFlavor(t.getTransferDataFlavors(), FILE_FLAVOR))
+            {
+                Log.i(TAG, "drag_n_drop:003");
+                try
+                {
+                    Log.i(TAG, "drag_n_drop:004");
+                    List<File> fileList = (List<File>) t.getTransferData(FILE_FLAVOR);
+                    if (fileList != null && fileList.toArray() instanceof File[])
+                    {
+                        File[] files = (File[]) fileList.toArray();
+                        // mainPanel.addFiles(files);
+                        for (File f : files)
+                        {
+                            Log.i(TAG, "drag_n_drop:" + f.getAbsoluteFile() + " " + f.getName());
+                        }
+                    }
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns the type of transfer actions to be supported.
+         */
+        public int getSourceActions(JComponent c)
+        {
+            return COPY_OR_MOVE;
+        }
+
+        /**
+         * Specifies the actions to be performed after the data has been exported.
+         */
+        protected void exportDone(JComponent c, Transferable data, int action)
+        {
+            // c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+
+        /**
+         * Returns true if the specified flavor is contained in the flavors array,
+         * false otherwise.
+         */
+        private boolean transferFlavor(DataFlavor[] flavors, DataFlavor flavor)
+        {
+            boolean found = false;
+            for (int i = 0; i < flavors.length && !found; i++)
+            {
+                found = flavors[i].equals(flavor);
+            }
+            return found;
+        }
+
+        /**
+         * Returns true if the component can import the specified flavours, false
+         * otherwise.
+         */
+        public boolean canImport(JComponent c, DataFlavor[] flavors)
+        {
+            for (int i = 0; i < flavors.length; i++)
+            {
+                if (FILE_FLAVOR.equals(flavors[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public class FileDropTargetListener implements DropTargetListener
+    {
+
+        @Override
+        public void dragEnter(DropTargetDragEvent dropTargetDragEvent)
+        {
+            Log.i(TAG, "FileDropTargetListener:dragEnter");
+        }
+
+        @Override
+        public void dragOver(DropTargetDragEvent dropTargetDragEvent)
+        {
+            Log.i(TAG, "FileDropTargetListener:dragOver");
+        }
+
+        @Override
+        public void dropActionChanged(DropTargetDragEvent dropTargetDragEvent)
+        {
+            Log.i(TAG, "FileDropTargetListener:dropActionChanged");
+        }
+
+        @Override
+        public void dragExit(DropTargetEvent dropTargetEvent)
+        {
+            Log.i(TAG, "FileDropTargetListener:dragExit");
+        }
+
+        @Override
+        public void drop(DropTargetDropEvent dropTargetDropEvent)
+        {
+            Log.i(TAG, "FileDropTargetListener:drop");
+        }
     }
 }
 
