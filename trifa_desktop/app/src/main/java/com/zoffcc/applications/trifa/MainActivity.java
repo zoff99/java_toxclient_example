@@ -43,6 +43,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -98,6 +100,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
@@ -385,6 +388,8 @@ public class MainActivity extends JFrame
 
         messageInputTextField = new JTextArea();
         messageInputTextField.setFont(new java.awt.Font("default", PLAIN, 9));
+        Action action = messageInputTextField.getActionMap().get("paste-from-clipboard");
+        messageInputTextField.getActionMap().put("paste-from-clipboard", new ProxyPasteAction(action));
 
         sendButton = new JButton(lo.getString("send_button_text"));
         sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
@@ -3322,6 +3327,65 @@ public class MainActivity extends JFrame
 
     }
 
+    public class ProxyPasteAction extends AbstractAction
+    {
+        private Action action;
 
+        public ProxyPasteAction(Action action)
+        {
+            this.action = action;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            Log.i(TAG, "PasteOccured...");
+
+            BufferedImage img = (BufferedImage) getImageFromClipboard();
+            if (img != null)
+            {
+                Log.i(TAG, "PasteOccured...Image");
+                try
+                {
+                    if (message_panel_displayed == 1)
+                    {
+                        Log.i(TAG, "PasteOccured...Image:002");
+                        if (get_current_friendnum() != -1)
+                        {
+                            Log.i(TAG, "PasteOccured...Image:003:" + get_current_friendnum());
+
+                            final String friend_pubkey_str = HelperFriend.tox_friend_get_public_key__wrapper(
+                                    get_current_friendnum());
+
+                            String wanted_full_filename_path = VFS_PREFIX + VFS_FILE_DIR + "/" + friend_pubkey_str;
+                            new File(wanted_full_filename_path).mkdirs();
+
+                            String filename_local_corrected = get_incoming_filetransfer_local_filename("clip.png",
+                                                                                                       friend_pubkey_str);
+
+                            filename_local_corrected = wanted_full_filename_path + "/" + filename_local_corrected;
+
+                            Log.i(TAG, "PasteOccured...Image:004:" + filename_local_corrected);
+                            final File f_send = new File(filename_local_corrected);
+                            boolean res = ImageIO.write(img, "png", f_send);
+                            Log.i(TAG, "PasteOccured...Image:004:" + filename_local_corrected + " res=" + res);
+
+                            // send file
+                            add_outgoing_file(f_send.getAbsoluteFile().getParent(), f_send.getAbsoluteFile().getName());
+                        }
+                    }
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+            }
+            else
+            {
+                action.actionPerformed(e);
+            }
+        }
+
+    }
 }
 

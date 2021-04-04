@@ -20,9 +20,14 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -1047,5 +1052,37 @@ public class HelperGeneric
         }
 
         HelperConference.update_single_conference_in_friendlist_view(conf_temp);
+    }
+
+    /**
+     * Get an image off the system clipboard.
+     *
+     * @return Returns an Image if successful; otherwise returns null.
+     */
+    public static Image getImageFromClipboard()
+    {
+        Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.imageFlavor))
+        {
+            try
+            {
+                return (Image) transferable.getTransferData(DataFlavor.imageFlavor);
+            }
+            catch (UnsupportedFlavorException e)
+            {
+                // handle this as desired
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                // handle this as desired
+                e.printStackTrace();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
