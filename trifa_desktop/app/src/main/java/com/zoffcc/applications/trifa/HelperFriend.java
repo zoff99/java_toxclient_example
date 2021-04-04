@@ -20,14 +20,11 @@
 package com.zoffcc.applications.trifa;
 
 import java.nio.ByteBuffer;
-import java.sql.Statement;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
-import static com.zoffcc.applications.trifa.MainActivity.sqldb;
-import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -431,7 +428,7 @@ public class HelperFriend
         {
             friend_alias_name = orma.selectFromFriendList().
                     tox_public_key_stringEq(friend_pubkey).
-                    toList().get(0).alias_name;
+                    get(0).alias_name;
         }
         catch (Exception e)
         {
@@ -445,7 +442,7 @@ public class HelperFriend
             {
                 friend_name = orma.selectFromFriendList().
                         tox_public_key_stringEq(friend_pubkey).
-                        toList().get(0).name;
+                        get(0).name;
             }
             catch (Exception e)
             {
