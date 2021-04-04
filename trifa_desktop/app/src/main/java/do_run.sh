@@ -23,6 +23,13 @@ else
   fi
 fi
 
+# https://stackoverflow.com/a/53351433
+# https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8214083
+# https://bugs.openjdk.java.net/browse/JDK-8225571
+# GTK2 vs. GTK3
+
+# -Djdk.gtk.version=2 \
+
 java $scale \
 -Dcom.apple.mrj.application.apple.menu.about.name=TRIfA \
 -Djava.library.path="." \
