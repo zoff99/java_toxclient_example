@@ -549,4 +549,18 @@ public class FriendList
         this.sql_limit = " limit " + i + ",1 ";
         return this.toList().get(0);
     }
+
+    public FriendList alias_name(String alias_name)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " alias_name='" + s(alias_name) + "' ";
+        return this;
+    }
 }

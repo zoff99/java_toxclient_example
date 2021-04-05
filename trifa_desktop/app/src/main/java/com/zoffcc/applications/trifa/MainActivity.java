@@ -1106,7 +1106,8 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
-        new MainActivity();
+        java.awt.EventQueue.invokeLater(() -> new MainActivity().setVisible(true));
+        // new MainActivity();
 
         String my_tox_id_temp = get_my_toxid();
         Log.i(TAG, "MyToxID:" + my_tox_id_temp);

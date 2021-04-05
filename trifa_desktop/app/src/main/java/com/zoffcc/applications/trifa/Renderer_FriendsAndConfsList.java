@@ -30,6 +30,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static java.awt.Font.PLAIN;
@@ -38,6 +39,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
 {
     private static final String TAG = "trifa.Rndr_FriendsAndConfsList";
 
+    final JLabel notification = new JLabel("_");
     final JLabel type = new JLabel("_");
     final JLabel status = new JLabel("_");
     final JLabel name = new JLabel();
@@ -45,6 +47,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
     Renderer_FriendsAndConfsList()
     {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        add(notification);
         add(type);
         add(status);
         add(name);
@@ -56,6 +59,9 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
 
         status.setFont(new java.awt.Font("monospaced", PLAIN, 12));
         status.setOpaque(true);
+
+        notification.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+        notification.setOpaque(true);
     }
 
     @Override
@@ -81,7 +87,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
         {
             FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
 
-            name.setText(f.name);
+            name.setText(get_friend_name_from_pubkey(f.tox_public_key_string));
 
             try
             {
@@ -111,7 +117,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
                 status.setForeground(Color.GRAY);
             }
 
-            if (get_relay_for_friend(f.tox_public_key_string)!=null)
+            if (get_relay_for_friend(f.tox_public_key_string) != null)
             {
                 type.setText("*");
             }
@@ -121,6 +127,10 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             }
             type.setBackground(SEE_THRU);
             type.setForeground(Color.BLACK);
+
+            notification.setText(" ");
+            notification.setBackground(SEE_THRU);
+            notification.setForeground(Color.BLACK);
         }
         else // --- conference ---
         {
@@ -136,6 +146,10 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             type.setText("G");
             type.setBackground(Color.GREEN);
             type.setForeground(Color.BLACK);
+
+            notification.setText(" ");
+            notification.setBackground(SEE_THRU);
+            notification.setForeground(Color.BLACK);
         }
 
         return this;

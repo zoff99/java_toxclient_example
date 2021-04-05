@@ -21,23 +21,31 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -110,60 +118,123 @@ public class FriendListFragmentJ extends JPanel
         });
         popup.add(menuItem);
 
-        JMenuItem menuItem_as_relay = new JMenuItem(lo.getString("friend_as_relay"));
-        menuItem_as_relay.addActionListener(new ActionListener()
+        JMenuItem menuItem_alias_name = new JMenuItem(lo.getString("set_alias_name_friend"));
+        menuItem_alias_name.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent ev)
             {
-                if (!have_own_relay())
+                final JMenuItem mitem = (JMenuItem) ev.getSource();
+                final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                final CombinedFriendsAndConferences c_fac = ((JList<CombinedFriendsAndConferences>) a).getSelectedValue();
+
+                try
                 {
-                    final JMenuItem mitem = (JMenuItem) ev.getSource();
-                    final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
-                    final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
-                    Log.i(TAG, "add_as_relay:tox_public_key_string=" +
-                               b.getSelectedValue().friend_item.tox_public_key_string);
+                    ComplexDialogPanel set_aliasname_panel = new ComplexDialogPanel(c_fac.friend_item.name,
+                                                                                    c_fac.friend_item.alias_name);
 
-                    final String f2_tox_public_key_string = b.getSelectedValue().friend_item.tox_public_key_string;
-
-                    int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("add_as_relay_msg"),
-                                                                        lo.getString("add_as_relay_title"),
-                                                                        YES_NO_OPTION);
-                    if (selected_answer == YES_OPTION)
+                    int optionType = JOptionPane.DEFAULT_OPTION;
+                    int messageType = JOptionPane.PLAIN_MESSAGE;
+                    Icon icon = null;
+                    String[] options = {"Ok", "Cancel"};
+                    Object initialValue = options[0];
+                    int reply = JOptionPane.showOptionDialog(null, set_aliasname_panel,
+                                                             lo.getString("set_alias_name_friend"), optionType,
+                                                             messageType, icon, options, initialValue);
+                    if (reply == YES_OPTION)
                     {
                         try
                         {
-                            if (set_friend_as_own_relay_in_db(f2_tox_public_key_string))
+                            if (c_fac.friend_item.tox_public_key_string.length() > 1)
                             {
-                                // load all friends into data list ---
-                                Log.i(TAG, "onMenuItemClick:6");
-                                try
+                                String new_alias_name = set_aliasname_panel.getText("New Alias Name");
+                                if ((new_alias_name != null) && (new_alias_name.length() > 0))
                                 {
-                                    // reload friendlist
-                                    add_all_friends_clear(200);
+                                    // set new aliaa name
+                                    orma.updateFriendList().
+                                            tox_public_key_stringEq(c_fac.friend_item.tox_public_key_string).
+                                            alias_name(new_alias_name).execute();
                                 }
-                                catch (Exception e)
+                                else
                                 {
-                                    e.printStackTrace();
+                                    // remove alias name
+                                    orma.updateFriendList().
+                                            tox_public_key_stringEq(c_fac.friend_item.tox_public_key_string).
+                                            alias_name("").execute();
                                 }
-
-                                Log.i(TAG, "onMenuItemClick:7");
-                                // load all friends into data list ---
                             }
-
-                            send_all_friend_pubkeys_to_relay(f2_tox_public_key_string);
-                            send_relay_pubkey_to_all_friends(f2_tox_public_key_string);
-                            invite_to_all_conferences_own_relay(f2_tox_public_key_string);
                         }
-                        catch (Exception e3)
+                        catch (Exception e)
                         {
-                            e3.printStackTrace();
+                            e.printStackTrace();
                         }
                     }
                 }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
-        popup.add(menuItem_as_relay);
+        popup.add(menuItem_alias_name);
+
+        if (!have_own_relay())
+        {
+            JMenuItem menuItem_as_relay = new JMenuItem(lo.getString("friend_as_relay"));
+            menuItem_as_relay.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent ev)
+                {
+                    if (!have_own_relay())
+                    {
+                        final JMenuItem mitem = (JMenuItem) ev.getSource();
+                        final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                        final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                        Log.i(TAG, "add_as_relay:tox_public_key_string=" +
+                                   b.getSelectedValue().friend_item.tox_public_key_string);
+
+                        final String f2_tox_public_key_string = b.getSelectedValue().friend_item.tox_public_key_string;
+
+                        int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("add_as_relay_msg"),
+                                                                            lo.getString("add_as_relay_title"),
+                                                                            YES_NO_OPTION);
+                        if (selected_answer == YES_OPTION)
+                        {
+                            try
+                            {
+                                if (set_friend_as_own_relay_in_db(f2_tox_public_key_string))
+                                {
+                                    // load all friends into data list ---
+                                    Log.i(TAG, "onMenuItemClick:6");
+                                    try
+                                    {
+                                        // reload friendlist
+                                        add_all_friends_clear(200);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+
+                                    Log.i(TAG, "onMenuItemClick:7");
+                                    // load all friends into data list ---
+                                }
+
+                                send_all_friend_pubkeys_to_relay(f2_tox_public_key_string);
+                                send_relay_pubkey_to_all_friends(f2_tox_public_key_string);
+                                invite_to_all_conferences_own_relay(f2_tox_public_key_string);
+                            }
+                            catch (Exception e3)
+                            {
+                                e3.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            });
+            popup.add(menuItem_as_relay);
+        }
 
         friends_and_confs_list.addListSelectionListener(new ListSelectionListener()
         {
@@ -540,5 +611,64 @@ public class FriendListFragmentJ extends JPanel
         }
 
         return found_item;
+    }
+
+    public class ComplexDialogPanel extends JPanel
+    {
+        public final String[] LABEL_TEXTS = {"New Alias Name"};
+        public static final int COLS = 8;
+        private Map<String, JTextField> labelFieldMap = new HashMap<>();
+
+        public ComplexDialogPanel(String real_name, String current_alias_name)
+        {
+            setLayout(new GridBagLayout());
+            for (int i = 0; i < LABEL_TEXTS.length; i++)
+            {
+                String labelTxt = LABEL_TEXTS[i];
+                add(new JLabel(labelTxt), createGbc(0, i));
+
+                JTextField textField = new JTextField(COLS);
+                textField.setText(current_alias_name);
+                labelFieldMap.put(labelTxt, textField);
+                add(textField, createGbc(1, i));
+            }
+
+            setBorder(BorderFactory.createTitledBorder(real_name));
+        }
+
+        public String getText(String labelText)
+        {
+            JTextField textField = labelFieldMap.get(labelText);
+            if (textField != null)
+            {
+                return textField.getText();
+            }
+            else
+            {
+                throw new IllegalArgumentException(labelText);
+            }
+        }
+
+        public GridBagConstraints createGbc(int x, int y)
+        {
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = x;
+            gbc.gridy = y;
+            gbc.weightx = 1.0;
+            gbc.weighty = gbc.weightx;
+            if (x == 0)
+            {
+                gbc.anchor = GridBagConstraints.LINE_START;
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.insets = new Insets(3, 3, 3, 8);
+            }
+            else
+            {
+                gbc.anchor = GridBagConstraints.LINE_END;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.insets = new Insets(3, 3, 3, 3);
+            }
+            return gbc;
+        }
     }
 }
