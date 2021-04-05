@@ -51,7 +51,7 @@ import static com.zoffcc.applications.trifa.HelperFiletransfer.insert_into_filet
 import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_start_sending_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_state_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.update_filetransfer_db_full;
-import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
@@ -385,8 +385,10 @@ public class MessageListFragmentJ extends JPanel
                     try
                     {
                         MessagePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
-                                                                                main_get_friend(
-                                                                                        MessagePanel.friendnum).name));
+                                                                                get_friend_name_from_pubkey(
+                                                                                        MessagePanel.current_pk))
+
+                        );
                         ((TitledBorder) MessagePanel.getBorder()).setTitleFont(new Font("default", PLAIN, 8));
                         MessagePanel.revalidate();
                         MessagePanel.repaint();

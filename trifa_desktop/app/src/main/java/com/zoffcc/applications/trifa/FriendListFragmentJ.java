@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionListener;
 
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.setConfName;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_conferences_own_relay;
@@ -66,6 +67,7 @@ import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_NAME_DISPLAY_MENU_MAXLEN;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ONE_HOUR_IN_MS;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -130,8 +132,8 @@ public class FriendListFragmentJ extends JPanel
 
                 try
                 {
-                    ComplexDialogPanel set_aliasname_panel = new ComplexDialogPanel(c_fac.friend_item.name,
-                                                                                    c_fac.friend_item.alias_name);
+                    ComplexDialogPanel set_aliasname_panel = new ComplexDialogPanel(
+                            c_fac.friend_item.tox_public_key_string);
 
                     int optionType = JOptionPane.DEFAULT_OPTION;
                     int messageType = JOptionPane.PLAIN_MESSAGE;
@@ -162,6 +164,11 @@ public class FriendListFragmentJ extends JPanel
                                             tox_public_key_stringEq(c_fac.friend_item.tox_public_key_string).
                                             alias_name("").execute();
                                 }
+
+                                EventQueue.invokeLater(() -> {
+                                    MessagePanel.setFriendName();
+                                    MessagePanel.revalidate();
+                                });
                             }
                         }
                         catch (Exception e)
@@ -341,21 +348,26 @@ public class FriendListFragmentJ extends JPanel
         {
             final int index = friends_and_confs_list.locationToIndex(e.getPoint());
 
+            if (!friends_and_confs_list_model.getElementAt(index).is_friend)
+            {
+                // do not show popup menu on conferences, yet
+                return;
+            }
 
             EventQueue.invokeLater(() -> {
-
                 TitledBorder labelBorder = null;
                 try
                 {
-                    final String name = friends_and_confs_list_model.getElementAt(index).friend_item.name;
+                    final String name = get_friend_name_from_pubkey(
+                            friends_and_confs_list_model.getElementAt(index).friend_item.tox_public_key_string);
                     String name_shortened = name;
                     if ((name == null) || (name.length() == 0))
                     {
                         name_shortened = "...";
                     }
-                    else if (name.length() > 10)
+                    else if (name.length() > FRIEND_NAME_DISPLAY_MENU_MAXLEN)
                     {
-                        name_shortened = name.substring(0, 10);
+                        name_shortened = name.substring(0, FRIEND_NAME_DISPLAY_MENU_MAXLEN);
                     }
                     Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popup.getForeground());
                     labelBorder = BorderFactory.createTitledBorder(titleUnderline, name_shortened, TitledBorder.CENTER,
@@ -367,14 +379,13 @@ public class FriendListFragmentJ extends JPanel
                     e2.printStackTrace();
                 }
                 friends_and_confs_list.setSelectedIndex(index);
-                //if (labelBorder != null)
-                //{
                 popup.setBorder(labelBorder);
-                //}
                 popup.show(friends_and_confs_list, e.getX(), e.getY());
                 popup.revalidate();
                 popup.getParent().revalidate();
                 popup.repaint();
+                // popup.setPreferredSize(new Dimension(200, popup.getPreferredSize().height));
+                // popup.repaint();
             });
         }
     }
@@ -619,7 +630,7 @@ public class FriendListFragmentJ extends JPanel
         public static final int COLS = 8;
         private Map<String, JTextField> labelFieldMap = new HashMap<>();
 
-        public ComplexDialogPanel(String real_name, String current_alias_name)
+        public ComplexDialogPanel(String friend_pubkey)
         {
             setLayout(new GridBagLayout());
             for (int i = 0; i < LABEL_TEXTS.length; i++)
@@ -628,12 +639,12 @@ public class FriendListFragmentJ extends JPanel
                 add(new JLabel(labelTxt), createGbc(0, i));
 
                 JTextField textField = new JTextField(COLS);
-                textField.setText(current_alias_name);
+                textField.setText(get_friend_name_from_pubkey(friend_pubkey));
                 labelFieldMap.put(labelTxt, textField);
                 add(textField, createGbc(1, i));
             }
 
-            setBorder(BorderFactory.createTitledBorder(real_name));
+            setBorder(BorderFactory.createTitledBorder(get_friend_name_from_pubkey(friend_pubkey)));
         }
 
         public String getText(String labelText)

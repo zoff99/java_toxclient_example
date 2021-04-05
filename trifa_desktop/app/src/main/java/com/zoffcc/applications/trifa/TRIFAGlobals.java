@@ -108,6 +108,8 @@ public class TRIFAGlobals
 
     // static boolean global_incoming_ft_active = false;
 
+    static final int FRIEND_NAME_DISPLAY_MENU_MAXLEN = 50;
+
     public static enum TRIFA_FT_DIRECTION
     {
         TRIFA_FT_DIRECTION_INCOMING(0), TRIFA_FT_DIRECTION_OUTGOING(1);
