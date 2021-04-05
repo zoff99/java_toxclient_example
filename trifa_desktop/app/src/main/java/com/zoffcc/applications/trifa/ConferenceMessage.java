@@ -130,9 +130,17 @@ public class ConferenceMessage
         return this;
     }
 
-    public ConferenceMessage is_new(boolean b)
+    public ConferenceMessage is_new(boolean is_new)
     {
-        this.sql_where = this.sql_where + " and is_new='" + b(b) + "' ";
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " is_new='" + b(is_new) + "' ";
         return this;
     }
 
@@ -170,7 +178,7 @@ public class ConferenceMessage
                 ConferenceMessage out = new ConferenceMessage();
 
                 out.id = rs.getLong("id");
-                out.conference_identifier=rs.getString("conference_identifier");
+                out.conference_identifier = rs.getString("conference_identifier");
                 out.message_id_tox = rs.getString("message_id_tox");
                 out.tox_peerpubkey = rs.getString("tox_peerpubkey");
                 out.direction = rs.getInt("direction");
@@ -306,5 +314,60 @@ public class ConferenceMessage
         }
         this.sql_orderby = this.sql_orderby + " id DESC ";
         return this;
+    }
+
+    public ConferenceMessage is_newEq(boolean is_new)
+    {
+        this.sql_where = this.sql_where + " and is_new='" + b(is_new) + "' ";
+        return this;
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM ConferenceMessage";
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
     }
 }

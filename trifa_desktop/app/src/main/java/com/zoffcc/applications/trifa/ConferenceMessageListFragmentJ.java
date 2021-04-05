@@ -240,9 +240,10 @@ public class ConferenceMessageListFragmentJ extends JPanel
             // reset "new" flags for messages -------
             if (orma != null)
             {
-                //orma.updateConferenceMessage().
-                //        conference_identifierEq(current_conf_id).
-                //        is_new(false).execute();
+                orma.updateConferenceMessage().
+                        conference_identifierEq(current_conf_id).
+                        is_new(false).
+                        execute();
             }
             // reset "new" flags for messages -------
         }

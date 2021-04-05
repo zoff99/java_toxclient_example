@@ -602,8 +602,10 @@ public class MessageListFragmentJ extends JPanel
         try
         {
             // reset "new" flags for messages -------
-            //orma.updateMessage().tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(current_friendnum)).is_new(
-            //        false).execute();
+            orma.updateMessage().
+                    tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    is_new(false).
+                    execute();
             // reset "new" flags for messages -------
         }
         catch (Exception e)

@@ -671,4 +671,24 @@ public class Message
         this.sql_set = this.sql_set + " ft_outgoing_started='" + b(ft_outgoing_started) + "' ";
         return this;
     }
+
+    public Message is_newEq(boolean is_new)
+    {
+        this.sql_where = this.sql_where + " and  is_new='" + b(is_new) + "' ";
+        return this;
+    }
+
+    public Message is_new(boolean is_new)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " is_new='" + b(is_new) + "' ";
+        return this;
+    }
 }

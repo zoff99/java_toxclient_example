@@ -321,13 +321,13 @@ public class HelperGeneric
             try
             {
                 // update "new" status on friendlist fragment
-                //**// FriendList f = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
-                //**// HelperFriend.update_single_friend_in_friendlist_view(f);
+                FriendList f = orma.selectFromFriendList().tox_public_key_stringEq(m.tox_friendpubkey).toList().get(0);
+                HelperFriend.update_single_friend_in_friendlist_view(f);
 
-                //if (f.notification_silent)
-                //{
-                //    do_notification = false;
-                //}
+                if (f.notification_silent)
+                {
+                    do_notification = false;
+                }
             }
             catch (Exception e)
             {
@@ -1017,6 +1017,15 @@ public class HelperGeneric
             // e.printStackTrace();
         }
 
+
+        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        {
+            // Log.i(TAG, "noti_and_badge:003:");
+            // no notifcation and no badge update
+            do_notification = false;
+            do_badge_update = false;
+        }
+
         ConferenceMessage m = new ConferenceMessage();
         m.is_new = do_badge_update;
         // m.tox_friendnum = friend_number;
@@ -1052,6 +1061,11 @@ public class HelperGeneric
         }
 
         HelperConference.update_single_conference_in_friendlist_view(conf_temp);
+
+        if (do_notification)
+        {
+            displayMessage("new Group Message [synced]");
+        }
     }
 
     /**
