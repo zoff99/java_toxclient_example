@@ -571,17 +571,23 @@ public class MainActivity extends JFrame
                         {
                             // show filepicker
                             JFileChooser fileChooser = new JFileChooser();
+                            fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+                            fileChooser.setDialogTitle(lo.getString("select_files_dialog_title"));
                             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                            fileChooser.resetChoosableFileFilters();
+                            fileChooser.setAcceptAllFileFilterUsed(true);
+                            fileChooser.setMultiSelectionEnabled(true);
                             int result = fileChooser.showOpenDialog(attachmentButton);
                             if (result == JFileChooser.APPROVE_OPTION)
                             {
-                                File selectedFile = fileChooser.getSelectedFile();
-                                System.out.println(
-                                        "selected_file: " + selectedFile.getAbsoluteFile().getParent() + " :: " +
-                                        selectedFile.getAbsoluteFile().getName());
-                                // send file
-                                add_outgoing_file(selectedFile.getAbsoluteFile().getParent(),
-                                                  selectedFile.getAbsoluteFile().getName());
+                                for (File f1 : fileChooser.getSelectedFiles())
+                                {
+                                    System.out.println("selected_file: " + f1.getAbsoluteFile().getParent() + " :: " +
+                                                       f1.getAbsoluteFile().getName());
+                                    // send file
+                                    add_outgoing_file(f1.getAbsoluteFile().getParent(), f1.getAbsoluteFile().getName());
+                                }
                             }
                         }
                     }
