@@ -45,10 +45,10 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.newColorWithAlpha;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_MSG_DATE_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
-import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
@@ -74,7 +74,6 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
     Renderer_MessageList()
     {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
         message_image_label_line.setLayout(new FlowLayout(FlowLayout.LEFT));
         progress_bar.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -83,6 +82,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         //message_image_label.setMaximumSize(new Dimension(80, 80));
         //message_image_label.setPreferredSize(new Dimension(80, 80));
         button_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
     @Override

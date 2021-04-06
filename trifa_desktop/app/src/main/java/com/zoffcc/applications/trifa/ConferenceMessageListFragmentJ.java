@@ -188,18 +188,13 @@ public class ConferenceMessageListFragmentJ extends JPanel
                         {
                             // message was sent OK
                             insert_into_conference_message_db(m, true);
-                            Runnable myRunnable = new Runnable()
-                            {
-                                @Override
-                                public void run()
+                            Runnable myRunnable = () -> {
+                                try
                                 {
-                                    try
-                                    {
-                                        messageInputTextField.setText("");
-                                    }
-                                    catch (Exception e)
-                                    {
-                                    }
+                                    messageInputTextField.setText("");
+                                }
+                                catch (Exception e)
+                                {
                                 }
                             };
                             SwingUtilities.invokeLater(myRunnable);
@@ -257,13 +252,10 @@ public class ConferenceMessageListFragmentJ extends JPanel
         {
             if (always)
             {
-                conf_messagelistitems_model.clear();
-                MessagePanelConferences.revalidate();
-
+                conf_messagelistitems_model.removeAllElements();
                 // -------------------------------------------------
                 // HINT: this one does not respect ordering?!
                 // -------------------------------------------------
-
                 try
                 {
                     List<ConferenceMessage> ml = orma.selectFromConferenceMessage().
@@ -296,33 +288,26 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
     void add_message(final ConferenceMessage m)
     {
-        Runnable myRunnable = new Runnable()
-        {
-            @Override
-            public void run()
+        Runnable myRunnable = () -> {
+            try
             {
-                try
+                add_item(m);
+                if (is_at_bottom)
                 {
-                    add_item(m);
-                    if (is_at_bottom)
-                    {
-                        // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
-                        // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
-
-                        EventQueue.invokeLater(() -> {
-                            Conf_MessageScrollPane.getVerticalScrollBar().setValue(
-                                    Conf_MessageScrollPane.getVerticalScrollBar().getMaximum());
-                        });
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.i(TAG, "add_message:conf:EE1:" + e.getMessage());
-                    e.printStackTrace();
+                    // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
+                    // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
+                    EventQueue.invokeLater(() -> {
+                        Conf_MessageScrollPane.getVerticalScrollBar().setValue(
+                                Conf_MessageScrollPane.getVerticalScrollBar().getMaximum());
+                    });
                 }
             }
+            catch (Exception e)
+            {
+                Log.i(TAG, "add_message:conf:EE1:" + e.getMessage());
+                e.printStackTrace();
+            }
         };
-
         SwingUtilities.invokeLater(myRunnable);
     }
 

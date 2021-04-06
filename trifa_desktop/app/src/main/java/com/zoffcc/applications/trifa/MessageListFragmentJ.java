@@ -367,11 +367,11 @@ public class MessageListFragmentJ extends JPanel
         });
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        MessageScrollPane = new JScrollPane(messagelistitems);
-        add(MessageScrollPane);
-
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
         ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
+
+        MessageScrollPane = new JScrollPane(messagelistitems);
+        add(MessageScrollPane);
 
         revalidate();
     }
@@ -566,33 +566,26 @@ public class MessageListFragmentJ extends JPanel
 
     synchronized static void add_message(final Message m)
     {
-        Runnable myRunnable = new Runnable()
-        {
-            @Override
-            public void run()
+        Runnable myRunnable = () -> {
+            try
             {
-                try
+                add_item(m);
+                if (is_at_bottom)
                 {
-                    add_item(m);
-                    if (is_at_bottom)
-                    {
-                        // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
-                        // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
-
-                        EventQueue.invokeLater(() -> {
-                            MessageScrollPane.getVerticalScrollBar().setValue(
-                                    MessageScrollPane.getVerticalScrollBar().getMaximum());
-                        });
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.i(TAG, "add_message:EE1:" + e.getMessage());
-                    e.printStackTrace();
+                    // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
+                    // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
+                    EventQueue.invokeLater(() -> {
+                        MessageScrollPane.getVerticalScrollBar().setValue(
+                                MessageScrollPane.getVerticalScrollBar().getMaximum());
+                    });
                 }
             }
+            catch (Exception e)
+            {
+                Log.i(TAG, "add_message:EE1:" + e.getMessage());
+                e.printStackTrace();
+            }
         };
-
         SwingUtilities.invokeLater(myRunnable);
     }
 
@@ -620,47 +613,37 @@ public class MessageListFragmentJ extends JPanel
             {
                 // Log.i(TAG, "data_values:005a");
 
-                Runnable myRunnable = new Runnable()
-                {
-                    @Override
-                    public void run()
+                    messagelistitems_model.removeAllElements();
+                    // MessagePanel.revalidate();
+                    // Log.i(TAG, "data_values:005b");
+                    if (show_only_files)
                     {
-                        messagelistitems_model.clear();
-                        MessagePanel.revalidate();
-                        // Log.i(TAG, "data_values:005b");
+                        // TODO:
+                    }
+                    else
+                    {
+                        try
+                        {
+                            List<Message> ml = orma.selectFromMessage().
+                                    tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                                    orderBySent_timestampAsc().
+                                    orderBySent_timestamp_msAsc().
+                                    toList();
 
-                        if (show_only_files)
-                        {
-                            // TODO:
-                        }
-                        else
-                        {
-                            try
+                            if (ml != null)
                             {
-                                List<Message> ml = orma.selectFromMessage().
-                                        tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
-                                        orderBySent_timestampAsc().
-                                        orderBySent_timestamp_msAsc().
-                                        toList();
-
-                                if (ml != null)
+                                for (Message message : ml)
                                 {
-                                    for (Message message : ml)
-                                    {
-                                        add_message(message);
-                                    }
+                                    add_message(message);
                                 }
                             }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
                         }
-                        // Log.i(TAG, "data_values:005c");
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
-
-                };
-                SwingUtilities.invokeLater(myRunnable);
+                    // Log.i(TAG, "data_values:005c");
             }
             // Log.i(TAG, "data_values:005d");
         }
