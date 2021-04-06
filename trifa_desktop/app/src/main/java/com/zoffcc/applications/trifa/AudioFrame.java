@@ -34,6 +34,7 @@ import javax.swing.SwingConstants;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.pcm_wave_rec;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.pcm_wave_play;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALL_SIZE;
 import static java.awt.Font.PLAIN;
 
@@ -73,12 +74,12 @@ public class AudioFrame extends JFrame
         JLabel audio_out_text = new JLabel("Audio - Speaker", SwingConstants.LEFT);
         audio_out_text.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
 
-        audio_in_refesh = new JButton("\u21BB"); // unicode reload character
+        audio_in_refesh = new JButton("\uD83D\uDD01"); // unicode Clockwise Rightwards and Leftwards Open Circle Arrows
         audio_in_refesh.setMargin(new Insets(0, 5, 0, 5));
-        audio_in_refesh.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
-        audio_out_refesh = new JButton("\u21BB"); // unicode reload character
+        audio_in_refesh.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+        audio_out_refesh = new JButton("\uD83D\uDD01"); // unicode Clockwise Rightwards and Leftwards Open Circle Arrows
         audio_out_refesh.setMargin(new Insets(0, 5, 0, 5));
-        audio_out_refesh.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+        audio_out_refesh.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         audio_in_bar = new AudioBar();
         audio_in_bar.setPreferredSize(new Dimension(5, 1));

@@ -465,13 +465,13 @@ public class MainActivity extends JFrame
         });
 
         sendButton = new JButton(lo.getString("send_button_text"));
-        sendButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+        sendButton.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         attachmentButton = new JButton("\uD83D\uDCCE"); // paperclip utf-8 char
-        attachmentButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+        attachmentButton.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         screengrabButton = new JButton("\uD83D\uDCBB"); // PERSONAL COMPUTER utf-8 char
-        screengrabButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+        screengrabButton.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         leftPanel = new JPanel(true);
         ownProfileShort = new JTextArea();
