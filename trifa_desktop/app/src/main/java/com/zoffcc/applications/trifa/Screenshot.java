@@ -71,9 +71,9 @@ public class Screenshot
         return new Screenshot(getRobot().createScreenCapture(screenRect));
     }
 
-    public static final Screenshot capture(int width, int height) throws AWTException
+    public static final Screenshot capture(int x, int y, int width, int height) throws AWTException
     {
-        return capture(new Rectangle(width, height));
+        return capture(new Rectangle(x, y, width, height));
     }
 
 
@@ -83,7 +83,9 @@ public class Screenshot
     {
 
         if (robot == null)
+        {
             robot = new Robot();
+        }
         return robot;
 
     }
