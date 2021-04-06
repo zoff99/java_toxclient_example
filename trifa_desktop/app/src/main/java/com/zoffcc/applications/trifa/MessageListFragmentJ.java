@@ -62,6 +62,7 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_
 import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
@@ -370,7 +371,7 @@ public class MessageListFragmentJ extends JPanel
         add(MessageScrollPane);
 
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
-        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, 8));
+        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
 
         revalidate();
     }
@@ -389,7 +390,7 @@ public class MessageListFragmentJ extends JPanel
                                                                                         MessagePanel.current_pk))
 
                         );
-                        ((TitledBorder) MessagePanel.getBorder()).setTitleFont(new Font("default", PLAIN, 8));
+                        ((TitledBorder) MessagePanel.getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
                         MessagePanel.revalidate();
                         MessagePanel.repaint();
                     }

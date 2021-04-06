@@ -32,6 +32,9 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_FLIST_STATS_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
@@ -53,15 +56,15 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
         add(status);
         add(name);
         name.setBorder(new EmptyBorder(0, 3, 0, 0));
-        name.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
+        name.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
-        type.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+        type.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_FLIST_STATS_SIZE));
         type.setOpaque(true);
 
-        status.setFont(new java.awt.Font("monospaced", PLAIN, 12));
+        status.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_FLIST_STATS_SIZE));
         status.setOpaque(true);
 
-        notification.setFont(new java.awt.Font("monospaced", PLAIN, 10));
+        notification.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_FLIST_STATS_SIZE));
         notification.setOpaque(true);
     }
 

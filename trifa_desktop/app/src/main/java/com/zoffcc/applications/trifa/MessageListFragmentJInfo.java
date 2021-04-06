@@ -19,6 +19,8 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Color;
+
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
@@ -39,28 +41,48 @@ public class MessageListFragmentJInfo extends JPanel
 
     public static void show_info_text()
     {
+        Color default_bg = null;
+        try
+        {
+            default_bg = MessageTextArea.getParent().getBackground();
+        }
+        catch (Exception e)
+        {
+
+        }
         MessageTextArea.setSelectionStart(0);
         MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
         MessageTextArea.setCharacterAttributes(mainStyle, true);
         // @formatter:off
         MessageTextArea.replaceSelection("\n\n\n\n\n\n" +
-                                         "                 Welcome to\n" +
-                                         "                 TRIfA - Desktop\n" +
+                                         "             Welcome to\n" +
+                                         "             TRIfA - Desktop\n" +
                                          "\n" +
-                                         "                 Your Tox Client for the Desktop\n" +
-                                         "                 v" + MainActivity.Version +
+                                         "             Your Tox Client for the Desktop\n" +
+                                         "             v" + MainActivity.Version +
                                          "\n");
+        // @formatter:on
 
         MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
         MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
         MessageTextArea.setCharacterAttributes(blueSmallStyle, true);
 
+        try
+        {
+            if (default_bg != null)
+            {
+                MessageTextArea.setBackground(default_bg);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+
+        // @formatter:off
         MessageTextArea.replaceSelection("\n" +
                                          "\n" +
-                                         "           https://github.com/zoff99/java_toxclient_example/tree/master/trifa_desktop/app/src/main/java\n" +
+                                         "         https://github.com/zoff99/java_toxclient_example/\n" +
                                          "\n");
-
-
         // @formatter:on
     }
 }

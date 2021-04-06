@@ -38,6 +38,7 @@ import static com.zoffcc.applications.trifa.AudioFrame.audio_in_select;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_in_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_device_changes;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALL_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_audio_buffer;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_audio_send_frame;
 import static java.awt.Font.PLAIN;
@@ -63,7 +64,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
     public AudioSelectInBox()
     {
         super();
-        setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
 
         audioformat = new AudioFormat(AUDIO_REC_SAMPLE_RATE, AUDIO_REC_SAMPLE_SIZE_BIT, AUDIO_REC_CHANNELS, true,
                                       false);

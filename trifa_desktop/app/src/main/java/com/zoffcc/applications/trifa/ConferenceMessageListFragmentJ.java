@@ -52,6 +52,7 @@ import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
@@ -138,7 +139,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         add(Conf_MessageScrollPane);
 
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
-        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, 8));
+        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
 
         revalidate();
     }
@@ -345,7 +346,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
                                                                  (get_conference_title_from_confid(current_conf_id) +
                                                                   " " + current_conf_id.substring(0, 5))));
                         ((TitledBorder) MessagePanelConferences.getBorder()).setTitleFont(
-                                new Font("default", PLAIN, 8));
+                                new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
 
                         MessagePanelConferences.revalidate();
                         MessagePanelConferences.repaint();

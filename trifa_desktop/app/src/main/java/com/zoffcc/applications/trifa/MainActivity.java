@@ -87,6 +87,7 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
@@ -183,7 +184,6 @@ public class MainActivity extends JFrame
     static final String Version = "1.0.14";
     // --------- global config ---------
     // --------- global config ---------
-    // --------- global config ---------
     final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
     final static boolean ORMA_TRACE = false; // set "false" for release builds
     final static boolean DB_ENCRYPT = true; // set "true" always!
@@ -260,6 +260,16 @@ public class MainActivity extends JFrame
     static int buffer_size_in_bytes = 0;
     static ByteBuffer _recBuffer = null;
     static int message_panel_displayed = -1;
+    final static String TTF_FONT_FILENAME = "OpenSansEmoji.ttf";
+    final static String TTF_FONT_FAMILY_NAME = "OpenSansEmoji";
+    final static int TTF_FONT_FAMILY_NAME_REGULAR_SIZE = 14;
+    final static int TTF_FONT_FAMILY_NAME_SMALL_SIZE = 12;
+    final static int TTF_FONT_FAMILY_BUTTON_SIZE = 10;
+    final static int TTF_FONT_FAMILY_MSG_DATE_SIZE = 10;
+    final static int TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE = 20;
+    final static int TTF_FONT_FAMILY_FLIST_STATS_SIZE = 15;
+    final static int TTF_FONT_FAMILY_BORDER_TITLE = 12;
+    final static int TTF_FONT_FAMILY_MENU_SIZE = 12;
 
     static class send_message_result
     {
@@ -273,6 +283,26 @@ public class MainActivity extends JFrame
     public MainActivity()
     {
         super("TRIfA - Desktop - " + Version + "   ");
+
+        try
+        {
+            // UIManager.getLookAndFeelDefaults().put("defaultFont", new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
+            UIManager.put("Viewport.font",
+                          new FontUIResource(new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE)));
+            UIManager.put("TextField.font",
+                          new FontUIResource(new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE)));
+            UIManager.put("TextArea.font",
+                          new FontUIResource(new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE)));
+            UIManager.put("TextPane.font",
+                          new FontUIResource(new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE)));
+            UIManager.put("EditorPane.font",
+                          new FontUIResource(new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE)));
+            SwingUtilities.updateComponentTreeUI(this);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         try
         {
@@ -353,23 +383,23 @@ public class MainActivity extends JFrame
         defaultStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
         mainStyle = sc.addStyle("MainStyle", defaultStyle);
         StyleConstants.setFontFamily(mainStyle, "monospaced");
-        StyleConstants.setFontSize(mainStyle, 9);
+        StyleConstants.setFontSize(mainStyle, 12);
 
         // Create and add the constant width style
         redStyle = sc.addStyle("ConstantWidthRed", null);
         StyleConstants.setFontFamily(redStyle, "monospaced");
-        StyleConstants.setFontSize(redStyle, 9);
+        StyleConstants.setFontSize(redStyle, 12);
         StyleConstants.setForeground(redStyle, Color.red);
 
         // Create and add the constant width style
         blueStyle = sc.addStyle("ConstantWidthBlue", null);
         StyleConstants.setFontFamily(blueStyle, "monospaced");
-        StyleConstants.setFontSize(blueStyle, 9);
+        StyleConstants.setFontSize(blueStyle, 12);
         StyleConstants.setForeground(blueStyle, Color.blue);
 
         blueSmallStyle = sc.addStyle("ConstantWidthBlue", null);
         StyleConstants.setFontFamily(blueSmallStyle, "monospaced");
-        StyleConstants.setFontSize(blueSmallStyle, 7);
+        StyleConstants.setFontSize(blueSmallStyle, 9);
         StyleConstants.setForeground(blueSmallStyle, Color.blue);
 
         // Create and add the heading style
@@ -395,10 +425,11 @@ public class MainActivity extends JFrame
         MessageTextInputPanel = new JPanel(true);
 
         messageInputTextField = new JTextArea();
-        messageInputTextField.setFont(new java.awt.Font("default", PLAIN, 9));
+        messageInputTextField.setFont(
+                new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
         Action action = messageInputTextField.getActionMap().get("paste-from-clipboard");
         messageInputTextField.getActionMap().put("paste-from-clipboard", new ProxyPasteAction(action));
-        messageInputTextField.setTransferHandler(new ImageTransferHandler(messageInputTextField));
+        //messageInputTextField.setTransferHandler(new ImageTransferHandler(messageInputTextField));
         //messageInputTextField.setDropMode(DropMode.INSERT);
         //messageInputTextField.setDragEnabled(true);
         //messageInputTextField.setDropTarget(new DropTarget(messageInputTextField, new FileDropTargetListener()));
@@ -433,10 +464,10 @@ public class MainActivity extends JFrame
         });
 
         sendButton = new JButton(lo.getString("send_button_text"));
-        sendButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        sendButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         attachmentButton = new JButton("\uD83D\uDCCE"); // paperclip utf-8 char
-        attachmentButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        attachmentButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         leftPanel = new JPanel(true);
         ownProfileShort = new JTextArea();
@@ -446,10 +477,10 @@ public class MainActivity extends JFrame
         FriendAddPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 
         FriendAddToxID = new JTextField("");
-        FriendAddToxID.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        FriendAddToxID.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         FriendAddPanel.add(FriendAddToxID);
         FriendAddButton = new JButton("add Friend");
-        FriendAddButton.setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        FriendAddButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         FriendAddPanel.add(FriendAddButton);
 
         FriendAddButton.addActionListener(new ActionListener()
@@ -481,7 +512,7 @@ public class MainActivity extends JFrame
         splitPane.setVisible(true);
 
         splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(80);
+        splitPane.setDividerLocation(180);
         splitPane.setLeftComponent(leftPanel);
         splitPane.setRightComponent(MessagePanelContainer);
 
@@ -491,13 +522,13 @@ public class MainActivity extends JFrame
         leftPanel.add(FriendAddPanel);
         leftPanel.setVisible(true);
 
-        ownProfileShort.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        ownProfileShort.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         ownProfileShort.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
         ownProfileShort.setEditable(false);
         ownProfileShort.setVisible(true);
 
         MessagePanelContainer.setLayout(new BoxLayout(MessagePanelContainer, BoxLayout.Y_AXIS));
-        myToxID.setFont(new java.awt.Font("monospaced", PLAIN, 9));
+        myToxID.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         myToxID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 
         set_message_panel(0);
@@ -753,7 +784,7 @@ public class MainActivity extends JFrame
         // ------------ Main Menu ----------
         JMenuBar main_menu = new JMenuBar();
         JMenu m1 = new JMenu("FILE");
-        m1.setFont(new java.awt.Font("SansSerif", PLAIN, 7));
+        m1.setFont(new java.awt.Font("SansSerif", PLAIN, TTF_FONT_FAMILY_MENU_SIZE));
 
         main_menu.add(m1);
         this.setJMenuBar(main_menu);
@@ -768,7 +799,7 @@ public class MainActivity extends JFrame
                 SettingsFrame.setVisible(true);
             }
         });
-        m11.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
+        m11.setFont(new java.awt.Font("SansSerif", PLAIN, TTF_FONT_FAMILY_MENU_SIZE));
         m1.add(m11);
         // -------
         // -------
@@ -780,7 +811,7 @@ public class MainActivity extends JFrame
                 want_exit();
             }
         });
-        m12.setFont(new java.awt.Font("SansSerif", PLAIN, 8));
+        m12.setFont(new java.awt.Font("SansSerif", PLAIN, TTF_FONT_FAMILY_MENU_SIZE));
         m1.add(m12);
         // -------
 
@@ -1089,7 +1120,8 @@ public class MainActivity extends JFrame
             // File file = new File("assets/OpenMoji.ttf");
             // File file = new File("assets/OpenSansEmoji.ttf");
             // File file = new File("assets/TwitterColorEmoji-SVGinOT.ttf");
-            File file = new File("assets/TwitterColorEmoji-SVGinOT-OSX.ttf");
+            //**// File file = new File("assets/TwitterColorEmoji-SVGinOT-OSX.ttf");
+            File file = new File("assets/" + TTF_FONT_FILENAME);
             Font font = Font.createFont(Font.TRUETYPE_FONT, file);
 
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -3490,14 +3522,16 @@ public class MainActivity extends JFrame
                 catch (Exception e2)
                 {
                     e2.printStackTrace();
+                    Log.i(TAG, "PasteOccured...EE:" + e2.getMessage());
                 }
             }
             else
             {
+                Log.i(TAG, "PasteOccured...Text");
                 action.actionPerformed(e);
             }
+            Log.i(TAG, "PasteOccured...END");
         }
-
     }
 
     public class ImageTransferHandler extends TransferHandler

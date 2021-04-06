@@ -45,6 +45,10 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.newColorWithAlpha;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_MSG_DATE_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
@@ -160,10 +164,10 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
             }
         }
 
-        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_MSG_DATE_SIZE));
         m_date_time.setIconTextGap(0);
 
-        m_text.setFont(new java.awt.Font("default", PLAIN, 9));
+        m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
         // m_date_time.setBorder(new LineBorder(Color.GREEN));
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);
@@ -309,9 +313,9 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                             m._swing_ok = ok_button;
                             m._swing_cancel = cancel_button;
 
-                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
                             ok_button.setBackground(newColorWithAlpha(Color.decode("0x389A3A"), 150));
-                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
                             cancel_button.setBackground(newColorWithAlpha(Color.decode("0xFE2424"), 150));
 
                             cancel_button.setVisible(true);
@@ -336,9 +340,9 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                             m._swing_ok = null;
                             m._swing_cancel = cancel_button;
 
-                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
                             ok_button.setBackground(newColorWithAlpha(Color.decode("0x389A3A"), 150));
-                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
                             cancel_button.setBackground(newColorWithAlpha(Color.decode("0xFE2424"), 150));
                             // ***
                             ok_button.setVisible(false);

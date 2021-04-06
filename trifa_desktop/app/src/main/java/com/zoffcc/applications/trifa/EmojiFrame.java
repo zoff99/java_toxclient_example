@@ -31,6 +31,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static java.awt.Font.PLAIN;
 
@@ -38,7 +40,7 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
 {
     private static final String TAG = "trifa.EmojiFrame";
 
-    public static int width = 500;
+    public static int width = 580;
     public static int height = 60;
 
     public EmojiFrame()
@@ -49,9 +51,11 @@ public class EmojiFrame extends JFrame implements EmojiTable.EmojiSelectListener
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         // HINT: for some reason "columnCount" needs to be exactly "8"
-        EmojiTable table = new EmojiTable(8, new java.awt.Font("Twitter Color Emoji", PLAIN, 14), true);
+        //EmojiTable table = new EmojiTable(8, new java.awt.Font("Twitter Color Emoji", PLAIN, 14), true);
+        EmojiTable table = new EmojiTable(8, new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN,
+                                                               TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE), true);
 
-        table.setRowHeight(19);
+        table.setRowHeight(TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE + 8);
         table.setDoubleClickListener(this);
 
         JPanel panel1 = new JPanel(true);

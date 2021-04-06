@@ -62,6 +62,7 @@ import javax.swing.event.ChangeListener;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.VideoOutFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.crgb2yuv;
 import static com.zoffcc.applications.trifa.MainActivity.set_JNI_video_buffer2;
@@ -164,17 +165,17 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         ButtonPanel.setLayout(new GridLayout());
 
         VideoCallStartButton = new JButton("start Video Call");
-        VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoCallStartButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         ButtonPanel.add(VideoCallStartButton);
 
         VideoCallStopButton = new JButton("stop Video Call");
-        VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         ButtonPanel.add(VideoCallStopButton);
 
         final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K", "Screengrab 1080p", "Screengrab 720p", "Screengrab 1080p with cam overlay"};
 
         VideoToggleScreengrab = new JComboBox<>(VideoToggleScreengrab_items);
-        VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         VideoToggleScreengrab.setMaximumRowCount(VideoToggleScreengrab_items.length);
         ButtonPanel.add(VideoToggleScreengrab);
 
@@ -183,10 +184,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoToggleScreengrab.setVisible(true);
 
         VideoOutBitRate_text = new JButton("0");
-        VideoOutBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoOutBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         VideoInBitRate_text = new JButton("0");
-        VideoInBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        VideoInBitRate_text.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
 
         ButtonPanels_Panel = new JPanel(true);
         ButtonPanels_Panel.setLayout(new BoxLayout(ButtonPanels_Panel, BoxLayout.PAGE_AXIS));

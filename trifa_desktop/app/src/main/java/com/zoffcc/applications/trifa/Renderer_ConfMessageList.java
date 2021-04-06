@@ -38,6 +38,9 @@ import static com.zoffcc.applications.trifa.HelperGeneric.darkenColor;
 import static com.zoffcc.applications.trifa.HelperGeneric.hash_to_bucket;
 import static com.zoffcc.applications.trifa.HelperGeneric.isColorDarkBrightness;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static java.awt.Font.PLAIN;
 
@@ -166,10 +169,10 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
 
         m_date_time.setText(date_time_text);
 
-        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, 6));
+        m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         m_date_time.setIconTextGap(0);
 
-        m_text.setFont(new java.awt.Font("default", PLAIN, 9));
+        m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
         // m_date_time.setBorder(new LineBorder(Color.GREEN));
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);

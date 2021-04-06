@@ -34,6 +34,7 @@ import javax.sound.sampled.SourceDataLine;
 import javax.swing.JComboBox;
 
 import static com.zoffcc.applications.trifa.AudioFrame.audio_out_select;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALL_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.jni_iterate_videocall_audio;
 import static java.awt.Font.PLAIN;
 
@@ -66,7 +67,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
     public AudioSelectOutBox()
     {
         super();
-        setFont(new java.awt.Font("monospaced", PLAIN, 7));
+        setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         audioformat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_BIT, CHANNELS, true, false);
 
         setRenderer(new AudioSelectionRenderer());
