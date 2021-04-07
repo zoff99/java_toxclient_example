@@ -261,8 +261,8 @@ public class MainActivity extends JFrame
     static int buffer_size_in_bytes = 0;
     static ByteBuffer _recBuffer = null;
     static int message_panel_displayed = -1;
-    final static String TTF_FONT_FILENAME = "OpenSansEmoji-Regular3.ttf";
-    final static String TTF_FONT_FAMILY_NAME = "OpenSansEmoji";
+    final static String TTF_FONT_FILENAME = "TBitstreamVeraSans-Roman.ttf"; // "TDejaVuSans.ttf";
+    final static String TTF_FONT_FAMILY_NAME = "TBitstream Vera Sans"; // "TDejaVuSans";
     final static int TTF_FONT_FAMILY_NAME_REGULAR_SIZE = 14;
     final static int TTF_FONT_FAMILY_NAME_SMALL_SIZE = 12;
     final static int TTF_FONT_FAMILY_BUTTON_SIZE = 10;
