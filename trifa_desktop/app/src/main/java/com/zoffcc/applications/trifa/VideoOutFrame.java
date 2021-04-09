@@ -117,11 +117,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
     final static String DRIVER_OFF = "off";
     final static String DRIVER_DEFAULT = "default";
+    final static String DRIVER_720P = "720p";
     final static String DRIVER_DUMMY = "dummy";
     final static String DRIVER_SCREENGRAB_4K = "screengrab_4k";
     final static String DRIVER_SCREENGRAB_1080P = "screengrab_1080p";
     final static String DRIVER_SCREENGRAB_CAMOVERLAY_1080p = "screengrab_camoverlay_1080p";
     final static String DRIVER_SCREENGRAB_720P = "screengrab_720p";
+
+    static String current_driver = DRIVER_OFF;
 
     public VideoOutFrame()
     {
@@ -172,7 +175,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         VideoCallStopButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         ButtonPanel.add(VideoCallStopButton);
 
-        final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K", "Screengrab 1080p", "Screengrab 720p", "Screengrab 1080p with cam overlay"};
+        final String[] VideoToggleScreengrab_items = {"Off", "Cam", "Dummy", "Screengrab 4K", "Screengrab 1080p", "Screengrab 720p", "Screengrab 1080p with cam overlay", "Cam 720p"};
 
         VideoToggleScreengrab = new JComboBox<>(VideoToggleScreengrab_items);
         VideoToggleScreengrab.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
@@ -232,6 +235,10 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 else if (VideoToggleScreengrab.getSelectedIndex() == 2)
                 {
                     change_webcam_driver(DRIVER_DUMMY, true);
+                }
+                else if (VideoToggleScreengrab.getSelectedIndex() == 7)
+                {
+                    change_webcam_driver(DRIVER_720P, true);
                 }
                 else if (VideoToggleScreengrab.getSelectedIndex() == 3)
                 {
@@ -326,6 +333,9 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         e.printStackTrace();
     }
 
+    /**
+     * dropdown to select what camera to use
+     */
     @Override
     public void itemStateChanged(ItemEvent e)
     {
@@ -333,7 +343,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         {
             if (e.getItem() != webcam)
             {
-                Log.i(TAG, "webcam=" + webcam);
+                Log.i(TAG, "itemStateChanged:2:webcam=" + webcam + " e=" + e.getItem());
 
                 try
                 {
@@ -365,7 +375,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     }
                     else
                     {
-                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        if (current_driver.equals(DRIVER_720P))
+                        {
+                            webcam.setViewSize(WebcamResolution.HD.getSize());
+                        }
+                        else
+                        {
+                            webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        }
                         Log.i(TAG, "size2");
                     }
                     width = webcam.getViewSize().width;
@@ -433,7 +450,14 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     }
                     else
                     {
-                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        if (current_driver.equals(DRIVER_720P))
+                        {
+                            webcam.setViewSize(WebcamResolution.HD.getSize());
+                        }
+                        else
+                        {
+                            webcam.setViewSize(WebcamResolution.VGA.getSize());
+                        }
                     }
                     width = webcam.getViewSize().width;
                     height = webcam.getViewSize().height;
@@ -1210,6 +1234,8 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             }
         }
 
+        current_driver = driver_name;
+
         if (driver_name.equals(DRIVER_SCREENGRAB_4K))
         {
             try
@@ -1281,6 +1307,19 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
             try
             {
                 Log.i(TAG, "DRIVER_DEFAULT");
+                screengrab_active = 0;
+                Webcam.setDriver(new WebcamDefaultDriver());
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
+        }
+        else if (driver_name.equals(DRIVER_720P))
+        {
+            try
+            {
+                Log.i(TAG, "DRIVER_720P");
                 screengrab_active = 0;
                 Webcam.setDriver(new WebcamDefaultDriver());
             }
@@ -1365,7 +1404,20 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 }
                 else
                 {
-                    webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    if (driver_name.equals(DRIVER_720P))
+                    {
+                        Log.i(TAG, "available_resolutions_for_cam:===============================");
+                        for (Dimension d : webcam.getViewSizes())
+                        {
+                            Log.i(TAG, "available_resolutions_for_cam:" + d.width + "x" + d.height);
+                        }
+                        Log.i(TAG, "available_resolutions_for_cam:===============================");
+                        webcam.setViewSize(WebcamResolution.HD.getSize());
+                    }
+                    else
+                    {
+                        webcam.setViewSize(WebcamResolution.VGA.getSize());
+                    }
                 }
             }
             catch (Exception e2)
