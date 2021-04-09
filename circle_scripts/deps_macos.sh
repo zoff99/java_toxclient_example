@@ -257,9 +257,9 @@ cd "$_SRC_"
     rm -Rf nasm
     git clone http://repo.or.cz/nasm.git
     cd nasm/
-    git checkout nasm-2.13.03
+    # git checkout nasm-2.13.03
+    git checkout nasm-2.14.02
 
-    autoupdate -fv
     ./autogen.sh
     ./configure --prefix="$_INST_"
 
