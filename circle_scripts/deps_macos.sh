@@ -259,6 +259,7 @@ cd "$_SRC_"
     cd nasm/
     git checkout nasm-2.13.03
 
+    autoupdate -fv
     ./autogen.sh
     ./configure --prefix="$_INST_"
 
