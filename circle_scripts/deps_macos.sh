@@ -274,12 +274,12 @@ cd "$_SRC_"
     #fi
 
     ./configure --prefix="$_INST_"
-    make || exit 1
+    sudo make || exit 1
 
     # seems man pages are not always built. but who needs those
     touch nasm.1
     touch ndisasm.1
-    make install || exit 1
+    sudo make install || exit 1
 
     export PATH="$_INST_""/bin":$NEWPATH
 
