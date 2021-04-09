@@ -184,12 +184,12 @@ public class RelayListDB
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.tox_public_key_string)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION_on_off)+"'," +
+                                 "'"+s(this.tox_public_key_string)+"'," +
+                                 "'"+s(this.TOX_CONNECTION)+"'," +
+                                 "'"+s(this.TOX_CONNECTION_on_off)+"'," +
                                  "'"+b(this.own_relay)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
-                                 "'"+s(""+this.tox_public_key_string_of_owner)+"'" +
+                                 "'"+s(this.TOX_CONNECTION)+"'," +
+                                 "'"+s(this.tox_public_key_string_of_owner)+"'" +
                                  ")";
 
             if (ORMA_TRACE)

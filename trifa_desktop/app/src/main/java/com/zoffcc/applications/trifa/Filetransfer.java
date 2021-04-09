@@ -188,19 +188,19 @@ public class Filetransfer
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.tox_public_key_string)+"'," +
-                                 "'"+s(""+this.direction)+"'," +
-                                 "'"+s(""+this.file_number)+"'," +
-                                 "'"+s(""+this.kind)+"'," +
-                                 "'"+s(""+this.state)+"'," +
+                                 "'"+s(this.tox_public_key_string)+"'," +
+                                 "'"+s(this.direction)+"'," +
+                                 "'"+s(this.file_number)+"'," +
+                                 "'"+s(this.kind)+"'," +
+                                 "'"+s(this.state)+"'," +
                                  "'"+b(this.ft_accepted)+"'," +
                                  "'"+b(this.ft_outgoing_started)+"'," +
-                                 "'"+s(""+this.path_name)+"'," +
-                                 "'"+s(""+this.file_name)+"'," +
+                                 "'"+s(this.path_name)+"'," +
+                                 "'"+s(this.file_name)+"'," +
                                  "'"+b(this.fos_open)+"'," +
-                                 "'"+s(""+this.filesize)+"'," +
-                                 "'"+s(""+this.current_position)+"'," +
-                                 "'"+s(""+this.message_id)+"'" +
+                                 "'"+s(this.filesize)+"'," +
+                                 "'"+s(this.current_position)+"'," +
+                                 "'"+s(this.message_id)+"'" +
                                  ")";
 
             if (ORMA_TRACE)

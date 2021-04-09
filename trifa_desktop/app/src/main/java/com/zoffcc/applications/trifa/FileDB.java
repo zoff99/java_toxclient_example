@@ -19,11 +19,9 @@
 
 package com.zoffcc.applications.trifa;
 
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
@@ -109,12 +107,12 @@ public class FileDB
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.kind)+"'," +
-                                 "'"+s(""+this.direction)+"'," +
-                                 "'"+s(""+this.tox_public_key_string)+"'," +
-                                 "'"+s(""+this.path_name)+"'," +
-                                 "'"+s(""+this.file_name)+"'," +
-                                 "'"+s(""+this.filesize)+"'," +
+                                 "'"+s(this.kind)+"'," +
+                                 "'"+s(this.direction)+"'," +
+                                 "'"+s(this.tox_public_key_string)+"'," +
+                                 "'"+s(this.path_name)+"'," +
+                                 "'"+s(this.file_name)+"'," +
+                                 "'"+s(this.filesize)+"'," +
                                  "'"+b(this.is_in_VFS)+"'" +
                                  ")";
 

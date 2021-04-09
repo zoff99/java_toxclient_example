@@ -268,29 +268,29 @@ public class Message
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.message_id)+"'," +
+                                 "'"+s(this.message_id)+"'," +
                                  "'"+s(this.tox_friendpubkey)+"'," +
-                                 "'"+s(""+this.direction)+"'," +
-                                 "'"+s(""+this.TOX_MESSAGE_TYPE)+"'," +
-                                 "'"+s(""+this.TRIFA_MESSAGE_TYPE)+"'," +
-                                 "'"+s(""+this.state)+"'," +
+                                 "'"+s(this.direction)+"'," +
+                                 "'"+s(this.TOX_MESSAGE_TYPE)+"'," +
+                                 "'"+s(this.TRIFA_MESSAGE_TYPE)+"'," +
+                                 "'"+s(this.state)+"'," +
                                  "'"+b(this.ft_accepted)+"'," +
                                  "'"+b(this.ft_outgoing_started)+"'," +
-                                 "'"+s(""+this.filedb_id)+"'," +
-                                 "'"+s(""+this.filetransfer_id)+"'," +
-                                 "'"+s(""+this.sent_timestamp)+"'," +
-                                 "'"+s(""+this.sent_timestamp_ms)+"'," +
-                                 "'"+s(""+this.rcvd_timestamp)+"'," +
-                                 "'"+s(""+this.rcvd_timestamp_ms)+"'," +
+                                 "'"+s(this.filedb_id)+"'," +
+                                 "'"+s(this.filetransfer_id)+"'," +
+                                 "'"+s(this.sent_timestamp)+"'," +
+                                 "'"+s(this.sent_timestamp_ms)+"'," +
+                                 "'"+s(this.rcvd_timestamp)+"'," +
+                                 "'"+s(this.rcvd_timestamp_ms)+"'," +
                                  "'"+b(this.read)+"'," +
-                                 "'"+s(""+this.send_retries)+"'," +
+                                 "'"+s(this.send_retries)+"'," +
                                  "'"+b(this.is_new)+"'," +
                                  "'"+s(this.text)+"'," +
                                  "'"+s(this.filename_fullpath)+"'," +
                                  "'"+s(this.msg_id_hash)+"'," +
-                                 "'"+s(""+this.msg_version)+"'," +
+                                 "'"+s(this.msg_version)+"'," +
                                  "'"+s(this.raw_msgv2_bytes)+"'," +
-                                 "'"+s(""+this.resend_count)+"'" +
+                                 "'"+s(this.resend_count)+"'" +
                                  ")";
 
             if (ORMA_TRACE)

@@ -244,24 +244,24 @@ public class FriendList
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.tox_public_key_string)+"'," +
-                                 "'"+s(""+this.name)+"'," +
-                                 "'"+s(""+this.alias_name)+"'," +
-                                 "'"+s(""+this.status_message)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION_real)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION_on_off)+"'," +
-                                 "'"+s(""+this.TOX_CONNECTION_on_off_real)+"'," +
-                                 "'"+s(""+this.TOX_USER_STATUS)+"'," +
-                                 "'"+s(""+this.avatar_pathname)+"'," +
-                                 "'"+s(""+this.avatar_filename)+"'," +
+                                 "'"+s(this.tox_public_key_string)+"'," +
+                                 "'"+s(this.name)+"'," +
+                                 "'"+s(this.alias_name)+"'," +
+                                 "'"+s(this.status_message)+"'," +
+                                 "'"+s(this.TOX_CONNECTION)+"'," +
+                                 "'"+s(this.TOX_CONNECTION_real)+"'," +
+                                 "'"+s(this.TOX_CONNECTION_on_off)+"'," +
+                                 "'"+s(this.TOX_CONNECTION_on_off_real)+"'," +
+                                 "'"+s(this.TOX_USER_STATUS)+"'," +
+                                 "'"+s(this.avatar_pathname)+"'," +
+                                 "'"+s(this.avatar_filename)+"'," +
                                  "'"+b(this.avatar_update)+"'," +
-                                 "'"+s(""+this.avatar_update_timestamp)+"'," +
+                                 "'"+s(this.avatar_update_timestamp)+"'," +
                                  "'"+b(this.notification_silent)+"'," +
-                                 "'"+s(""+this.sort)+"'," +
-                                 "'"+s(""+this.last_online_timestamp)+"'," +
-                                 "'"+s(""+this.last_online_timestamp_real)+"'," +
-                                 "'"+s(""+this.added_timestamp)+"'," +
+                                 "'"+s(this.sort)+"'," +
+                                 "'"+s(this.last_online_timestamp)+"'," +
+                                 "'"+s(this.last_online_timestamp_real)+"'," +
+                                 "'"+s(this.added_timestamp)+"'," +
                                  "'"+b(this.is_relay)+"'" +
                                   ")";
 

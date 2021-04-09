@@ -263,18 +263,18 @@ public class ConferenceMessage
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.conference_identifier)+"'," +
-                                 "'"+s(""+this.message_id_tox)+"'," +
-                                 "'"+s(""+this.tox_peerpubkey)+"'," +
-                                 "'"+s(""+this.direction)+"'," +
-                                 "'"+s(""+this.TOX_MESSAGE_TYPE)+"'," +
-                                 "'"+s(""+this.TRIFA_MESSAGE_TYPE)+"'," +
-                                 "'"+s(""+this.sent_timestamp)+"'," +
-                                 "'"+s(""+this.rcvd_timestamp)+"'," +
+                                 "'"+s(this.conference_identifier)+"'," +
+                                 "'"+s(this.message_id_tox)+"'," +
+                                 "'"+s(this.tox_peerpubkey)+"'," +
+                                 "'"+s(this.direction)+"'," +
+                                 "'"+s(this.TOX_MESSAGE_TYPE)+"'," +
+                                 "'"+s(this.TRIFA_MESSAGE_TYPE)+"'," +
+                                 "'"+s(this.sent_timestamp)+"'," +
+                                 "'"+s(this.rcvd_timestamp)+"'," +
                                  "'"+b(this.read)+"'," +
                                  "'"+b(this.is_new)+"'," +
-                                 "'"+s(""+this.text)+"'," +
-                                 "'"+s(""+this.tox_peername)+"'," +
+                                 "'"+s(this.text)+"'," +
+                                 "'"+s(this.tox_peername)+"'," +
                                  "'"+b(this.was_synced)+"'" +
                                  ")";
 

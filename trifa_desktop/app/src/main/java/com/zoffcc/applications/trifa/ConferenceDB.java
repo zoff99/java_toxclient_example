@@ -158,13 +158,13 @@ public class ConferenceDB
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(""+this.conference_identifier)+"'," +
-                                 "'"+s(""+this.name)+"'," +
-                                 "'"+s(""+this.peer_count)+"'," +
-                                 "'"+s(""+this.own_peer_number)+"'," +
-                                 "'"+s(""+this.kind)+"'," +
-                                 "'"+s(""+this.who_invited__tox_public_key_string)+"'," +
-                                 "'"+s(""+this.tox_conference_number)+"'," +
+                                 "'"+s(this.conference_identifier)+"'," +
+                                 "'"+s(this.name)+"'," +
+                                 "'"+s(this.peer_count)+"'," +
+                                 "'"+s(this.own_peer_number)+"'," +
+                                 "'"+s(this.kind)+"'," +
+                                 "'"+s(this.who_invited__tox_public_key_string)+"'," +
+                                 "'"+s(this.tox_conference_number)+"'," +
                                  "'"+b(this.conference_active)+"'," +
                                  "'"+b(this.notification_silent)+"'" +
                                  ")";
