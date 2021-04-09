@@ -1,5 +1,10 @@
 #! /bin/bash
 
+_SCRIPTDIR_=$(dirname $0)
+export _SCRIPTDIR_
+_SCRIPTDIR2_=$(cd $_SCRIPTDIR_;pwd)
+export _SCRIPTDIR2_
+
 _HOME_="$(pwd)"
 export _HOME_
 
@@ -264,7 +269,7 @@ cd "$_SRC_"
     ./autogen.sh
 
     #if [ ! -e ./configure ]; then
-      cp -av $_HOME_/configure_nasm_2.14.02 ./configure
+      cp -av $_SCRIPTDIR2_/configure_nasm_2.14.02 ./configure
       chmod a+rx ./configure
     #fi
 
