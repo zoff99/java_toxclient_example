@@ -261,6 +261,12 @@ cd "$_SRC_"
     git checkout nasm-2.14.02
 
     ./autogen.sh
+
+    if [ ! -e ./configure ]; then
+      cp -av $_HOME_/configure_nasm_2.14.02 ./configure
+      chmod a+rx ./configure
+    fi
+
     ./configure --prefix="$_INST_"
 
     set -x
