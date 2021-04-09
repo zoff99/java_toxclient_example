@@ -263,29 +263,18 @@ cd "$_SRC_"
     set -x
     ./autogen.sh
 
-    if [ ! -e ./configure ]; then
+    #if [ ! -e ./configure ]; then
       cp -av $_HOME_/configure_nasm_2.14.02 ./configure
       chmod a+rx ./configure
-    fi
-
-    set +x
+    #fi
 
     ./configure --prefix="$_INST_"
-
-    set -x
-
-    if [ $? -ne 0 ]; then
-      cp -av $_HOME_/configure_nasm_2.14.02 ./configure
-      chmod a+rx ./configure
-      ./configure --prefix="$_INST_"
-    fi
-
-    sudo make || exit 1
+    make || exit 1
 
     # seems man pages are not always built. but who needs those
     touch nasm.1
     touch ndisasm.1
-    sudo make install || exit 1
+    make install || exit 1
 
     export PATH="$_INST_""/bin":$NEWPATH
 
