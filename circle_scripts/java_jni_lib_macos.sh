@@ -161,7 +161,7 @@ $JAVA_HOME/bin/java  -Djava.library.path="." \
 -classpath ".:json-20210307.jar:emoji-java-5.1.1.jar:sqlite-jdbc-3.32.3.2.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" \
 com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
 # --------- run test java application ---------
-sleep 20
+sleep 40
 cat ./trifa.log|head -20
 echo
 echo
@@ -173,6 +173,7 @@ screencapture -T 1 -x -t png /Users/runner/screen101.png &
 sudo killall NotificationCenter &
 screencapture -x -t png /Users/runner/screen102.png
 screencapture -x -t png /Users/runner/screen103.png
-
+sleep 5
+screencapture -x -t png /Users/runner/screen104.png
 
 fi
