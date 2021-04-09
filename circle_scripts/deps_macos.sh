@@ -260,6 +260,7 @@ cd "$_SRC_"
     # git checkout nasm-2.13.03
     git checkout nasm-2.14.02
 
+    set -x
     ./autogen.sh
 
     if [ ! -e ./configure ]; then
@@ -267,9 +268,18 @@ cd "$_SRC_"
       chmod a+rx ./configure
     fi
 
+    set +x
+
     ./configure --prefix="$_INST_"
 
     set -x
+
+    if [ $? -ne 0 ]; then
+      cp -av $_HOME_/configure_nasm_2.14.02 ./configure
+      chmod a+rx ./configure
+      ./configure --prefix="$_INST_"
+    fi
+
     sudo make || exit 1
 
     # seems man pages are not always built. but who needs those
