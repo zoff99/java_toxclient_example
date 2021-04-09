@@ -274,12 +274,12 @@ cd "$_SRC_"
     #fi
 
     ./configure --prefix="$_INST_"
-    sudo make || echo "ingore errors here"
+    sudo make || echo "ignore errors here"
 
     # seems man pages are not always built. but who needs those
     touch nasm.1
     touch ndisasm.1
-    sudo make install || "ingore errors here"
+    sudo make install || echo "ignore errors here"
 
     export PATH="$_INST_""/bin":$NEWPATH
 
