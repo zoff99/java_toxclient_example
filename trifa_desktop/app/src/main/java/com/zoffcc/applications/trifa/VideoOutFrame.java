@@ -783,7 +783,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
-                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                         try
                         {
                             for (int j = h0; j < h1; j++)
@@ -840,7 +839,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
-                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                         try
                         {
                             for (int j = h1; j < h2; j++)
@@ -897,7 +895,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
-                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                         try
                         {
                             for (int j = h2; j < h3; j++)
@@ -954,7 +951,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
-                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                         try
                         {
                             for (int j = h3; j < h4; j++)
@@ -1011,7 +1007,6 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     @Override
                     public void run()
                     {
-                        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                         try
                         {
                             for (int j = h4; j < h5; j++)

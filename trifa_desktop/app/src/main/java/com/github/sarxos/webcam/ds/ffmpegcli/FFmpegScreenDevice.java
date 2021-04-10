@@ -59,7 +59,6 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
 
         try
         {
-            // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
             process = builder.start();
             Log.i(TAG, "process=" + process);
         }

@@ -1572,10 +1572,10 @@ public class MainActivity extends JFrame
         if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS) ||
             (_recBuffer == null) || (sample_count == 0))
         {
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
             _recBuffer = ByteBuffer.allocateDirect((int) (10000 * 2 * channels));
             set_JNI_audio_buffer2(_recBuffer);
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
         }
 
         if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS))
@@ -1588,19 +1588,17 @@ public class MainActivity extends JFrame
 
         if (sample_count == 0)
         {
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:77:setup");
             return;
         }
 
         try
         {
             _recBuffer.rewind();
+            _recBuffer.clear();
             final int want_bytes = (int) (sample_count * 2 * channels);
             final byte[] audio_out_byte_buffer = new byte[want_bytes];
             _recBuffer.get(audio_out_byte_buffer, 0, want_bytes);
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:1:" + want_bytes +
-            //            " sample_count=" + sample_count + " channels=" + channels +
-            //            " AudioSelectOutBox.sourceDataLine.getFormat().getChannels()=" +
-            //            AudioSelectOutBox.sourceDataLine.getFormat().getChannels());
 
             if (1 == 1 + 1)
             {
@@ -1630,6 +1628,7 @@ public class MainActivity extends JFrame
                 semaphore_audio_out_convert.acquire();
                 if (semaphore_audio_out_convert_active_threads > semaphore_audio_out_convert_max_active_threads)
                 {
+                    Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:too many threads running");
                     semaphore_audio_out_convert.release();
                     return;
                 }
@@ -1637,10 +1636,10 @@ public class MainActivity extends JFrame
             }
             catch (Exception e)
             {
-                e.printStackTrace();
             }
 
             final Thread t_audio_bar_set_play = new Thread(() -> {
+
                 try
                 {
                     semaphore_audio_out_convert.acquire();
@@ -1661,7 +1660,19 @@ public class MainActivity extends JFrame
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:sourceDataLine.write:EE:" +
+                               e.getMessage());
+                    // e.printStackTrace();
+                }
+
+                try
+                {
+                    semaphore_audio_out_convert.acquire();
+                    semaphore_audio_out_convert_active_threads--;
+                    semaphore_audio_out_convert.release();
+                }
+                catch (Exception e)
+                {
                 }
 
                 float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
@@ -1691,22 +1702,12 @@ public class MainActivity extends JFrame
                         pcm_wave_play.add_pcm((int) s);
                     }
                 }
-
-                try
-                {
-                    semaphore_audio_out_convert.acquire();
-                    semaphore_audio_out_convert_active_threads--;
-                    semaphore_audio_out_convert.release();
-                }
-                catch (Exception e)
-                {
-                }
             });
             t_audio_bar_set_play.start();
         }
         catch (Exception e)
         {
-            // Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:EE01:" + e.getMessage());
+            Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:EE01:" + e.getMessage());
         }
     }
 

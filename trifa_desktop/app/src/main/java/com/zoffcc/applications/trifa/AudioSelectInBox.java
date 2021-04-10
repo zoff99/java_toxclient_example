@@ -116,7 +116,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 }
 
                 Log.i(TAG, "Priority of thread is CUR: " + Thread.currentThread().getPriority());
-                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                 Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
 
                 while (true)

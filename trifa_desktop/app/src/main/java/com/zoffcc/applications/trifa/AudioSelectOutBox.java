@@ -111,7 +111,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                 Log.i(TAG, "Videocall_audio_play_thread:starting ... PART 3");
 
                 Log.i(TAG, "Priority of thread is CUR: " + Thread.currentThread().getPriority());
-                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+                // Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
                 Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
 
                 int delta = 0;
@@ -135,9 +135,10 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                                 // Log.i(TAG, "t_audio_play:003:Callstate.state=" + Callstate.state);
                                 if (sourceDataLine.isOpen())
                                 {
-                                    d1 = System.currentTimeMillis();
+                                    //Log.i(TAG, "t_audio_play:jni_iterate_videocall_audio:" +
+                                    //           (System.currentTimeMillis() - d1) + " ms");
+                                    //d1 = System.currentTimeMillis();
                                     res = jni_iterate_videocall_audio(0, sleep_millis, CHANNELS, SAMPLE_RATE, 0);
-                                    // Log.i(TAG, "t_audio_play:jni_iterate_videocall_audio");
                                     if (res == -1)
                                     {
                                         Thread.sleep(1);
@@ -160,17 +161,17 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
                                 }
                                 else
                                 {
-                                    Thread.sleep(50);
+                                    Thread.sleep(60);
                                 }
                             }
                             else
                             {
-                                Thread.sleep(50);
+                                Thread.sleep(60);
                             }
                         }
                         else
                         {
-                            Thread.sleep(50);
+                            Thread.sleep(60);
                         }
                     }
                     catch (Exception e)
