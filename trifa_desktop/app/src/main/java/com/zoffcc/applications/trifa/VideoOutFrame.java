@@ -113,7 +113,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     public static int screengrab_active = 0;
     final static Semaphore semaphore_video_out_convert = new Semaphore(1);
     static int semaphore_video_out_convert_active_threads = 0;
-    static int semaphore_video_out_convert_max_active_threads = 3;
+    static int semaphore_video_out_convert_max_active_threads = 1;
 
     final static String DRIVER_OFF = "off";
     final static String DRIVER_DEFAULT = "default";

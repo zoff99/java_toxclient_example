@@ -67,7 +67,7 @@ public class VideoInFrame extends JFrame
 
     final static Semaphore semaphore_video_in_convert = new Semaphore(1);
     static int semaphore_video_in_convert_active_threads = 0;
-    static int semaphore_video_in_convert_max_active_threads = 3;
+    static int semaphore_video_in_convert_max_active_threads = 1;
 
     public VideoInFrame()
     {
@@ -154,19 +154,29 @@ public class VideoInFrame extends JFrame
                     if (Callstate.state != 0)
                     {
                         final ImageIcon i = new ImageIcon(imageIn);
-                        EventQueue.invokeLater(() -> {
-                            try
+                        try
+                        {
+                            if (i != null)
                             {
-                                if (i != null)
-                                {
-                                    video_in_frame.setIcon(i);
-                                    video_in_frame.repaint();
-                                }
+                                video_in_frame.setIcon(i);
+                                EventQueue.invokeLater(() -> {
+                                    try
+                                    {
+                                        if (i != null)
+                                        {
+                                            video_in_frame.repaint();
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                    }
+                                });
+
                             }
-                            catch (Exception e)
-                            {
-                            }
-                        });
+                        }
+                        catch (Exception e)
+                        {
+                        }
                     }
 
                     try
