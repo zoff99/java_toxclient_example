@@ -13,7 +13,10 @@
 
 ## Installation & starting the App [Linux, Windows and MacOS]
 
-<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/on_github.png" width="200"></a>
+
+
+| <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/on_github.png" width="200"></a> | <a href="https://snapcraft.io/trifa-desktop"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" height="55"></a> | 
+|--------|--------|
 
 - Install JRE 11 or JDK 11.
 - Download [trifa_desktop.zip](https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip)
