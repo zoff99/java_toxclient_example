@@ -385,7 +385,14 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             Log.i(TAG, "******** START **********");
             Log.i(TAG, "*************************");
             Log.i(TAG, "input: " + e.paramString());
-            change_device((Mixer.Info) e.getItem());
+            try
+            {
+                change_device((Mixer.Info) e.getItem());
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
             Log.i(TAG, "*************************");
             Log.i(TAG, "********  END  **********");
             Log.i(TAG, "*************************");

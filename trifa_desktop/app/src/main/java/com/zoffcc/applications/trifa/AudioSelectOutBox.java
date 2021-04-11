@@ -237,13 +237,28 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
     public static void change_audio_format(int sample_rate, int channels)
     {
-        Log.i(TAG, "AA::OUT::change_audio_format:001:" + sample_rate + " " + channels);
-        Log.i(TAG, "change_audio_format:sample_rate=" + sample_rate + " SAMPLE_RATE=" + SAMPLE_RATE + " channels=" +
-                   channels + " CHANNELS=" + CHANNELS);
-        SAMPLE_RATE = sample_rate;
-        CHANNELS = channels;
-        change_device((Mixer.Info) audio_out_select.getSelectedItem());
-        Log.i(TAG, "AA::OUT::change_audio_format:099");
+        try
+        {
+            Log.i(TAG, "AA::OUT::change_audio_format:001:" + sample_rate + " " + channels);
+            Log.i(TAG, "change_audio_format:sample_rate=" + sample_rate + " SAMPLE_RATE=" + SAMPLE_RATE + " channels=" +
+                       channels + " CHANNELS=" + CHANNELS);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            SAMPLE_RATE = sample_rate;
+            CHANNELS = channels;
+            change_device((Mixer.Info) audio_out_select.getSelectedItem());
+            Log.i(TAG, "AA::OUT::change_audio_format:099");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public synchronized static void change_device(Mixer.Info i)
@@ -376,7 +391,14 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
             Log.i(TAG, "******** START **********");
             Log.i(TAG, "*************************");
             Log.i(TAG, "output: " + e.paramString());
-            change_device((Mixer.Info) e.getItem());
+            try
+            {
+                change_device((Mixer.Info) e.getItem());
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+            }
             Log.i(TAG, "*************************");
             Log.i(TAG, "********  END  **********");
             Log.i(TAG, "*************************");
