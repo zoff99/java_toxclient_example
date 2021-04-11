@@ -938,6 +938,19 @@ public class MainActivity extends JFrame
 
         try
         {
+            System.out.println("java.vm.name:" + System.getProperty("java.vm.name"));
+            System.out.println("java.home:" + System.getProperty("java.home"));
+            System.out.println("java.vendor:" + System.getProperty("java.vendor"));
+            System.out.println("java.version:" + System.getProperty("java.version"));
+            System.out.println("java.specification.vendor:" + System.getProperty("java.specification.vendor"));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
             // HINT: show proper name in MacOS Menubar
             // https://alvinalexander.com/java/java-application-name-mac-menu-bar-menubar-class-name/
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TRIfA - Desktop");
