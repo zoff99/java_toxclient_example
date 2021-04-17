@@ -531,7 +531,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                 try
                 {
                     semaphore_video_out_convert.acquire();
-                    if (semaphore_video_out_convert_active_threads > semaphore_video_out_convert_max_active_threads)
+                    if (semaphore_video_out_convert_active_threads >= semaphore_video_out_convert_max_active_threads)
                     {
                         semaphore_video_out_convert.release();
                         return;
