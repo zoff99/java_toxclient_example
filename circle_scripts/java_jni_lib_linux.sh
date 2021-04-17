@@ -70,6 +70,10 @@ echo "JAVADIR2:""$JAVADIR2"
 
 export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all "
 
+# if [ "$1""x" == "localx" ]; then
+#     export CFLAGS=" $CFLAGS -pg "
+# fi
+
 gcc $CFLAGS \
 -Wall \
 -DJAVA_LINUX \

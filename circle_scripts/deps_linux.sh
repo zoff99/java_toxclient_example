@@ -268,7 +268,9 @@ cd "$_SRC_"
 
 if [ "$1""x" == "localx" ]; then
     cp -av /c-toxcore ./
+    LOGG=" -DMIN_LOGGER_LEVEL=LOGGER_LEVEL_DEBUG "
 else
+    unset LOGG
     git clone https://github.com/zoff99/c-toxcore c-toxcore
 fi
 cd c-toxcore/
@@ -283,10 +285,9 @@ cd ../
 cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
 # ------ set c-toxcore git commit hash ------
 
-
 autoreconf -fi
 ./configure \
-    CFLAGS=" -O3 -g -fPIC -fstack-protector-all" \
+    CFLAGS=" -O3 -g -fPIC -fstack-protector-all $LOGG " \
     --prefix="$_INST_" \
     --disable-soname-versions \
     --disable-shared \
