@@ -121,6 +121,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
+import static com.zoffcc.applications.trifa.OrmaDatabase.update_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
@@ -1115,6 +1116,7 @@ public class MainActivity extends JFrame
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
         create_db();
+        update_db();
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
