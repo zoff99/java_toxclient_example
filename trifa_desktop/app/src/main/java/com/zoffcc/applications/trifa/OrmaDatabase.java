@@ -77,6 +77,20 @@ public class OrmaDatabase
         return results;
     }
 
+    public static void update_db()
+    {
+        try
+        {
+            final String update_001 = "CREATE UNIQUE INDEX ux_tox_public_key_string_of_owner ON RelayListDB(tox_public_key_string_of_owner);";
+            run_multi_sql(update_001);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
     public static void create_db()
     {
         try
