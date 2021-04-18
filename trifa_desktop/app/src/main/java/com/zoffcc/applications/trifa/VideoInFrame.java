@@ -112,10 +112,7 @@ public class VideoInFrame extends JFrame
         try
         {
             vbuf.rewind();
-            // Log.i(TAG, "new_video_in_frame:1:vbuf:" + vbuf.limit() + " len=" + vbuf.remaining() + " imageInByte:" +
-            //            imageInByte.length);
-
-            vbuf.slice().get(imageInByte);
+            vbuf.get(imageInByte, 0, imageInByte.length);
 
             final Thread paint_thread = new Thread()
             {
@@ -137,11 +134,9 @@ public class VideoInFrame extends JFrame
                     try
                     {
                         final int h0 = 0;
-                        final int h1 = (h / 5);
-                        final int h2 = 2 * (h / 5);
-                        final int h3 = 3 * (h / 5);
-                        final int h4 = 4 * (h / 5);
-                        final int h5 = h;
+                        final int h1 = (h / 3);
+                        final int h2 = 2 * (h / 3);
+                        final int h3 = h;
 
                         final Thread t1 = new Thread()
                         {
@@ -227,67 +222,9 @@ public class VideoInFrame extends JFrame
                         };
                         t3.start();
 
-                        final Thread t4 = new Thread()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                int rColor;
-                                int i;
-                                for (int j = h3; j < h4; j++)
-                                {
-                                    for (i = 0; i < w; i++)
-                                    {
-                                        try
-                                        {
-                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
-                                            imageIn.setRGB(i, j, rColor);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
-                                            // e.printStackTrace();
-                                            imageIn.setRGB(i, j, 0);
-                                        }
-                                    }
-                                }
-                            }
-                        };
-                        t4.start();
-
-                        final Thread t5 = new Thread()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                int rColor;
-                                int i;
-                                for (int j = h4; j < h5; j++)
-                                {
-                                    for (i = 0; i < w; i++)
-                                    {
-                                        try
-                                        {
-                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
-                                            imageIn.setRGB(i, j, rColor);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
-                                            // e.printStackTrace();
-                                            imageIn.setRGB(i, j, 0);
-                                        }
-                                    }
-                                }
-                            }
-                        };
-                        t5.start();
-
                         t1.join();
                         t2.join();
                         t3.join();
-                        t4.join();
-                        t5.join();
                     }
                     catch (Exception e)
                     {
