@@ -487,6 +487,17 @@ public class VideoInFrame extends JFrame
             e.printStackTrace();
         }
 
+        try
+        {
+            int res = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
+                                       ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_DECODER_VIDEO_BUFFER_MS.value, 5);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "TOXAV_DECODER_VIDEO_BUFFER_MS:EE:" + e.getMessage());
+        }
+
         // reset audio play format
         change_audio_format((int) AudioSelectOutBox.SAMPLE_RATE_DEFAULT, AudioSelectOutBox.CHANNELS_DEFAULT);
     }
