@@ -1609,7 +1609,6 @@ public class MainActivity extends JFrame
         try
         {
             _recBuffer.rewind();
-            _recBuffer.clear();
             final int want_bytes = (int) (sample_count * 2 * channels);
             final byte[] audio_out_byte_buffer = new byte[want_bytes];
             _recBuffer.get(audio_out_byte_buffer, 0, want_bytes);
