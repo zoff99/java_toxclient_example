@@ -1640,7 +1640,7 @@ public class MainActivity extends JFrame
             try
             {
                 semaphore_audio_out_convert.acquire();
-                if (semaphore_audio_out_convert_active_threads > semaphore_audio_out_convert_max_active_threads)
+                if (semaphore_audio_out_convert_active_threads >= semaphore_audio_out_convert_max_active_threads)
                 {
                     Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:too many threads running");
                     semaphore_audio_out_convert.release();
