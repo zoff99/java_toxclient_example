@@ -84,7 +84,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                 int audio_send_res = 1;
                 int numBytesRead = 0;
 
-                int frameduration_ms = 40;
+                int frameduration_ms = 60;
                 int sample_count2 = ((AUDIO_REC_SAMPLE_RATE * frameduration_ms) / 1000);
                 int want_numBytesRead = sample_count2 * AUDIO_REC_CHANNELS * 2;
 
@@ -154,19 +154,29 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
 
                                     // Log.i(TAG, "t_audio_rec:res=" + audio_send_res);
 
-                                    float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
-                                    if (sample_count > 0)
+                                    final int sample_count_ = sample_count;
+                                    final Thread t_audio_bar_set = new Thread()
                                     {
-                                        float vu_value = audio_vu(data, sample_count);
-                                        if (vu_value > AUDIO_VU_MIN_VALUE)
+                                        @Override
+                                        public void run()
                                         {
-                                            global_audio_out_vu = vu_value;
-                                        }
-                                        else
-                                        {
-                                            global_audio_out_vu = 0;
-                                        }
-                                    }
+                                            float global_audio_out_vu = AUDIO_VU_MIN_VALUE;
+
+                                            if (sample_count_ > 0)
+                                            {
+                                                float vu_value = audio_vu(data, sample_count_);
+                                                if (vu_value > AUDIO_VU_MIN_VALUE)
+                                                {
+                                                    global_audio_out_vu = vu_value;
+                                                }
+                                                else
+                                                {
+                                                    global_audio_out_vu = 0;
+                                                }
+                                            }
+
+                                            //Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
+                                            set_audio_in_bar_level((int) global_audio_out_vu);
 
                                     /*
                                     if (sample_count > 1)
@@ -179,14 +189,6 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                     }
                                     */
 
-                                    final float global_audio_out_vu_ = global_audio_out_vu;
-                                    final Thread t_audio_bar_set = new Thread()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            //Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
-                                            set_audio_in_bar_level((int) global_audio_out_vu_);
                                         }
                                     };
                                     t_audio_bar_set.start();
