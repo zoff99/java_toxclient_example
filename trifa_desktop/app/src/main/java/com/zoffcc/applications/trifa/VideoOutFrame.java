@@ -96,7 +96,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
     static JPanel ButtonPanels_Panel = null;
     static JPanel ButtonPanel = null;
     static JPanel ButtonPanel_2 = null;
-    static JComboBox VideoToggleScreengrab = null;
+    static JComboBox<String> VideoToggleScreengrab = null;
     static JSlider VideoOutBitRate = null;
     static JButton VideoOutBitRate_text = null;
     static JButton VideoInBitRate_text = null;
@@ -584,7 +584,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                     //Log.i(TAG, "webcam_image:captured:002:001");
                                     video_buffer_2.rewind();
                                     //Log.i(TAG, "webcam_image:captured:002:002:" + (System.currentTimeMillis() - ts1));
-                                    byte[] b = rgb2yuv(buf, frame_width_px, frame_height_px);
+                                    final byte[] b = rgb2yuv(buf, frame_width_px, frame_height_px);
                                     //Log.i(TAG, "webcam_image:captured:002:003:" + (System.currentTimeMillis() - ts1));
                                     // Log.i(TAG, "webcam_image:captured:005a:r=" + video_buffer_2.remaining() + " p=" +
                                     //            video_buffer_2.capacity() + " b=" + b.length);
@@ -602,7 +602,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                     {
                                         age = 0;
                                     }
-                                    int res = toxav_video_send_frame_age(
+                                    final int res = toxav_video_send_frame_age(
                                             tox_friend_by_public_key__wrapper(Callstate.friend_pubkey), buf.getWidth(),
                                             buf.getHeight(), age);
                                     //Log.i(TAG, "webcam_image:captured:002:006:" + (System.currentTimeMillis() - ts1));
@@ -736,7 +736,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         // Log.i(TAG, "rgb2yuv:000");
         // final long ts0 = System.currentTimeMillis();
 
-        byte[] ret = null;
+        byte[] ret;
 
         int w = bi.getWidth();
         int h = bi.getHeight();
@@ -785,6 +785,16 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     {
                         try
                         {
+                            int color;
+                            int R;
+                            int G;
+                            int B;
+                            int Y;
+                            int U;
+                            int V;
+                            int yLoc;
+                            int uLoc;
+                            int vLoc;
                             for (int j = h0; j < h1; j++)
                             {
                                 final int j_w = j * width1;
@@ -793,27 +803,27 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                 for (int i = 0; i < w; i++)
                                 {
                                     // final long ts1_1 = System.currentTimeMillis();
-                                    int color = bi.getRGB(i, j);
+                                    color = bi.getRGB(i, j);
                                     //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
                                     // int alpha = color >> 24 & 0xff;
-                                    int R = color >> 16 & 0xff;
-                                    int G = color >> 8 & 0xff;
-                                    int B = color & 0xff;
+                                    R = color >> 16 & 0xff;
+                                    G = color >> 8 & 0xff;
+                                    B = color & 0xff;
 
                                     // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
                                     // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
                                     // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
                                     // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                                    int yLoc = j_w + i;
-                                    int uLoc = factor2 + (i / 2) + arraySize;
-                                    int vLoc = uLoc + arr_4;
+                                    yLoc = j_w + i;
+                                    uLoc = factor2 + (i / 2) + arraySize;
+                                    vLoc = uLoc + arr_4;
 
                                     // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
 
@@ -841,6 +851,16 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     {
                         try
                         {
+                            int color;
+                            int R;
+                            int G;
+                            int B;
+                            int Y;
+                            int U;
+                            int V;
+                            int yLoc;
+                            int uLoc;
+                            int vLoc;
                             for (int j = h1; j < h2; j++)
                             {
                                 final int j_w = j * width1;
@@ -849,27 +869,27 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                 for (int i = 0; i < w; i++)
                                 {
                                     // final long ts1_1 = System.currentTimeMillis();
-                                    int color = bi.getRGB(i, j);
+                                    color = bi.getRGB(i, j);
                                     //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
                                     // int alpha = color >> 24 & 0xff;
-                                    int R = color >> 16 & 0xff;
-                                    int G = color >> 8 & 0xff;
-                                    int B = color & 0xff;
+                                    R = color >> 16 & 0xff;
+                                    G = color >> 8 & 0xff;
+                                    B = color & 0xff;
 
                                     // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
                                     // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
                                     // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
                                     // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                                    int yLoc = j_w + i;
-                                    int uLoc = factor2 + (i / 2) + arraySize;
-                                    int vLoc = uLoc + arr_4;
+                                    yLoc = j_w + i;
+                                    uLoc = factor2 + (i / 2) + arraySize;
+                                    vLoc = uLoc + arr_4;
 
                                     // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
 
@@ -897,6 +917,16 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     {
                         try
                         {
+                            int color;
+                            int R;
+                            int G;
+                            int B;
+                            int Y;
+                            int U;
+                            int V;
+                            int yLoc;
+                            int uLoc;
+                            int vLoc;
                             for (int j = h2; j < h3; j++)
                             {
                                 final int j_w = j * width1;
@@ -905,27 +935,27 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                 for (int i = 0; i < w; i++)
                                 {
                                     // final long ts1_1 = System.currentTimeMillis();
-                                    int color = bi.getRGB(i, j);
+                                    color = bi.getRGB(i, j);
                                     //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
                                     // int alpha = color >> 24 & 0xff;
-                                    int R = color >> 16 & 0xff;
-                                    int G = color >> 8 & 0xff;
-                                    int B = color & 0xff;
+                                    R = color >> 16 & 0xff;
+                                    G = color >> 8 & 0xff;
+                                    B = color & 0xff;
 
                                     // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
                                     // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
                                     // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
                                     // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                                    int yLoc = j_w + i;
-                                    int uLoc = factor2 + (i / 2) + arraySize;
-                                    int vLoc = uLoc + arr_4;
+                                    yLoc = j_w + i;
+                                    uLoc = factor2 + (i / 2) + arraySize;
+                                    vLoc = uLoc + arr_4;
 
                                     // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
 
@@ -953,6 +983,16 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     {
                         try
                         {
+                            int color;
+                            int R;
+                            int G;
+                            int B;
+                            int Y;
+                            int U;
+                            int V;
+                            int yLoc;
+                            int uLoc;
+                            int vLoc;
                             for (int j = h3; j < h4; j++)
                             {
                                 final int j_w = j * width1;
@@ -961,27 +1001,27 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                 for (int i = 0; i < w; i++)
                                 {
                                     // final long ts1_1 = System.currentTimeMillis();
-                                    int color = bi.getRGB(i, j);
+                                    color = bi.getRGB(i, j);
                                     //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
                                     // int alpha = color >> 24 & 0xff;
-                                    int R = color >> 16 & 0xff;
-                                    int G = color >> 8 & 0xff;
-                                    int B = color & 0xff;
+                                    R = color >> 16 & 0xff;
+                                    G = color >> 8 & 0xff;
+                                    B = color & 0xff;
 
                                     // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
                                     // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
                                     // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
                                     // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                                    int yLoc = j_w + i;
-                                    int uLoc = factor2 + (i / 2) + arraySize;
-                                    int vLoc = uLoc + arr_4;
+                                    yLoc = j_w + i;
+                                    uLoc = factor2 + (i / 2) + arraySize;
+                                    vLoc = uLoc + arr_4;
 
                                     // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
 
@@ -1009,6 +1049,16 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                     {
                         try
                         {
+                            int color;
+                            int R;
+                            int G;
+                            int B;
+                            int Y;
+                            int U;
+                            int V;
+                            int yLoc;
+                            int uLoc;
+                            int vLoc;
                             for (int j = h4; j < h5; j++)
                             {
                                 final int j_w = j * width1;
@@ -1017,27 +1067,27 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                                 for (int i = 0; i < w; i++)
                                 {
                                     // final long ts1_1 = System.currentTimeMillis();
-                                    int color = bi.getRGB(i, j);
+                                    color = bi.getRGB(i, j);
                                     //Log.i(TAG, "rgb2yuv:runtime:01:" + (System.currentTimeMillis() - ts1_1));
 
                                     // int alpha = color >> 24 & 0xff;
-                                    int R = color >> 16 & 0xff;
-                                    int G = color >> 8 & 0xff;
-                                    int B = color & 0xff;
+                                    R = color >> 16 & 0xff;
+                                    G = color >> 8 & 0xff;
+                                    B = color & 0xff;
 
                                     // int Y = (int) ((0.257 * R) + (0.504 * G) + (0.098 * B) + 16);
                                     // int U = (int) (-(0.148 * R) - (0.291 * G) + (0.439 * B) + 128);
                                     // int V = (int) ((0.439 * R) - (0.368 * G) - (0.071 * B) + 128);
 
-                                    int Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
-                                    int U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
-                                    int V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
+                                    Y = (int) (R * .299000f + G * .587000f + B * 0.114000f);
+                                    U = (int) (R * -.168736f + G * -.331264f + B * 0.500000f + 128);
+                                    V = (int) (R * .500000f + G * -.418688f + B * -0.081312f + 128);
 
                                     // Log.i(TAG, "rgb2yuv:runtime:02:" + (System.currentTimeMillis() - ts1_1));
 
-                                    int yLoc = j_w + i;
-                                    int uLoc = factor2 + (i / 2) + arraySize;
-                                    int vLoc = uLoc + arr_4;
+                                    yLoc = j_w + i;
+                                    uLoc = factor2 + (i / 2) + arraySize;
+                                    vLoc = uLoc + arr_4;
 
                                     // Log.i(TAG, "rgb2yuv:runtime:03:" + (System.currentTimeMillis() - ts1_1));
 
@@ -1167,7 +1217,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
         return modified;
     }
 
-    private static final BufferedImage getImage()
+    private static BufferedImage getImage()
     {
         try
         {
