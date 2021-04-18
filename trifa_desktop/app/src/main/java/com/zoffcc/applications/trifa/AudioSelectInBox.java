@@ -168,6 +168,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                         }
                                     }
 
+                                    /*
                                     if (sample_count > 1)
                                     {
                                         for (int i = 0; i < sample_count; i = i + 2)
@@ -176,6 +177,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                             pcm_wave_rec.add_pcm((int) s);
                                         }
                                     }
+                                    */
 
                                     final float global_audio_out_vu_ = global_audio_out_vu;
                                     final Thread t_audio_bar_set = new Thread()

@@ -59,7 +59,7 @@ public class PCMWaveFormDisplay extends JPanel
             {
                 this.setName("t_pcmwave");
 
-                while (true)
+                //while (true)
                 {
                     try
                     {
