@@ -95,7 +95,7 @@ public class VideoInFrame extends JFrame
         try
         {
             semaphore_video_in_convert.acquire();
-            if (semaphore_video_in_convert_active_threads > semaphore_video_in_convert_max_active_threads)
+            if (semaphore_video_in_convert_active_threads >= semaphore_video_in_convert_max_active_threads)
             {
                 semaphore_video_in_convert.release();
                 //Log.i(TAG,
@@ -132,39 +132,191 @@ public class VideoInFrame extends JFrame
                     {
                     }
 
-                    for (int j = 0; j < h; j++)
+                    // final long tt1 = System.currentTimeMillis();
+
+                    try
                     {
-                        for (int i = 0; i < w; i++)
+                        final int h0 = 0;
+                        final int h1 = (h / 5);
+                        final int h2 = 2 * (h / 5);
+                        final int h3 = 3 * (h / 5);
+                        final int h4 = 4 * (h / 5);
+                        final int h5 = h;
+
+                        final Thread t1 = new Thread()
                         {
-                            try
+                            @Override
+                            public void run()
                             {
-                                int rColor = getRGBFromStream(i, j, w, h, imageInByte);
-                                imageIn.setRGB(i, j, rColor);
+                                int rColor;
+                                int i;
+                                for (int j = h0; j < h1; j++)
+                                {
+                                    for (i = 0; i < w; i++)
+                                    {
+                                        try
+                                        {
+                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                                            imageIn.setRGB(i, j, rColor);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
+                                            // e.printStackTrace();
+                                            imageIn.setRGB(i, j, 0);
+                                        }
+                                    }
+                                }
                             }
-                            catch (Exception e)
+                        };
+                        t1.start();
+
+                        final Thread t2 = new Thread()
+                        {
+                            @Override
+                            public void run()
                             {
-                                // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
-                                // e.printStackTrace();
-                                imageIn.setRGB(i, j, 0);
+                                int rColor;
+                                int i;
+                                for (int j = h1; j < h2; j++)
+                                {
+                                    for (i = 0; i < w; i++)
+                                    {
+                                        try
+                                        {
+                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                                            imageIn.setRGB(i, j, rColor);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
+                                            // e.printStackTrace();
+                                            imageIn.setRGB(i, j, 0);
+                                        }
+                                    }
+                                }
                             }
-                        }
+                        };
+                        t2.start();
+
+                        final Thread t3 = new Thread()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                int rColor;
+                                int i;
+                                for (int j = h2; j < h3; j++)
+                                {
+                                    for (i = 0; i < w; i++)
+                                    {
+                                        try
+                                        {
+                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                                            imageIn.setRGB(i, j, rColor);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
+                                            // e.printStackTrace();
+                                            imageIn.setRGB(i, j, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        t3.start();
+
+                        final Thread t4 = new Thread()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                int rColor;
+                                int i;
+                                for (int j = h3; j < h4; j++)
+                                {
+                                    for (i = 0; i < w; i++)
+                                    {
+                                        try
+                                        {
+                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                                            imageIn.setRGB(i, j, rColor);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
+                                            // e.printStackTrace();
+                                            imageIn.setRGB(i, j, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        t4.start();
+
+                        final Thread t5 = new Thread()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                int rColor;
+                                int i;
+                                for (int j = h4; j < h5; j++)
+                                {
+                                    for (i = 0; i < w; i++)
+                                    {
+                                        try
+                                        {
+                                            rColor = getRGBFromStream(i, j, w, h, imageInByte);
+                                            imageIn.setRGB(i, j, rColor);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
+                                            // e.printStackTrace();
+                                            imageIn.setRGB(i, j, 0);
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        t5.start();
+
+                        t1.join();
+                        t2.join();
+                        t3.join();
+                        t4.join();
+                        t5.join();
                     }
-                    // Log.i(TAG, "new_video_in_frame:006:bImageFromConvert=" + imageIn);
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    // Log.i(TAG, "new_video_in_frame:006:" + (System.currentTimeMillis() - tt1) + " ms");
 
                     if (Callstate.state != 0)
                     {
-                        final ImageIcon i = new ImageIcon(imageIn);
+                        //final long tt2 = System.currentTimeMillis();
+                        ImageIcon i = new ImageIcon(imageIn);
+                        //Log.i(TAG, "new_video_in_frame:007:" + (System.currentTimeMillis() - tt2) + " ms");
                         try
                         {
                             if (i != null)
                             {
+                                //final long tt3 = System.currentTimeMillis();
                                 video_in_frame.setIcon(i);
+                                //Log.i(TAG, "new_video_in_frame:008:" + (System.currentTimeMillis() - tt3) + " ms");
                                 EventQueue.invokeLater(() -> {
                                     try
                                     {
                                         if (i != null)
                                         {
+                                            //final long tt4 = System.currentTimeMillis();
                                             video_in_frame.repaint();
+                                            //Log.i(TAG, "new_video_in_frame:009:" + (System.currentTimeMillis() - tt4) +
+                                            //           " ms");
                                         }
                                     }
                                     catch (Exception e)
@@ -217,17 +369,17 @@ public class VideoInFrame extends JFrame
         video_in_frame.repaint();
     }
 
-    public static int unsignedByteToInt(byte b)
+    public static int unsignedByteToInt(final byte b)
     {
         return (int) b & 0xFF;
     }
 
-    public static int getRGBFromStream(int x, int y, int width, int height, byte[] buf)
+    public static int getRGBFromStream(final int x, final int y, final int width, final int height, final byte[] buf)
     {
-        int arraySize = height * width;
-        int Y = unsignedByteToInt(buf[y * width + x]);
-        int U = unsignedByteToInt(buf[(y / 2) * (width / 2) + x / 2 + arraySize]);
-        int V = unsignedByteToInt(buf[(y / 2) * (width / 2) + x / 2 + arraySize + arraySize / 4]);
+        final int arraySize = height * width;
+        final int Y = unsignedByteToInt(buf[y * width + x]);
+        final int U = unsignedByteToInt(buf[(y / 2) * (width / 2) + x / 2 + arraySize]);
+        final int V = unsignedByteToInt(buf[(y / 2) * (width / 2) + x / 2 + arraySize + arraySize / 4]);
 
         //~ int R = (int)(Y + 1.370705 * (V-128));
         //~ int G = (int)(Y - 0.698001 * (V-128) - 0.337633 * (U-128));
@@ -264,9 +416,7 @@ public class VideoInFrame extends JFrame
             B = 0;
         }
 
-        int rColor = (0xff << 24) | (R << 16) | (G << 8) | B;
-
-        return rColor;
+        return (0xff << 24) | (R << 16) | (G << 8) | B;
     }
 
     static void on_call_started_actions()
