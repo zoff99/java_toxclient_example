@@ -97,7 +97,6 @@ import javax.swing.text.StyleContext;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
-import static com.zoffcc.applications.trifa.AudioSelectOutBox.pcm_wave_play;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_active_threads;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_max_active_threads;
@@ -1709,6 +1708,7 @@ public class MainActivity extends JFrame
                 // Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
                 set_audio_out_bar_level((int) global_audio_out_vu_);
 
+                /*
                 if (sample_count > 1)
                 {
                     for (int i = 0; i < sample_count; i = i + 2)
@@ -1717,6 +1717,7 @@ public class MainActivity extends JFrame
                         pcm_wave_play.add_pcm((int) s);
                     }
                 }
+                */
             });
             t_audio_bar_set_play.start();
         }
