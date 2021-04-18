@@ -78,7 +78,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
             @Override
             public void run()
             {
-                this.setName("t_va_rec");
+                this.setName("t_a_rec");
 
                 int sample_count = 0;
                 int audio_send_res = 1;
