@@ -43,6 +43,8 @@ public class JPictureBox extends JComponent
         JPictureBox.this.setPreferredSize(dimension);
         JPictureBox.this.setOpaque(false);
         JPictureBox.this.setSizeMode(SizeMode.STRETCH);
+        setDoubleBuffered(true);
+        setIgnoreRepaint(true);
     }
 
     @Override
