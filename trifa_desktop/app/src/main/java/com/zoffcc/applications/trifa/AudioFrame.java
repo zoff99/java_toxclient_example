@@ -103,9 +103,9 @@ public class AudioFrame extends JFrame
         audio_panel.add(audio_out_text);
         audio_panel.add(audio_out_panel);
         audio_panel.add(audio_out_bar);
-        audio_panel.add(pcm_wave_rec);
+        // audio_panel.add(pcm_wave_rec);
         audio_panel.add(dummy);
-        audio_panel.add(pcm_wave_play);
+        // audio_panel.add(pcm_wave_play);
 
         audio_in_select = new AudioSelectInBox();
         audio_in_panel.add(audio_in_refesh);
