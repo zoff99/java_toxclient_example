@@ -1,12 +1,12 @@
 #! /bin/bash
 
-_HOME2_=$(dirname $0)
+_HOME2_=$(dirname "$0")
 export _HOME2_
-_HOME_=$(cd $_HOME2_;pwd)
+_HOME_=$(cd "$_HOME2_" || exit;pwd)
 export _HOME_
 
-echo $_HOME_
-cd $_HOME_
+echo "$_HOME_"
+cd "$_HOME_" || exit
 
 
 build_for='ubuntu:16.04
@@ -20,20 +20,20 @@ for system_to_build_for in $build_for ; do
     system_to_build_for_orig="$system_to_build_for"
     system_to_build_for=$(echo "$system_to_build_for_orig" 2>/dev/null|tr ':' '_' 2>/dev/null)"_linux"
 
-    cd $_HOME_/
-    mkdir -p $_HOME_/"$system_to_build_for"/
+    cd "$_HOME_"/ || exit
+    mkdir -p "$_HOME_"/"$system_to_build_for"/
 
     # rm -Rf $_HOME_/"$system_to_build_for"/script 2>/dev/null
     # rm -Rf $_HOME_/"$system_to_build_for"/workspace 2>/dev/null
 
-    mkdir -p $_HOME_/"$system_to_build_for"/artefacts
-    mkdir -p $_HOME_/"$system_to_build_for"/script
-    mkdir -p $_HOME_/"$system_to_build_for"/workspace
+    mkdir -p "$_HOME_"/"$system_to_build_for"/artefacts
+    mkdir -p "$_HOME_"/"$system_to_build_for"/script
+    mkdir -p "$_HOME_"/"$system_to_build_for"/workspace
 
-    ls -al $_HOME_/"$system_to_build_for"/
+    ls -al "$_HOME_"/"$system_to_build_for"/
 
-    rsync -a ../ --exclude=.localrun $_HOME_/"$system_to_build_for"/workspace/data
-    chmod a+rwx -R $_HOME_/"$system_to_build_for"/workspace/data
+    rsync -a ../ --exclude=.localrun "$_HOME_"/"$system_to_build_for"/workspace/data
+    chmod a+rwx -R "$_HOME_"/"$system_to_build_for"/workspace/data
 
     echo '#! /bin/bash
 
@@ -136,17 +136,17 @@ fi
 #------------------------
 
 
-' > $_HOME_/"$system_to_build_for"/script/run.sh
+' > "$_HOME_"/"$system_to_build_for"/script/run.sh
 
 if [ "$1""x" == "localx" ]; then
     echo " ******* LOCAL *******"
     echo " ******* LOCAL *******"
     echo " ******* LOCAL *******"
     docker run -ti --rm \
-      -v $_HOME_/"$system_to_build_for"/artefacts:/artefacts \
-      -v $_HOME_/"$system_to_build_for"/script:/script \
-      -v $_HOME_/"$system_to_build_for"/workspace:/workspace \
-      -v $_HOME_/"$system_to_build_for"/c-toxcore:/c-toxcore \
+      -v "$_HOME_"/"$system_to_build_for"/artefacts:/artefacts \
+      -v "$_HOME_"/"$system_to_build_for"/script:/script \
+      -v "$_HOME_"/"$system_to_build_for"/workspace:/workspace \
+      -v "$_HOME_"/"$system_to_build_for"/c-toxcore:/c-toxcore \
       --net=host \
      "$system_to_build_for_orig" \
      /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh local"
@@ -158,9 +158,9 @@ if [ "$1""x" == "localx" ]; then
      fi
 else
     docker run -ti --rm \
-      -v $_HOME_/"$system_to_build_for"/artefacts:/artefacts \
-      -v $_HOME_/"$system_to_build_for"/script:/script \
-      -v $_HOME_/"$system_to_build_for"/workspace:/workspace \
+      -v "$_HOME_"/"$system_to_build_for"/artefacts:/artefacts \
+      -v "$_HOME_"/"$system_to_build_for"/script:/script \
+      -v "$_HOME_"/"$system_to_build_for"/workspace:/workspace \
       --net=host \
      "$system_to_build_for_orig" \
      /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh"
