@@ -38,6 +38,7 @@ import static com.zoffcc.applications.trifa.MainActivity.PREF__audio_play_volume
 import static com.zoffcc.applications.trifa.MainActivity.VideoInFrame1;
 import static com.zoffcc.applications.trifa.MainActivity.addKeyBinding;
 import static com.zoffcc.applications.trifa.MainActivity.set_audio_play_volume_percent;
+import static com.zoffcc.applications.trifa.MainActivity.tox_set_onion_active;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
@@ -415,6 +416,8 @@ public class VideoInFrame extends JFrame
             }
         });
 
+        tox_set_onion_active(0);
+
         try
         {
             set_audio_play_volume_percent(PREF__audio_play_volume_percent);
@@ -460,6 +463,7 @@ public class VideoInFrame extends JFrame
         });
 
         Callstate.reset_values();
+        tox_set_onion_active(1);
 
         // reset audio play format
         change_audio_format((int) AudioSelectOutBox.SAMPLE_RATE_DEFAULT, AudioSelectOutBox.CHANNELS_DEFAULT);
