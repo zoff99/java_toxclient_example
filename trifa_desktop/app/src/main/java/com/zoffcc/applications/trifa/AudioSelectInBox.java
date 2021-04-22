@@ -58,8 +58,10 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
     static PCMWaveFormDisplay pcm_wave_rec = null;
 
     final int AUDIO_REC_SAMPLE_RATE = 48000;
-    final int AUDIO_REC_CHANNELS = 2;
+    final int AUDIO_REC_CHANNELS = 1;
     final int AUDIO_REC_SAMPLE_SIZE_BIT = 16;
+
+    public final static int audio_rec_buf_ms = 40; // fixed ms interval for outgoing audio
 
     public AudioSelectInBox()
     {
