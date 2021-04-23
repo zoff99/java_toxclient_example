@@ -2888,13 +2888,7 @@ public class MainActivity extends JFrame
                         {
                             e2.printStackTrace();
                         }
-                        if (!check_auto_accept_incoming_filetransfer(m2))
-                        {
-                            // TODO: every non-auto-accept-file transfer will be canceled for now
-                            //       write me!!
-                            tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
-                            update_single_message_from_messge_id(m2.id, true);
-                        }
+                        check_auto_accept_incoming_filetransfer(m2);
                     }
                 };
                 t.start();

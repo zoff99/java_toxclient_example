@@ -191,7 +191,8 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         if (m.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
         {
-            if ((m.filedb_id > 0) && (m.direction == 0))
+            // FT done
+            if (m.filedb_id > 0)
             {
                 // FT complete, file is here
                 progress_bar.setValue(1000);
@@ -230,50 +231,13 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                 add(progress_bar);
                 progress_bar.setMaximum(1000);
             }
-            else if ((m.filedb_id > 0) && (m.direction == 1))
-            {
-                // FT complete, file is here
-                progress_bar.setValue(1000);
-
-                if (file_is_image(m.filename_fullpath))
-                {
-                    // show image on component
-
-                    try
-                    {
-                        BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                        Dimension newMaxSize = new Dimension(80, 80);
-                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.QUALITY, newMaxSize.width,
-                                                                newMaxSize.height);
-                        message_image.setImage(resizedImg);
-
-                        if (m.direction == 0)
-                        {
-                            message_image_label_line.setBackground(CHAT_MSG_BG_OTHER_COLOR);
-                        }
-                        else
-                        {
-                            message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
-                        }
-
-                        message_image_label.setIcon(message_image);
-                        add(message_image_label_line);
-                        message_image_label_line.add(message_image_label);
-                        message_image_label_line.setBorder(new EmptyBorder(new Insets(-5, -5, -5, -5)));
-                    }
-                    catch (Exception ie)
-                    {
-                    }
-                }
-
-                add(progress_bar);
-                progress_bar.setMaximum(1000);
-            }
+            // FT not done (meaning [not started] or [in progress] or [canceled])
             else
             {
                 add(progress_bar);
                 progress_bar.setMaximum(1000);
 
+                // FT is image and direction outgoing
                 if (file_is_image(m.filename_fullpath) && (m.direction == 1))
                 {
                     // show image on component
@@ -284,16 +248,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                         BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.QUALITY, newMaxSize.width,
                                                                 newMaxSize.height);
                         message_image.setImage(resizedImg);
-
-                        if (m.direction == 0)
-                        {
-                            message_image_label_line.setBackground(CHAT_MSG_BG_OTHER_COLOR);
-                        }
-                        else
-                        {
-                            message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
-                        }
-
+                        message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
                         message_image_label.setIcon(message_image);
                         add(message_image_label_line);
                         message_image_label_line.add(message_image_label);
@@ -304,6 +259,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     }
                 }
 
+                // FT is direction outgoing
                 if (m.direction == 1)
                 {
                     try
@@ -359,9 +315,58 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                         e.printStackTrace();
                     }
                 }
+                // FT is direction incoming
+                else if (m.direction == 0)
+                {
+                    try
+                    {
+                        if (m.state == TOX_FILE_CONTROL_PAUSE.value)
+                        {
+                            m._swing_ok = ok_button;
+                            m._swing_cancel = cancel_button;
+
+                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+                            ok_button.setBackground(newColorWithAlpha(Color.decode("0x389A3A"), 150));
+                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+                            cancel_button.setBackground(newColorWithAlpha(Color.decode("0xFE2424"), 150));
+
+                            cancel_button.setVisible(true);
+
+                            ok_button.setVisible(true);
+                            button_line.add(ok_button);
+
+                            button_line.add(cancel_button);
+                            add(button_line);
+                            button_line.setVisible(true);
+                        }
+                        else if (m.state == TOX_FILE_CONTROL_RESUME.value)
+                        {
+                            m._swing_ok = null;
+                            m._swing_cancel = cancel_button;
+
+                            ok_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+                            ok_button.setBackground(newColorWithAlpha(Color.decode("0x389A3A"), 150));
+                            cancel_button.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
+                            cancel_button.setBackground(newColorWithAlpha(Color.decode("0xFE2424"), 150));
+                            // ***
+                            ok_button.setVisible(false);
+                            button_line.remove(ok_button);
+                            // ***
+                            cancel_button.setVisible(true);
+                            button_line.add(cancel_button);
+                            add(button_line);
+                            button_line.setVisible(true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
 
                 try
                 {
+                    // FT is in progress (update progress bar)
                     if ((m.filetransfer_id > 0) && (m.state == TOX_FILE_CONTROL_RESUME.value))
                     {
                         Filetransfer ft = orma.selectFromFiletransfer().idEq(m.filetransfer_id).toList().get(0);
@@ -378,6 +383,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                             progress_bar.setValue((int) progress_1000);
                         }
                     }
+                    // FT is NOT in progress (set progress bar to zero)
                     else
                     {
                         progress_bar.setValue(0);
