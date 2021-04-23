@@ -3,6 +3,7 @@ package com.zoffcc.applications.trifa;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -77,18 +78,74 @@ public class OrmaDatabase
         return results;
     }
 
-    public static void update_db()
+    public static int get_current_db_version()
     {
+        int ret = 0;
+
         try
         {
-            final String update_001 = "CREATE UNIQUE INDEX ux_tox_public_key_string_of_owner ON RelayListDB(tox_public_key_string_of_owner);";
-            run_multi_sql(update_001);
+            Statement statement = sqldb.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "select db_version from orma_schema order by db_version desc limit 1");
+            if (rs.next())
+            {
+                ret = rs.getInt("db_version");
+            }
+
+            return ret;
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            ret = 0;
+
+            try
+            {
+                final String update_001 = "CREATE TABLE orma_schema (db_version INTEGER NOT NULL);";
+                run_multi_sql(update_001);
+                final String update_002 = "insert into orma_schema values ('0');";
+                run_multi_sql(update_002);
+            }
+            catch (Exception e2)
+            {
+                e2.printStackTrace();
+            }
         }
 
+        return ret;
+    }
+
+    public static void set_new_db_version(int new_version)
+    {
+        try
+        {
+            final String update_001 = "update orma_schema set db_version='" + new_version + "';";
+            run_multi_sql(update_001);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+        }
+    }
+
+    public static int update_db(int current_db_version)
+    {
+        if (current_db_version < 1)
+        {
+            try
+            {
+                final String update_001 = "CREATE UNIQUE INDEX ux_tox_public_key_string_of_owner ON RelayListDB(tox_public_key_string_of_owner);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 1;
+        set_new_db_version(new_db_version);
+        // return the updated DB VERSION
+        return new_db_version;
     }
 
     public static void create_db()

@@ -109,7 +109,6 @@ import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
-import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
@@ -120,6 +119,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.global_typing;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
+import static com.zoffcc.applications.trifa.OrmaDatabase.get_current_db_version;
 import static com.zoffcc.applications.trifa.OrmaDatabase.update_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
@@ -201,6 +201,7 @@ public class MainActivity extends JFrame
     static Semaphore semaphore_tox_savedata = new Semaphore(1);
 
     static Connection sqldb = null;
+    static int current_db_version = 0;
 
     static JFrame MainFrame = null;
     static VideoInFrame VideoInFrame1 = null;
@@ -1114,8 +1115,11 @@ public class MainActivity extends JFrame
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
+        current_db_version = get_current_db_version();
+        Log.i(TAG, "trifa:current_db_version=" + current_db_version);
         create_db();
-        update_db();
+        current_db_version = update_db(current_db_version);
+        Log.i(TAG, "trifa:new_db_version=" + current_db_version);
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
