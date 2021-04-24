@@ -149,7 +149,7 @@ public class FriendListFragmentJ extends JPanel
                         {
                             if (c_fac.friend_item.tox_public_key_string.length() > 1)
                             {
-                                String new_alias_name = set_aliasname_panel.getText("New Alias Name");
+                                String new_alias_name = set_aliasname_panel.getText("panel_" + "new_alias_name");
                                 if ((new_alias_name != null) && (new_alias_name.length() > 0))
                                 {
                                     // set new aliaa name
@@ -640,7 +640,7 @@ public class FriendListFragmentJ extends JPanel
 
                 JTextField textField = new JTextField(COLS);
                 textField.setText(get_friend_name_from_pubkey(friend_pubkey));
-                labelFieldMap.put(labelTxt, textField);
+                labelFieldMap.put("panel_" + LABEL_TEXTS[i], textField);
                 add(textField, createGbc(1, i));
             }
 
