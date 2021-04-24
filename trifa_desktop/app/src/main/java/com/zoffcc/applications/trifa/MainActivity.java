@@ -484,7 +484,7 @@ public class MainActivity extends JFrame
         FriendAddToxID = new JTextField("");
         FriendAddToxID.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         FriendAddPanel.add(FriendAddToxID);
-        FriendAddButton = new JButton("add Friend");
+        FriendAddButton = new JButton(lo.getString("add_friend_button_text"));
         FriendAddButton.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         FriendAddPanel.add(FriendAddButton);
 
@@ -798,14 +798,14 @@ public class MainActivity extends JFrame
 
         // ------------ Main Menu ----------
         JMenuBar main_menu = new JMenuBar();
-        JMenu m1 = new JMenu("FILE");
+        JMenu m1 = new JMenu(lo.getString("menu_file"));
         m1.setFont(new java.awt.Font("SansSerif", PLAIN, TTF_FONT_FAMILY_MENU_SIZE));
 
         main_menu.add(m1);
         this.setJMenuBar(main_menu);
 
         // -------
-        JMenuItem m11 = new JMenuItem(new AbstractAction("Settings")
+        JMenuItem m11 = new JMenuItem(new AbstractAction(lo.getString("menu_settings"))
         {
             public void actionPerformed(ActionEvent e)
             {
@@ -818,7 +818,7 @@ public class MainActivity extends JFrame
         m1.add(m11);
         // -------
         // -------
-        JMenuItem m12 = new JMenuItem(new AbstractAction("Exit")
+        JMenuItem m12 = new JMenuItem(new AbstractAction(lo.getString("menu_exit"))
         {
             public void actionPerformed(ActionEvent e)
             {

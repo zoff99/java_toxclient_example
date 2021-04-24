@@ -626,7 +626,7 @@ public class FriendListFragmentJ extends JPanel
 
     public class ComplexDialogPanel extends JPanel
     {
-        public final String[] LABEL_TEXTS = {"New Alias Name"};
+        public final String[] LABEL_TEXTS = {"new_alias_name"};
         public static final int COLS = 8;
         private Map<String, JTextField> labelFieldMap = new HashMap<>();
 
@@ -635,7 +635,7 @@ public class FriendListFragmentJ extends JPanel
             setLayout(new GridBagLayout());
             for (int i = 0; i < LABEL_TEXTS.length; i++)
             {
-                String labelTxt = LABEL_TEXTS[i];
+                String labelTxt = lo.getString("panel_" + LABEL_TEXTS[i]);
                 add(new JLabel(labelTxt), createGbc(0, i));
 
                 JTextField textField = new JTextField(COLS);
