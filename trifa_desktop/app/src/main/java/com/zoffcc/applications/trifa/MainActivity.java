@@ -286,6 +286,8 @@ public class MainActivity extends JFrame
     {
         super("TRIfA - Desktop - " + Version + "   ");
 
+        // Thread.currentThread().setName("t_main_act");
+
         try
         {
             // UIManager.getLookAndFeelDefaults().put("defaultFont", new Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
@@ -1176,8 +1178,12 @@ public class MainActivity extends JFrame
             e.printStackTrace();
         }
 
+        // ---------------------------------------------
         // java.awt.EventQueue.invokeLater(() -> new MainActivity().setVisible(true));
         new MainActivity();
+        // final Thread main_t = new Thread(MainActivity::new);
+        // main_t.start();
+        // ---------------------------------------------
 
         String my_tox_id_temp = get_my_toxid();
         Log.i(TAG, "MyToxID:" + my_tox_id_temp);
@@ -1196,6 +1202,14 @@ public class MainActivity extends JFrame
                 }
             });
             t_screengrab.start();
+        }
+
+        try
+        {
+            Thread.currentThread().setName("t_main");
+        }
+        catch (Exception e)
+        {
         }
     }
 
