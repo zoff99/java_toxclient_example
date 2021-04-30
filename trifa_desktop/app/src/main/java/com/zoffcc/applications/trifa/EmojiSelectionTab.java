@@ -19,6 +19,9 @@
 
 package com.zoffcc.applications.trifa;
 
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
+
 import org.w3c.dom.Document;
 
 import java.awt.Dimension;
@@ -27,6 +30,8 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -52,6 +57,9 @@ public class EmojiSelectionTab extends JFrame
     private static final String TAG = "trifa.EmojiSelectionTab";
 
     private static final String EMOJI_GROUP_FILE_SHA256SUM = "57nrWKpiKdhyY9RuGPtiQDjqB4wK1Z271pZDzgHI67U=";
+
+    //Collection of all the Emoji objects from com.vdurmont.emoji.Emoji
+    private static final Collection<Emoji> allEmojis = EmojiManager.getAll();
 
     public static int width = 590;
     public static int height = 114;
@@ -145,6 +153,19 @@ public class EmojiSelectionTab extends JFrame
                 {
                     // Log.i(TAG, "emoji=X" + cur_emoji + "Y " + cur_emoji.length());
                     JButton b = new JButton(cur_emoji);
+
+                    Iterator<Emoji> it = allEmojis.iterator();
+                    while (it.hasNext())
+                    {
+                        Emoji e = it.next();
+                        if (e.getUnicode().equalsIgnoreCase(cur_emoji))
+                        {
+                            b.setToolTipText(e.getDescription());
+                            // Log.i(TAG, "e.getUnicode=" + e.getUnicode() + " " + e.getDescription());
+                            break;
+                        }
+                    }
+
                     b.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE));
                     b.setPreferredSize(new Dimension((width - 10) / 8, TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE + 8));
 
