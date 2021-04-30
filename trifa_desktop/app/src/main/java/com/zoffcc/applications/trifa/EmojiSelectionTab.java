@@ -40,6 +40,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import static com.zoffcc.applications.trifa.HelperOSFile.sha256sum_of_file;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALL_SIZE;
@@ -49,6 +50,8 @@ import static java.awt.Font.PLAIN;
 public class EmojiSelectionTab extends JFrame
 {
     private static final String TAG = "trifa.EmojiSelectionTab";
+
+    private static final String EMOJI_GROUP_FILE_SHA256SUM = "57nrWKpiKdhyY9RuGPtiQDjqB4wK1Z271pZDzgHI67U=";
 
     public static int width = 590;
     public static int height = 114;
@@ -70,15 +73,30 @@ public class EmojiSelectionTab extends JFrame
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(new File("assets/emoji_grouping.xml"));
-            doc.getDocumentElement().normalize();
-            Log.i(TAG, "Root Element :" + doc.getDocumentElement().getNodeName());
-            Log.i(TAG, "------");
-            Log.i(TAG, "keys:" + doc.getElementsByTagName("key").getLength());
-            for (int i = 0; i < doc.getElementsByTagName("key").getLength(); i++)
+
+            String asset_filename = "." + File.separator + "assets" + File.separator + "emoji_grouping.xml";
+            String sha256sum_of_file = sha256sum_of_file(asset_filename);
+            Log.i(TAG, "EmojiSelectionTab:sha256sum_of_file=" + sha256sum_of_file);
+            // TODO: on some windows systems the checksum does not seem to match?
+            // maybe "\r\n" or the file is not read as UTF-8 ?
+            if ((sha256sum_of_file.equals(EMOJI_GROUP_FILE_SHA256SUM)) ||
+                (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS))
             {
-                Log.i(TAG, "key:#" + i + ":" + doc.getElementsByTagName("key").item(i).getTextContent());
-                tabbedPane.addTab(doc.getElementsByTagName("key").item(i).getTextContent(), makePanel(doc, i));
+                Document doc = db.parse(new File(asset_filename));
+                doc.getDocumentElement().normalize();
+                //Log.i(TAG, "Root Element :" + doc.getDocumentElement().getNodeName());
+                //Log.i(TAG, "------");
+                //Log.i(TAG, "keys:" + doc.getElementsByTagName("key").getLength());
+                for (int i = 0; i < doc.getElementsByTagName("key").getLength(); i++)
+                {
+                    //Log.i(TAG, "key:#" + i + ":" + doc.getElementsByTagName("key").item(i).getTextContent());
+                    tabbedPane.addTab(doc.getElementsByTagName("key").item(i).getTextContent(), makePanel(doc, i));
+                }
+            }
+            else
+            {
+                Log.i(TAG, "EmojiSelectionTab:input file sha256 hash does not match!");
+                System.exit(5);
             }
         }
         catch (Exception e)
