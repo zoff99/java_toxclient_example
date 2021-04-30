@@ -135,7 +135,7 @@ public class EmojiSelectionTab extends JFrame
                         @Override
                         public void mousePressed(MouseEvent me)
                         {
-                            if (me.getClickCount() == 2)
+                            if (me.getClickCount() == 1)
                             {
                                 try
                                 {
