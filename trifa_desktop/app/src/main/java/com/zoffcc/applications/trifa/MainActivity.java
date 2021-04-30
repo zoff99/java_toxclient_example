@@ -1155,7 +1155,7 @@ public class MainActivity extends JFrame
             // File file = new File("assets/OpenSansEmoji.ttf");
             // File file = new File("assets/TwitterColorEmoji-SVGinOT.ttf");
             //**// File file = new File("assets/TwitterColorEmoji-SVGinOT-OSX.ttf");
-            File file = new File("assets/" + TTF_FONT_FILENAME);
+            File file = new File("." + File.separator + "assets" + File.separator + TTF_FONT_FILENAME);
             Font font = Font.createFont(Font.TRUETYPE_FONT, file);
 
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
