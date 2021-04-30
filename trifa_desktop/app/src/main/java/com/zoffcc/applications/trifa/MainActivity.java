@@ -208,7 +208,7 @@ public class MainActivity extends JFrame
     static VideoOutFrame VideoOutFrame1 = null;
     static AudioFrame AudioFrame1 = null;
 
-    static EmojiFrame EmojiFrame1 = null;
+    static EmojiSelectionTab EmojiFrame1 = null;
     static JSplitPane splitPane = null;
     static FriendListFragmentJ FriendPanel;
     static JPanel leftPanel = null;
@@ -358,7 +358,7 @@ public class MainActivity extends JFrame
         VideoInFrame1 = new VideoInFrame();
         VideoOutFrame1 = new VideoOutFrame();
         AudioFrame1 = new AudioFrame();
-        EmojiFrame1 = new EmojiFrame();
+        EmojiFrame1 = new EmojiSelectionTab();
 
         setLayout(new FlowLayout());
         setSize(600, 400);
