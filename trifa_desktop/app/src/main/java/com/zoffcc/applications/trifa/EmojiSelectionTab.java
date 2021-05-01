@@ -48,7 +48,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import static com.zoffcc.applications.trifa.HelperOSFile.sha256sum_of_file;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE;
-import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALL_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_SMALLER_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static java.awt.Font.PLAIN;
 
@@ -61,8 +61,11 @@ public class EmojiSelectionTab extends JFrame
     //Collection of all the Emoji objects from com.vdurmont.emoji.Emoji
     private static final Collection<Emoji> allEmojis = EmojiManager.getAll();
 
-    public static int width = 590;
+    public static int width = 580;
     public static int height = 114;
+
+    static int tabheader_height = 50;
+    static final int emoji_columns = 5;
 
     public EmojiSelectionTab()
     {
@@ -71,10 +74,20 @@ public class EmojiSelectionTab extends JFrame
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         UIDefaults def = UIManager.getLookAndFeelDefaults();
-        // def.put("TabbedPane.tabInsets", new Insets(0, 0, 0, 0));
+        // def.put("TabbedPane.tabInsets", new Insets(0, 10, 0, 0));
         // def.put("TabbedPane.selectedTabPadInsets", new Insets(0, 0, 0, 0));
 
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        /*
+        tabbedPane.setUI(new BasicTabbedPaneUI()
+        {
+            @Override
+            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight)
+            {
+                return TTF_FONT_FAMILY_NAME_SMALLER_SIZE * 2;
+            }
+        });
+         */
 
         try
         {
@@ -112,12 +125,19 @@ public class EmojiSelectionTab extends JFrame
             Log.i(TAG, "EE:" + e.getMessage());
         }
 
-        tabbedPane.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
-        setPreferredSize(new Dimension(width, height + 55));
+        tabbedPane.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_SMALLER_SIZE));
 
         this.add(tabbedPane);
         this.pack();
         this.setVisible(true);
+
+        Log.i(TAG, "EmojiSelectionTab:" + tabbedPane.getBoundsAt(0));
+        Log.i(TAG, "EmojiSelectionTab:" + tabbedPane.getBoundsAt(tabbedPane.getSelectedIndex()));
+        tabheader_height = tabbedPane.getBoundsAt(tabbedPane.getSelectedIndex()).height;
+        Log.i(TAG, "EmojiSelectionTab:tabheader_height=" + tabheader_height);
+
+        // tabbedPane.setPreferredSize(new Dimension(width, height + tabheader_height));
+        // setPreferredSize(new Dimension(width, height + tabheader_height));
     }
 
     private static JPanel makePanel(Document doc1, int index)
@@ -126,10 +146,11 @@ public class EmojiSelectionTab extends JFrame
         JPanel inner_panel = new JPanel(true);
 
         JScrollPane scrollPane1 = new JScrollPane();
-        scrollPane1.setPreferredSize(new Dimension(width, height));
+        scrollPane1.setPreferredSize(new Dimension(width, height - tabheader_height));
         scrollPane1.add(inner_panel);
         scrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane1.setViewportView(inner_panel);
+        scrollPane1.setDoubleBuffered(true);
         p.add(scrollPane1);
 
         int count_emojis_in_this_category_actual = 0;
@@ -167,7 +188,8 @@ public class EmojiSelectionTab extends JFrame
                     }
 
                     b.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE));
-                    b.setPreferredSize(new Dimension((width - 10) / 8, TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE + 8));
+                    b.setPreferredSize(
+                            new Dimension((width / emoji_columns)-8, TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE + 8));
 
                     b.addMouseListener(new MouseAdapter()
                     {
@@ -193,8 +215,10 @@ public class EmojiSelectionTab extends JFrame
             }
         }
 
-        inner_panel.setLayout(new GridLayout((count_emojis_in_this_category_actual / 8) + 1, 8));
-        p.setPreferredSize(new Dimension(width, height));
+        inner_panel.setLayout(
+                new GridLayout((count_emojis_in_this_category_actual / emoji_columns) + 1, emoji_columns));
+        scrollPane1.setPreferredSize(
+                new Dimension(width, ((TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE + 8) * 5) - tabheader_height));
         return p;
     }
 

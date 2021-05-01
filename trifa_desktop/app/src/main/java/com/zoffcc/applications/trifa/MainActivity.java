@@ -266,6 +266,7 @@ public class MainActivity extends JFrame
     final static String TTF_FONT_FAMILY_NAME = "TBitstream Vera Sans"; // "TDejaVuSans";
     final static int TTF_FONT_FAMILY_NAME_REGULAR_SIZE = 14;
     final static int TTF_FONT_FAMILY_NAME_SMALL_SIZE = 12;
+    final static int TTF_FONT_FAMILY_NAME_SMALLER_SIZE = 9;
     final static int TTF_FONT_FAMILY_BUTTON_SIZE = 10;
     final static int TTF_FONT_FAMILY_MSG_DATE_SIZE = 10;
     final static int TTF_FONT_FAMILY_NAME_EMOJI_REGULAR_SIZE = 20;
@@ -847,7 +848,7 @@ public class MainActivity extends JFrame
         AudioFrame1.setLocation(bounds3.x, bounds3.y + bounds3.height);
 
         EmojiFrame1.setLocationRelativeTo(null);
-        final Rectangle bounds4 = EmojiFrame1.getBounds();
+        // final Rectangle bounds4 = EmojiFrame1.getBounds();
         EmojiFrame1.setLocation(bounds.x, bounds.y + bounds.height);
 
         EventQueue.invokeLater(() -> {
