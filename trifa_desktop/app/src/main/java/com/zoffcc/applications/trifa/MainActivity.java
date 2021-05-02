@@ -433,6 +433,7 @@ public class MainActivity extends JFrame
         messageInputTextField.setFont(
                 new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
         Action action = messageInputTextField.getActionMap().get("paste-from-clipboard");
+        // messageInputTextField.setLineWrap(true);
         messageInputTextField.getActionMap().put("paste-from-clipboard", new ProxyPasteAction(action));
         //messageInputTextField.setTransferHandler(new ImageTransferHandler(messageInputTextField));
         //messageInputTextField.setDropMode(DropMode.INSERT);
