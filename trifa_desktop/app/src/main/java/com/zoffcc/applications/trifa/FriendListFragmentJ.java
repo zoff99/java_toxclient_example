@@ -65,6 +65,7 @@ import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_NAME_DISPLAY_MENU_MAXLEN;
@@ -78,7 +79,7 @@ public class FriendListFragmentJ extends JPanel
 {
     private static final String TAG = "trifa.FriendListFrgnt";
 
-    private final JList<CombinedFriendsAndConferences> friends_and_confs_list;
+    private static JList<CombinedFriendsAndConferences> friends_and_confs_list;
     static DefaultListModel<CombinedFriendsAndConferences> friends_and_confs_list_model;
     JScrollPane FriendScrollPane;
     static JPopupMenu popup;
@@ -270,10 +271,14 @@ public class FriendListFragmentJ extends JPanel
                         String pk = friends_and_confs_list_model.elementAt(
                                 friends_and_confs_list.getSelectedIndex()).friend_item.tox_public_key_string;
 
-                        // friends_and_confs_list.clearSelection();
-
                         if (pk.length() == (TOX_PUBLIC_KEY_SIZE * 2))
                         {
+                            if ((current_pk != null) && (pk.compareTo(current_pk) == 0))
+                            {
+                                // this friend is already selected
+                                Log.i(TAG, "this friend is already selected");
+                                return;
+                            }
 
                             set_message_panel(1);
 
@@ -390,6 +395,23 @@ public class FriendListFragmentJ extends JPanel
         }
     }
 
+    synchronized static void fix_selected_item()
+    {
+        try
+        {
+            if (current_pk != null)
+            {
+                friends_and_confs_list.clearSelection();
+                int pos = find_friend_pubkey_in_friend_list(current_pk);
+                Log.i(TAG, "fix_selected_item=" + pos);
+                friends_and_confs_list.setSelectedIndex(pos);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+    }
+
     synchronized static void add_all_friends_clear(final int delay)
     {
         // Log.i(TAG, "add_all_friends_clear");
@@ -488,6 +510,8 @@ public class FriendListFragmentJ extends JPanel
                     }
                 }
             }
+
+            fix_selected_item();
         }
         catch (Exception e)
         {
@@ -576,6 +600,28 @@ public class FriendListFragmentJ extends JPanel
             }
 
         }
+    }
+
+    private static int find_friend_pubkey_in_friend_list(String pubkey)
+    {
+        int ret = -1;
+
+        Iterator<CombinedFriendsAndConferences> it = friends_and_confs_list_model.elements().asIterator();
+        while (it.hasNext())
+        {
+            CombinedFriendsAndConferences f_combined = (CombinedFriendsAndConferences) it.next();
+            if (f_combined.is_friend)
+            {
+                FriendList f = f_combined.friend_item;
+                if (f.tox_public_key_string.equals(pubkey))
+                {
+                    ret = friends_and_confs_list_model.indexOf(f_combined);
+                    break;
+                }
+            }
+        }
+
+        return ret;
     }
 
     private boolean update_item(CombinedFriendsAndConferences new_item_combined, boolean is_friend)
