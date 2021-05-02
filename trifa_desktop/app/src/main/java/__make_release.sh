@@ -43,5 +43,5 @@ cp -a \
   release/ || exit 1
 
 
-cd release && zip -r trifa_desktop_1.0.xx.zip *
+cd release && zip -r ../releases/trifa_desktop_1.0.xx.zip *
 
