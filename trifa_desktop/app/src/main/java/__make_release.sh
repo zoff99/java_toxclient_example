@@ -25,7 +25,7 @@ cp -a \
   bridj-0.7.0.jar \
   slf4j-api-1.7.2.jar \
   webcam-capture-0.3.12.jar \
-  sqlite-jdbc-3.32.3.2.jar \
+  sqlite-jdbc-*.jar \
   flatlaf-1.0.jar \
   \
   jni-c-toxcore.dll \
