@@ -2847,6 +2847,7 @@ public class MainActivity extends JFrame
             m.state = TOX_FILE_CONTROL_PAUSE.value;
             m.ft_accepted = false;
             m.ft_outgoing_started = false; // dummy for incoming FTs, but still set it here
+            m.ft_outgoing_queued = false;
             m.rcvd_timestamp = System.currentTimeMillis();
             m.sent_timestamp = m.rcvd_timestamp;
             m.text = filename_corrected + "\n" + file_size + " bytes";

@@ -119,6 +119,9 @@ public class Message
     @Column(indexed = true, defaultExpr = "2")
     int resend_count; // 2 -> do not resend msg anymore, 0 or 1 -> resend count
 
+    @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
+    boolean ft_outgoing_queued = false;
+
     // ------- SWING UI elements ------- //
     JButton _swing_ok = null;
     JButton _swing_cancel = null;
@@ -151,6 +154,7 @@ public class Message
         out.msg_version = in.msg_version;
         out.raw_msgv2_bytes = in.raw_msgv2_bytes;
         out.resend_count = in.resend_count;
+        out.ft_outgoing_queued = in.ft_outgoing_queued;
 
         return out;
     }
@@ -164,7 +168,8 @@ public class Message
                ", sent_timestamp=" + sent_timestamp + ", rcvd_timestamp=" + rcvd_timestamp + ", read=" + read +
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
-               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx";
+               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" + ", ft_outgoing_queued=" +
+               ft_outgoing_queued;
     }
 
     String sql_start = "";
@@ -215,6 +220,7 @@ public class Message
                 out.msg_version = rs.getInt("msg_version");
                 out.raw_msgv2_bytes = rs.getString("raw_msgv2_bytes");
                 out.resend_count = rs.getInt("resend_count");
+                out.ft_outgoing_queued = rs.getBoolean("ft_outgoing_queued");
 
                 if (list == null)
                 {
@@ -264,7 +270,8 @@ public class Message
                                  "msg_id_hash," +
                                  "msg_version," +
                                  "raw_msgv2_bytes," +
-                                 "resend_count" +
+                                 "resend_count," +
+                                 "ft_outgoing_queued" +
                                  ")" +
                                  "values" +
                                  "(" +
@@ -290,7 +297,8 @@ public class Message
                                  "'"+s(this.msg_id_hash)+"'," +
                                  "'"+s(this.msg_version)+"'," +
                                  "'"+s(this.raw_msgv2_bytes)+"'," +
-                                 "'"+s(this.resend_count)+"'" +
+                                 "'"+s(this.resend_count)+"'," +
+                                 "'"+b(this.ft_outgoing_queued)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -689,6 +697,26 @@ public class Message
             this.sql_set = this.sql_set + " , ";
         }
         this.sql_set = this.sql_set + " is_new='" + b(is_new) + "' ";
+        return this;
+    }
+
+    public Message ft_outgoing_queued(boolean ft_outgoing_queued)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " ft_outgoing_queued='" + b(ft_outgoing_queued) + "' ";
+        return this;
+    }
+
+    public Message ft_outgoing_queuedEq(boolean ft_outgoing_queued)
+    {
+        this.sql_where = this.sql_where + " and  ft_outgoing_queued='" + b(ft_outgoing_queued) + "' ";
         return this;
     }
 }

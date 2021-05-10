@@ -142,7 +142,22 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 1;
+        if (current_db_version < 2)
+        {
+            try
+            {
+                final String update_001 = "alter table Message add ft_outgoing_queued BOOLEAN NOT NULL DEFAULT false;" +
+                                          "\n"+
+                                          "CREATE INDEX index_ft_outgoing_queued_on_Message ON Message (ft_outgoing_queued);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 2;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;
@@ -176,6 +191,9 @@ public class OrmaDatabase
 
     }
 
+    /*
+     * Runs SQL statements that are seperated by ";" character
+     */
     public static void run_multi_sql(String sql_multi)
     {
         try

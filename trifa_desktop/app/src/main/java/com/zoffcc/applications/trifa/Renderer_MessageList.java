@@ -287,6 +287,12 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                                 button_line.add(ok_button);
                             }
 
+                            if (m.ft_outgoing_queued)
+                            {
+                                ok_button.setVisible(false);
+                                button_line.remove(ok_button);
+                            }
+
                             button_line.add(cancel_button);
                             add(button_line);
                             button_line.setVisible(true);

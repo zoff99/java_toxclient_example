@@ -406,6 +406,7 @@ public class HelperGeneric
             m.state = TOX_FILE_CONTROL_RESUME.value;
             m.ft_accepted = false;
             m.ft_outgoing_started = false;
+            m.ft_outgoing_queued = false;
             m.sent_timestamp = (ts_sec * 1000); // sent time as unix timestamp -> convert to milliseconds
             m.sent_timestamp_ms = ts_ms; // "ms" part of timestamp (could be just an increasing number)
             m.rcvd_timestamp = System.currentTimeMillis();
@@ -517,6 +518,7 @@ public class HelperGeneric
             m.state = TOX_FILE_CONTROL_RESUME.value;
             m.ft_accepted = false;
             m.ft_outgoing_started = false;
+            m.ft_outgoing_queued = false;
             m.sent_timestamp = (ts_sec * 1000); // sent time as unix timestamp -> convert to milliseconds
             m.sent_timestamp_ms = ts_ms; // "ms" part of timestamp (could be just an increasing number)
             m.rcvd_timestamp = System.currentTimeMillis();

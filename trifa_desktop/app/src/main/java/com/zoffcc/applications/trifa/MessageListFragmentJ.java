@@ -29,7 +29,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,7 +48,6 @@ import javax.swing.border.TitledBorder;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_filetransfer_filenum_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.insert_into_filetransfer_db;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_accepted_from_id;
-import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_start_sending_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_state_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.update_filetransfer_db_full;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
@@ -58,7 +56,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
-import static com.zoffcc.applications.trifa.HelperMessage.set_message_start_sending_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
@@ -68,7 +66,6 @@ import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
-import static com.zoffcc.applications.trifa.MainActivity.tox_file_send;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
@@ -77,7 +74,6 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MS
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
-import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
@@ -185,79 +181,20 @@ public class MessageListFragmentJ extends JPanel
                                         Log.i(TAG, "OK button pressed");
                                         button_pressed = true;
 
+                                        // queue FT
+                                        set_message_queueing_from_id(element.id, true);
                                         try
                                         {
-                                            // accept FT
-                                            set_message_start_sending_from_id(element.id);
-                                            set_filetransfer_start_sending_from_id(element.filetransfer_id);
-
-                                            try
-                                            {
-                                                element._swing_ok.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            // update message view
-                                            update_single_message_from_messge_id(element.id, true);
-
-                                            Filetransfer ft = orma.selectFromFiletransfer().
-                                                    idEq(element.filetransfer_id).
-                                                    orderByIdDesc().toList().get(0);
-
-                                            Log.i(TAG,
-                                                  "MM2MM:8:ft.filesize=" + ft.filesize + " ftid=" + ft.id + " ft.mid=" +
-                                                  ft.message_id + " mid=" + element.id);
-
-                                            // ------ DEBUG ------
-                                            Log.i(TAG, "MM2MM:8a:ft full=" + ft);
-                                            // ------ DEBUG ------
-
-                                            ByteBuffer file_id_buffer = ByteBuffer.allocateDirect(TOX_FILE_ID_LENGTH);
-                                            byte[] sha256_buf = TrifaSetPatternActivity.sha256(
-                                                    TrifaSetPatternActivity.StringToBytes2(
-                                                            "" + ft.path_name + ":" + ft.file_name + ":" +
-                                                            ft.filesize));
-
-                                            Log.i(TAG, "TOX_FILE_ID_LENGTH=" + TOX_FILE_ID_LENGTH + " sha_byte=" +
-                                                       sha256_buf.length);
-
-                                            file_id_buffer.put(sha256_buf);
-
-                                            // actually start sending the file to friend
-                                            long file_number = tox_file_send(
-                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
-                                                    ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value, ft.filesize,
-                                                    file_id_buffer, ft.file_name, ft.file_name.length());
-                                            // TODO: handle errors from tox_file_send() here -------
-
-                                            // @formatter:off
-                                            Log.D(TAG,
-                                                  "DEBUG_FT:OUT:file_chunk_request:file_number=" +
-                                                  file_number +
-                                                  " fn=" + tox_friend_by_public_key__wrapper(element.tox_friendpubkey) +
-                                                  " filetransfer_id=" + element.filetransfer_id+
-                                                  " pk="+element.tox_friendpubkey+
-                                                  " path_name="+ft.path_name+
-                                                  " file_name=" + ft.file_name
-                                            );
-                                            // @formatter:on
-
-                                            Log.i(TAG, "MM2MM:9:new filenum=" + file_number);
-
-                                            // update the tox file number in DB -----------
-                                            ft.file_number = file_number;
-                                            update_filetransfer_db_full(ft);
-                                            // update the tox file number in DB -----------
-
-                                            Log.i(TAG, "button_ok:OnTouch:009:f_num=" + file_number);
+                                            element._swing_ok.setVisible(false);
                                         }
-                                        catch (Exception e2)
+                                        catch (Exception ee)
                                         {
-                                            e2.printStackTrace();
-                                            Log.i(TAG, "MM2MM:EE1:" + e2.getMessage());
                                         }
+
+                                        // update message view
+                                        update_single_message_from_messge_id(element.id, true);
+
+                                        Log.i(TAG, "button_ok:OnTouch:009");
 
                                     }
                                     else if (cancel_button_rect_absolute.contains(point))
@@ -950,6 +887,7 @@ public class MessageListFragmentJ extends JPanel
         m.state = TOX_FILE_CONTROL_PAUSE.value;
         m.ft_accepted = false;
         m.ft_outgoing_started = false;
+        m.ft_outgoing_queued = false;
         m.filename_fullpath = new java.io.File(filepath + "/" + filename).getAbsolutePath();
         m.sent_timestamp = System.currentTimeMillis();
         m.text = filename + "\n" + file_size + " bytes";
