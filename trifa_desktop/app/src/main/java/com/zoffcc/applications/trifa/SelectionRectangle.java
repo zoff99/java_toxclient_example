@@ -57,9 +57,13 @@ public class SelectionRectangle
     public static int capture_y = 0;
     public static int capture_width = 0;
     public static int capture_height = 0;
+    public static boolean cancel = false;
+    public static boolean showing = true;
 
     public SelectionRectangle()
     {
+        cancel = false;
+        showing = true;
         EventQueue.invokeLater(() -> {
             JFrame frame = new JFrame("Take Screenshot");
             frame.setUndecorated(true);
@@ -152,11 +156,13 @@ public class SelectionRectangle
     public class SelectionPane extends JPanel
     {
         private JButton button;
+        private JButton cancel_button;
         private JLabel label;
 
         public SelectionPane()
         {
             button = new JButton("Capture");
+            cancel_button = new JButton("Cancel");
             setOpaque(false);
 
             label = new JLabel("Rectangle");
@@ -173,6 +179,8 @@ public class SelectionRectangle
 
             gbc.gridy++;
             add(button, gbc);
+            gbc.gridy++;
+            add(cancel_button, gbc);
 
             button.addActionListener(new ActionListener()
             {
@@ -180,6 +188,18 @@ public class SelectionRectangle
                 public void actionPerformed(ActionEvent e)
                 {
                     SwingUtilities.getWindowAncestor(SelectionPane.this).dispose();
+                    showing = false;
+                }
+            });
+
+            cancel_button.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    cancel = true;
+                    SwingUtilities.getWindowAncestor(SelectionPane.this).dispose();
+                    showing = false;
                 }
             });
 

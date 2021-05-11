@@ -3502,55 +3502,97 @@ public class MainActivity extends JFrame
     {
         try
         {
+            Log.i(TAG, "CaptureOccured...SelectionRectangle start");
             new SelectionRectangle();
-            BufferedImage img = (BufferedImage) Screenshot.capture(SelectionRectangle.capture_x,
-                                                                   SelectionRectangle.capture_y,
-                                                                   SelectionRectangle.capture_width,
-                                                                   SelectionRectangle.capture_height).getImage();
 
-            if (img != null)
-            {
-                Log.i(TAG, "CaptureOccured...Image");
+
+            final Thread t = new Thread(() -> {
                 try
                 {
-                    if (message_panel_displayed == 1)
+                    while (SelectionRectangle.showing)
                     {
-                        Log.i(TAG, "CaptureOccured...Image:002");
-                        if (get_current_friendnum() != -1)
+                        Thread.sleep(20);
+                    }
+
+                    Thread.sleep(200);
+                    Log.i(TAG, "CaptureOccured...SelectionRectangle done");
+
+                    try
+                    {
+                        if (!SelectionRectangle.cancel)
                         {
-                            Log.i(TAG, "CaptureOccured...Image:003:" + get_current_friendnum());
+                            Log.i(TAG, "CaptureOccured...Screenshot capture");
+                            BufferedImage img = (BufferedImage) Screenshot.capture(SelectionRectangle.capture_x,
+                                                                                   SelectionRectangle.capture_y,
+                                                                                   SelectionRectangle.capture_width,
+                                                                                   SelectionRectangle.capture_height).getImage();
 
-                            final String friend_pubkey_str = HelperFriend.tox_friend_get_public_key__wrapper(
-                                    get_current_friendnum());
+                            Log.i(TAG, "CaptureOccured...Screenshot capture DONE");
 
-                            String wanted_full_filename_path = VFS_PREFIX + VFS_FILE_DIR + "/" + friend_pubkey_str;
-                            new File(wanted_full_filename_path).mkdirs();
+                            if (img != null)
+                            {
+                                Log.i(TAG, "CaptureOccured...Image");
+                                try
+                                {
+                                    if (message_panel_displayed == 1)
+                                    {
+                                        Log.i(TAG, "CaptureOccured...Image:002");
+                                        if (get_current_friendnum() != -1)
+                                        {
+                                            Log.i(TAG, "CaptureOccured...Image:003:" + get_current_friendnum());
 
-                            String filename_local_corrected = get_incoming_filetransfer_local_filename("clip.png",
-                                                                                                       friend_pubkey_str);
+                                            final String friend_pubkey_str = HelperFriend.tox_friend_get_public_key__wrapper(
+                                                    get_current_friendnum());
 
-                            filename_local_corrected = wanted_full_filename_path + "/" + filename_local_corrected;
+                                            String wanted_full_filename_path =
+                                                    VFS_PREFIX + VFS_FILE_DIR + "/" + friend_pubkey_str;
+                                            new File(wanted_full_filename_path).mkdirs();
 
-                            Log.i(TAG, "CaptureOccured...Image:004:" + filename_local_corrected);
-                            final File f_send = new File(filename_local_corrected);
-                            boolean res = ImageIO.write(img, "png", f_send);
-                            Log.i(TAG, "CaptureOccured...Image:004:" + filename_local_corrected + " res=" + res);
+                                            String filename_local_corrected = get_incoming_filetransfer_local_filename(
+                                                    "clip.png", friend_pubkey_str);
 
-                            // send file
-                            add_outgoing_file(f_send.getAbsoluteFile().getParent(), f_send.getAbsoluteFile().getName());
+                                            filename_local_corrected =
+                                                    wanted_full_filename_path + "/" + filename_local_corrected;
+
+                                            Log.i(TAG, "CaptureOccured...Image:004:" + filename_local_corrected);
+                                            final File f_send = new File(filename_local_corrected);
+                                            boolean res = ImageIO.write(img, "png", f_send);
+                                            Log.i(TAG,
+                                                  "CaptureOccured...Image:004:" + filename_local_corrected + " res=" +
+                                                  res);
+
+                                            // send file
+                                            add_outgoing_file(f_send.getAbsoluteFile().getParent(),
+                                                              f_send.getAbsoluteFile().getName());
+                                        }
+                                    }
+                                }
+                                catch (Exception e2)
+                                {
+                                    e2.printStackTrace();
+                                    Log.i(TAG, "CaptureOccured...EE2:" + e2.getMessage());
+                                }
+                            }
                         }
+                        else
+                        {
+                            Log.i(TAG, "CaptureOccured...SelectionRectangle CANCEL");
+                        }
+                    }
+                    catch (Exception e)
+                    {
                     }
                 }
                 catch (Exception e2)
                 {
-                    e2.printStackTrace();
-                    Log.i(TAG, "CaptureOccured...EE:" + e2.getMessage());
                 }
-            }
+            });
+            t.start();
         }
         catch (Throwable e)
         {
             e.printStackTrace();
+            Log.i(TAG, "CaptureOccured...EE1:" + e.getMessage());
         }
     }
 
