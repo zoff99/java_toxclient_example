@@ -205,7 +205,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     {
                         BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
                         Dimension newMaxSize = new Dimension(80, 80);
-                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.QUALITY, newMaxSize.width,
+                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
                                                                 newMaxSize.height);
                         message_image.setImage(resizedImg);
 
@@ -245,7 +245,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     {
                         BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
                         Dimension newMaxSize = new Dimension(80, 80);
-                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.QUALITY, newMaxSize.width,
+                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
                                                                 newMaxSize.height);
                         message_image.setImage(resizedImg);
                         message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
