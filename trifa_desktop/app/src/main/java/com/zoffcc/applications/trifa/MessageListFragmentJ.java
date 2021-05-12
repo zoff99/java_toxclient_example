@@ -204,6 +204,8 @@ public class MessageListFragmentJ extends JPanel
 
                                         try
                                         {
+                                            set_message_queueing_from_id(element.id, false);
+
                                             // cancel FT
                                             Log.i(TAG, "button_cancel:OnTouch:001");
                                             // values.get(position).state = TOX_FILE_CONTROL_CANCEL.value;
