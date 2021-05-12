@@ -280,17 +280,20 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                             {
                                 ok_button.setVisible(false);
                                 button_line.remove(ok_button);
+                                m_text.setText("" + m.text + "\n\nWaiting for Friend to accept ...");
                             }
                             else
                             {
                                 ok_button.setVisible(true);
                                 button_line.add(ok_button);
+                                m_text.setText("" + m.text + "\n\nSend this file?");
                             }
 
                             if (m.ft_outgoing_queued)
                             {
                                 ok_button.setVisible(false);
                                 button_line.remove(ok_button);
+                                m_text.setText("" + m.text + "\n\nqueued ...");
                             }
 
                             button_line.add(cancel_button);
