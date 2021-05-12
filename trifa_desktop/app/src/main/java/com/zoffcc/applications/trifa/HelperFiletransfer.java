@@ -28,6 +28,7 @@ import java.util.Random;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_start_sending_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__auto_accept_all_upto;
@@ -654,6 +655,8 @@ public class HelperFiletransfer
     {
         try
         {
+            set_message_queueing_from_id(element.id, false);
+
             // accept FT
             set_message_start_sending_from_id(element.id);
             set_filetransfer_start_sending_from_id(element.filetransfer_id);
