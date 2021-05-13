@@ -181,7 +181,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.17";
+    static final String Version = "1.0.18";
     // --------- global config ---------
     // --------- global config ---------
     final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
