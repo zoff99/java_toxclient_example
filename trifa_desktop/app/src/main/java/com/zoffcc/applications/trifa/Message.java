@@ -719,4 +719,10 @@ public class Message
         this.sql_where = this.sql_where + " and  ft_outgoing_queued='" + b(ft_outgoing_queued) + "' ";
         return this;
     }
+
+    public Message stateNotEq(int state)
+    {
+        this.sql_where = this.sql_where + " and  state != '" + s(state) + "' ";
+        return this;
+    }
 }

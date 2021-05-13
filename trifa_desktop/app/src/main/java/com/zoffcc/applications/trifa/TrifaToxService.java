@@ -75,6 +75,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_status_messag
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_connection_status;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 
 public class TrifaToxService
 {
@@ -634,6 +635,7 @@ public class TrifaToxService
                                         directionEq(1).
                                         TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_FILE.value).
                                         ft_outgoing_queuedEq(true).
+                                        stateNotEq(TOX_FILE_CONTROL_CANCEL.value).
                                         orderBySent_timestampAsc().
                                         toList();
 
