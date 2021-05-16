@@ -51,7 +51,7 @@ jobs:
             javac -version
             cd trifa_desktop/app/src/main/java/
             ./do_run.sh > trifa.log 2>&1 &
-            sleep 20
+            sleep 50
             cat trifa.log
             cat trifa.log | grep "MainActivity:MyToxID:"
 
