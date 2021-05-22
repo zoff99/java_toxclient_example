@@ -1101,4 +1101,12 @@ public class HelperGeneric
         }
         return null;
     }
+
+    static void update_display_friend_avatar(String friend_pubkey, String avatar_path_name, String avatar_file_name)
+    {
+        // TODO: update entry in main friendlist (if visible)
+        //       or in chat view (if visible)
+        HelperFriend.update_single_friend_in_friendlist_view(
+                main_get_friend(tox_friend_by_public_key__wrapper(friend_pubkey)));
+    }
 }
