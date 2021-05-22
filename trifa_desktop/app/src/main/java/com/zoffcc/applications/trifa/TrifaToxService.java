@@ -88,7 +88,7 @@ public class TrifaToxService
     static OrmaDatabase orma = null;
     static long last_resend_pending_messages_ms = -1;
     static long last_resend_pending_messages2_ms = -1;
-    static long last_start_uqueued_fts_ms = -1;
+    static long last_start_queued_fts_ms = -1;
 
     void tox_thread_start_fg()
     {
@@ -625,9 +625,9 @@ public class TrifaToxService
                     // --- start queued outgoing FTs here --------------
                     if (global_self_connection_status != TOX_CONNECTION_NONE.value)
                     {
-                        if ((last_start_uqueued_fts_ms + (10 * 1000)) < System.currentTimeMillis())
+                        if ((last_start_queued_fts_ms + (4 * 1000)) < System.currentTimeMillis())
                         {
-                            last_start_uqueued_fts_ms = System.currentTimeMillis();
+                            last_start_queued_fts_ms = System.currentTimeMillis();
 
                             try
                             {
