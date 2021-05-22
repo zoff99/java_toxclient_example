@@ -19,6 +19,7 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -672,6 +673,98 @@ public class HelperFriend
         {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    static void del_friend_avatar(String friend_pubkey, String avatar_path_name, String avatar_file_name)
+    {
+        try
+        {
+            boolean avatar_filesize_non_zero = false;
+            File f1 = null;
+
+            try
+            {
+                f1 = new File(avatar_path_name + "/" + avatar_file_name);
+
+                if (f1.length() > 0)
+                {
+                    avatar_filesize_non_zero = true;
+                }
+
+                f1.delete();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            orma.updateFriendList().tox_public_key_stringEq(friend_pubkey).
+                    avatar_pathname(null).
+                    avatar_filename(null).
+                    avatar_update(false).
+                    avatar_update_timestamp(System.currentTimeMillis()).
+                    execute();
+
+            HelperGeneric.update_display_friend_avatar(friend_pubkey, avatar_path_name, avatar_file_name);
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "set_friend_avatar:EE:" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    static void set_friend_avatar(String friend_pubkey, String avatar_path_name, String avatar_file_name)
+    {
+        try
+        {
+            boolean avatar_filesize_non_zero = false;
+            File f1 = null;
+
+            try
+            {
+                f1 = new File(avatar_path_name + "/" + avatar_file_name);
+
+                if (f1.length() > 0)
+                {
+                    avatar_filesize_non_zero = true;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                Log.i(TAG, "set_friend_avatar:EE01:" + e.getMessage());
+            }
+
+            // Log.i(TAG, "set_friend_avatar:update:pubkey=" + friend_pubkey.substring(0,4) + " path=" + avatar_path_name + " file=" +
+            // avatar_file_name);
+
+            if (avatar_filesize_non_zero)
+            {
+                orma.updateFriendList().tox_public_key_stringEq(friend_pubkey).
+                        avatar_pathname(avatar_path_name).
+                        avatar_filename(avatar_file_name).
+                        avatar_update(false).
+                        avatar_update_timestamp(System.currentTimeMillis()).
+                        execute();
+            }
+            else
+            {
+                orma.updateFriendList().tox_public_key_stringEq(friend_pubkey).
+                        avatar_pathname(null).
+                        avatar_filename(null).
+                        avatar_update(false).
+                        avatar_update_timestamp(System.currentTimeMillis()).
+                        execute();
+            }
+
+            HelperGeneric.update_display_friend_avatar(friend_pubkey, avatar_path_name, avatar_file_name);
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "set_friend_avatar:EE02:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
