@@ -122,8 +122,10 @@ import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.OrmaDatabase.get_current_db_version;
 import static com.zoffcc.applications.trifa.OrmaDatabase.update_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.AVATAR_INCOMING_MAX_BYTE_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_AVATAR_FILENAME;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
@@ -274,6 +276,8 @@ public class MainActivity extends JFrame
     final static int TTF_FONT_FAMILY_FLIST_STATS_SIZE = 15;
     final static int TTF_FONT_FAMILY_BORDER_TITLE = 12;
     final static int TTF_FONT_FAMILY_MENU_SIZE = 12;
+    final static int AVATAR_FRIENDLIST_W = 15;
+    final static int AVATAR_FRIENDLIST_H = 15;
 
     static class send_message_result
     {
@@ -2797,16 +2801,58 @@ public class MainActivity extends JFrame
 
         if (a_TOX_FILE_KIND == TOX_FILE_KIND_AVATAR.value)
         {
-            try
+            Log.i(TAG, "file_recv:TOX_FILE_KIND_AVATAR");
+
+            if (file_size > AVATAR_INCOMING_MAX_BYTE_SIZE)
             {
-                // TODO: cancel all incoming avatar for now
-                tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
+                Log.i(TAG, "file_recv:avatar_too_large");
+                try
+                {
+                    tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                return;
             }
-            catch (Exception e)
+            else if (file_size == 0)
             {
-                e.printStackTrace();
+                Log.i(TAG, "file_recv:avatar_size_zero");
+
+                // friend wants to unset avatar
+                HelperFriend.del_friend_avatar(HelperFriend.tox_friend_get_public_key__wrapper(friend_number),
+                                               VFS_PREFIX + VFS_FILE_DIR + "/" +
+                                               HelperFriend.tox_friend_get_public_key__wrapper(friend_number) + "/",
+                                               FRIEND_AVATAR_FILENAME);
+
+                try
+                {
+                    tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_CANCEL.value);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                return;
             }
-            return;
+
+            String file_name_avatar = FRIEND_AVATAR_FILENAME;
+            Filetransfer f = new Filetransfer();
+            f.tox_public_key_string = HelperFriend.tox_friend_get_public_key__wrapper(friend_number);
+            f.direction = TRIFA_FT_DIRECTION_INCOMING.value;
+            f.file_number = file_number;
+            f.kind = a_TOX_FILE_KIND;
+            f.message_id = -1;
+            f.state = TOX_FILE_CONTROL_RESUME.value;
+            f.path_name = VFS_PREFIX + VFS_TMP_FILE_DIR + "/" + f.tox_public_key_string + "/";
+            f.file_name = file_name_avatar;
+            f.filesize = file_size;
+            f.current_position = 0;
+            long row_id = HelperFiletransfer.insert_into_filetransfer_db(f);
+            f.id = row_id;
+            // TODO: we just accept incoming avatar, maybe make some checks first?
+            tox_file_control(friend_number, file_number, TOX_FILE_CONTROL_RESUME.value);
         }
         else // DATA file ft
         {
@@ -3037,9 +3083,11 @@ public class MainActivity extends JFrame
                 if (f.kind == TOX_FILE_KIND_AVATAR.value)
                 {
                     // we have received an avatar image for a friend. and the filetransfer is complete here
-                    //HelperFriend.set_friend_avatar(HelperFriend.tox_friend_get_public_key__wrapper(friend_number),
-                    //                               VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string + "/",
-                    //                               f.file_name);
+                    HelperFriend.set_friend_avatar(HelperFriend.tox_friend_get_public_key__wrapper(friend_number),
+                                                   VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string + "/",
+                                                   f.file_name);
+                    // Log.i(TAG, "file_recv_chunk:kind=avatar:set_friend_avatar:" + VFS_PREFIX + VFS_FILE_DIR + "/" +
+                    //           f.tox_public_key_string + "/" + f.file_name);
                 }
                 else
                 {
@@ -3093,16 +3141,16 @@ public class MainActivity extends JFrame
                     RandomAccessFile fos = new RandomAccessFile(f.path_name + "/" + f.file_name, "rw");
 
                     // @formatter:off
-                Log.D(TAG,
-                      "DEBUG_FT:IN:file_recv_chunk:file_number=" +
-                      file_number +
-                      " fn=" + friend_number +
-                      " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
-                      " path_name="+f.path_name+
-                      " file_name=" + f.file_name+
-                      " fos="+fos
-                );
-                // @formatter:on
+                    Log.D(TAG,
+                          "DEBUG_FT:IN:file_recv_chunk:file_number=" +
+                          file_number +
+                          " fn=" + friend_number +
+                          " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
+                          " path_name="+f.path_name+
+                          " file_name=" + f.file_name+
+                          " fos="+fos
+                    );
+                    // @formatter:on
 
                     fos.seek(position);
                     fos.write(data);
