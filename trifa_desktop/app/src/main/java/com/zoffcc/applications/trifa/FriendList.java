@@ -563,4 +563,60 @@ public class FriendList
         this.sql_set = this.sql_set + " alias_name='" + s(alias_name) + "' ";
         return this;
     }
+
+    public FriendList avatar_pathname(String avatar_pathname)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " avatar_pathname='" + s(avatar_pathname) + "' ";
+        return this;
+    }
+
+    public FriendList avatar_filename(String avatar_filename)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " avatar_filename='" + s(avatar_filename) + "' ";
+        return this;
+    }
+
+    public FriendList avatar_update(boolean avatar_update)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " avatar_update='" + b(avatar_update) + "' ";
+        return this;
+    }
+
+    public FriendList avatar_update_timestamp(long avatar_update_timestamp)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " avatar_update_timestamp='" + s(avatar_update_timestamp) + "' ";
+        return this;
+    }
 }
