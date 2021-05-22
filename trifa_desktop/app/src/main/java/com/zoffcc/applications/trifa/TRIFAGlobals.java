@@ -95,6 +95,7 @@ public class TRIFAGlobals
 
     final static long AVATAR_INCOMING_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
     final static long AVATAR_SELF_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
+    final static String FRIEND_AVATAR_FILENAME = "_____xyz____avatar.png";
 
     // ---- lookup cache ----
     // static Map<String, java.io.FileInputStream> cache_ft_fis = new HashMap<String, java.io.FileInputStream>();
