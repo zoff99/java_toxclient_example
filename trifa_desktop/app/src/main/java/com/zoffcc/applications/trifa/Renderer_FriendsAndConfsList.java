@@ -21,8 +21,13 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -32,17 +37,22 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
+import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_H;
+import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_W;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_FLIST_STATS_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRenderer
 {
     private static final String TAG = "trifa.Rndr_FriendsAndConfsList";
 
+    final JPanel avatar_container = new JPanel(new SingleComponentAspectRatioKeeperLayout(), true);
+    final JPictureBox avatar = new JPictureBox();
     final JLabel notification = new JLabel("__");
     final JLabel type = new JLabel("_");
     final JLabel status = new JLabel("_");
@@ -51,10 +61,20 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
     Renderer_FriendsAndConfsList()
     {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+        avatar.setSize(AVATAR_FRIENDLIST_W, AVATAR_FRIENDLIST_H);
+
+        avatar_container.add(avatar);
+        avatar_container.setPreferredSize(new Dimension(AVATAR_FRIENDLIST_W, AVATAR_FRIENDLIST_H));
+        avatar_container.setMaximumSize(new Dimension(AVATAR_FRIENDLIST_W, AVATAR_FRIENDLIST_H));
+        avatar_container.setMinimumSize(new Dimension(AVATAR_FRIENDLIST_W, AVATAR_FRIENDLIST_H));
+
+        add(avatar_container);
         add(notification);
         add(type);
         add(status);
         add(name);
+
         name.setBorder(new EmptyBorder(0, 3, 0, 0));
         name.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
@@ -90,6 +110,23 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
         if (((CombinedFriendsAndConferences) value).is_friend) // --- friend ---
         {
             FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
+
+            try
+            {
+                final BufferedImage img = ImageIO.read(new File(f.avatar_pathname + File.separator + f.avatar_filename));
+                final ImageIcon icon = new ImageIcon(img);
+                avatar.setIcon(icon);
+            }
+            catch(Exception e)
+            {
+                final BufferedImage img = new BufferedImage(1, 1, TYPE_INT_ARGB);
+                img.setRGB(0, 0, SEE_THRU.getRGB());
+                final ImageIcon icon = new ImageIcon(img);
+                avatar.setIcon(icon);
+            }
+
+            avatar.setBackground(Color.ORANGE);
+            avatar.repaint();
 
             name.setText(get_friend_name_from_pubkey(f.tox_public_key_string));
 
@@ -175,6 +212,13 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
         else // --- conference ---
         {
             ConferenceDB c = ((CombinedFriendsAndConferences) value).conference_item;
+
+            final BufferedImage img = new BufferedImage(1, 1, TYPE_INT_ARGB);
+            img.setRGB(0, 0, SEE_THRU.getRGB());
+            final ImageIcon icon = new ImageIcon(img);
+            avatar.setBackground(SEE_THRU);
+            avatar.setIcon(icon);
+            avatar.repaint();
 
             name.setText(get_conference_title_from_confid(c.conference_identifier) + " " +
                          c.conference_identifier.substring(0, 5));
