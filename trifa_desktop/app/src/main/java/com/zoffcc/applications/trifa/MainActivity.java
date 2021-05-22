@@ -231,6 +231,7 @@ public class MainActivity extends JFrame
     static Style defaultStyle;
     static JTextArea ownProfileShort;
     static JPanel FriendAddPanel;
+    static PopupToxIDQrcode QrcodeFrame = null;
 
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
@@ -917,9 +918,23 @@ public class MainActivity extends JFrame
                     @Override
                     public void mousePressed(final MouseEvent e)
                     {
-                        if (!SwingUtilities.isLeftMouseButton(e))
+                        if (SwingUtilities.isRightMouseButton(e))
                         {
-                            PopupToxIDQrcode QrcodeFrame = new PopupToxIDQrcode();
+                            Log.i(TAG, "PopupToxIDQrcode");
+                            try
+                            {
+                                if (QrcodeFrame != null)
+                                {
+                                    QrcodeFrame.setVisible(false);
+                                    QrcodeFrame.dispose();
+                                    QrcodeFrame = null;
+                                }
+                            }
+                            catch (Exception ew)
+                            {
+                                QrcodeFrame = null;
+                            }
+                            QrcodeFrame = new PopupToxIDQrcode();
                             QrcodeFrame.setVisible(true);
                         }
                     }
