@@ -39,6 +39,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
+import static com.zoffcc.applications.trifa.MainActivity.mainwindow_has_focus;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -273,7 +274,7 @@ public class HelperGeneric
 
             // Log.i(TAG, "noti_and_badge:001:" + message_list_activity);
             // Log.i(TAG, "noti_and_badge:002:" + message_list_activity.get_current_friendnum() + ":" + friend_number);
-            if (get_current_friendnum() == friend_number)
+            if ((get_current_friendnum() == friend_number) && (mainwindow_has_focus))
             {
                 // Log.i(TAG, "noti_and_badge:003:");
                 // no notifcation and no badge update
@@ -351,7 +352,7 @@ public class HelperGeneric
             boolean do_notification = true;
             boolean do_badge_update = true;
 
-            if (get_current_friendnum() == friend_number)
+            if ((get_current_friendnum() == friend_number) && (mainwindow_has_focus))
             {
                 // Log.i(TAG, "noti_and_badge:003:");
                 // no notifcation and no badge update
@@ -464,7 +465,7 @@ public class HelperGeneric
 
             // Log.i(TAG, "noti_and_badge:001:" + message_list_activity);
             // Log.i(TAG, "noti_and_badge:002:" + message_list_activity.get_current_friendnum() + ":" + friend_number);
-            if (get_current_friendnum() == friend_number_real_sender)
+            if ((get_current_friendnum() == friend_number_real_sender) && (mainwindow_has_focus))
             {
                 // Log.i(TAG, "noti_and_badge:003:");
                 // no notifcation and no badge update
@@ -1019,8 +1020,7 @@ public class HelperGeneric
             // e.printStackTrace();
         }
 
-
-        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        if ((MessagePanelConferences.get_current_conf_id().equals(conf_id)) && (mainwindow_has_focus))
         {
             // Log.i(TAG, "noti_and_badge:003:");
             // no notifcation and no badge update

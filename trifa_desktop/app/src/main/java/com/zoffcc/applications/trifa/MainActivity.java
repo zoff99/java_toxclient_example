@@ -43,12 +43,17 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -180,7 +185,7 @@ import static java.awt.Font.PLAIN;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 
-public class MainActivity extends JFrame
+public class MainActivity extends JFrame implements WindowListener, WindowFocusListener, WindowStateListener
 {
     private static final String TAG = "trifa.MainActivity";
     static final String Version = "1.0.19";
@@ -279,6 +284,8 @@ public class MainActivity extends JFrame
     final static int AVATAR_FRIENDLIST_W = 15;
     final static int AVATAR_FRIENDLIST_H = 15;
 
+    static boolean mainwindow_has_focus = true;
+
     static class send_message_result
     {
         long msg_num;
@@ -293,6 +300,17 @@ public class MainActivity extends JFrame
         super("TRIfA - Desktop - " + Version + "   ");
 
         // Thread.currentThread().setName("t_main_act");
+
+        try
+        {
+            this.addWindowListener(this);
+            this.addWindowFocusListener(this);
+            this.addWindowStateListener(this);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         try
         {
@@ -382,6 +400,23 @@ public class MainActivity extends JFrame
 
         FriendPanel = new FriendListFragmentJ();
         MessagePanelContainer = new JPanel(true);
+
+        MessagePanelContainer.addComponentListener(new ComponentAdapter()
+        {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                super.componentResized(e);
+                // Log.i(TAG, "componentResized");
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e)
+            {
+                super.componentMoved(e);
+                // Log.i(TAG, "componentMoved");
+            }
+        });
 
         // ------------------
         // ------------------
@@ -3367,7 +3402,7 @@ public class MainActivity extends JFrame
 
         Log.i(TAG, "noti_and_badge:002conf:" + MessagePanelConferences.get_current_conf_id() + ":" + conf_id);
 
-        if (MessagePanelConferences.get_current_conf_id().equals(conf_id))
+        if ((MessagePanelConferences.get_current_conf_id().equals(conf_id)) && (mainwindow_has_focus))
         {
             // Log.i(TAG, "noti_and_badge:003:");
             // no notifcation and no badge update
@@ -3859,6 +3894,68 @@ public class MainActivity extends JFrame
         {
             Log.i(TAG, "FileDropTargetListener:drop");
         }
+    }
+
+    @Override
+    public void windowGainedFocus(WindowEvent windowEvent)
+    {
+        Log.i(TAG, "windowGainedFocus");
+        mainwindow_has_focus = true;
+    }
+
+    @Override
+    public void windowLostFocus(WindowEvent windowEvent)
+    {
+        Log.i(TAG, "windowLostFocus");
+        mainwindow_has_focus = false;
+    }
+
+    @Override
+    public void windowOpened(WindowEvent windowEvent)
+    {
+        Log.i(TAG, "windowOpened");
+    }
+
+    @Override
+    public void windowClosing(WindowEvent windowEvent)
+    {
+        Log.i(TAG, "windowClosing");
+    }
+
+    @Override
+    public void windowClosed(WindowEvent windowEvent)
+    {
+        Log.i(TAG, "windowClosed");
+    }
+
+    @Override
+    public void windowIconified(WindowEvent windowEvent)
+    {
+        // Log.i(TAG, "windowIconified");
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent windowEvent)
+    {
+        // Log.i(TAG, "windowDeiconified");
+    }
+
+    @Override
+    public void windowActivated(WindowEvent windowEvent)
+    {
+        // Log.i(TAG, "windowActivated");
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent windowEvent)
+    {
+        // Log.i(TAG, "windowDeactivated");
+    }
+
+    @Override
+    public void windowStateChanged(WindowEvent windowEvent)
+    {
+        // Log.i(TAG, "windowStateChanged");
     }
 }
 
