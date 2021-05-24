@@ -51,6 +51,8 @@ import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
@@ -204,7 +206,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     try
                     {
                         BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                        Dimension newMaxSize = new Dimension(80, 80);
+                        Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
                         BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
                                                                 newMaxSize.height);
                         message_image.setImage(resizedImg);
@@ -244,7 +246,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     try
                     {
                         BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                        Dimension newMaxSize = new Dimension(80, 80);
+                        Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
                         BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
                                                                 newMaxSize.height);
                         message_image.setImage(resizedImg);
