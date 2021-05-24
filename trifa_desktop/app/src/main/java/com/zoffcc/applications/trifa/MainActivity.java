@@ -3461,7 +3461,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         if (do_notification)
         {
             // change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.conference_identifier);
-            displayMessage("new Group Message");
+            displayMessage("new Group Message from: " + conf_temp.name);
         }
     }
 

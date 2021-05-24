@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
@@ -339,7 +340,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
-                displayMessage("new Message");
+                displayMessage("new Message from: " + get_friend_name_from_pubkey(tox_friend_get_public_key__wrapper(friend_number)));
             }
         }
         else if (msg_type == 1)
@@ -449,7 +450,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**//change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
-                displayMessage("new Message");
+                displayMessage("new Message from: " + get_friend_name_from_pubkey(tox_friend_get_public_key__wrapper(friend_number)));
             }
         }
         else if (msg_type == 2)
@@ -562,7 +563,7 @@ public class HelperGeneric
             if (do_notification)
             {
                 //**// change_msg_notification(NOTIFICATION_EDIT_ACTION_ADD.value, m.tox_friendpubkey);
-                displayMessage("new Message");
+                displayMessage("new Message from: " + get_friend_name_from_pubkey(original_sender_pubkey));
             }
         }
     }
@@ -1066,7 +1067,7 @@ public class HelperGeneric
 
         if (do_notification)
         {
-            displayMessage("new Group Message [synced]");
+            displayMessage("new Group Message [synced] from: " + conf_temp.name);
         }
     }
 
