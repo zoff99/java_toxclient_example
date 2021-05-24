@@ -60,7 +60,7 @@ public class TrifaSetPatternActivity
     {
         try
         {
-            return in.replaceAll("[^ a-zA-Z0-9]", "_");
+            return in.replaceAll("[^ a-zA-Z0-9:]", "_");
         }
         catch (Exception e)
         {
