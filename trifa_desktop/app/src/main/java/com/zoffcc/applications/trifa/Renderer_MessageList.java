@@ -141,17 +141,25 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         if (m.msg_version == 1)
         {
-            if (m.direction == 0)
+            if (m.direction == 0) // receive
             {
                 m_date_time.setText(
                         is_read + unicode_ARROW_LEFT + " " + sent_ts + " : " + unicode_Mobile_Phone_With_Arrow + " " +
                         rcvd_ts);
             }
-            else
+            else // send
             {
-                m_date_time.setText(
-                        is_read + unicode_ARROW_LEFT + " " + sent_ts + " : " + unicode_Mobile_Phone_With_Arrow + " " +
-                        rcvd_ts);
+                if ((m.msg_at_relay) && (!m.read))
+                {
+                    m_date_time.setText(is_read + unicode_ARROW_LEFT + " " + sent_ts + " : ==>> " +
+                                        unicode_Mobile_Phone_With_Arrow + " " + rcvd_ts);
+                }
+                else
+                {
+                    m_date_time.setText(
+                            is_read + unicode_ARROW_LEFT + " " + sent_ts + " : " + unicode_Mobile_Phone_With_Arrow +
+                            " " + rcvd_ts);
+                }
             }
         }
         else

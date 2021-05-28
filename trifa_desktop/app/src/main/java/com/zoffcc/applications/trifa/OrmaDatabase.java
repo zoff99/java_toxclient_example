@@ -157,7 +157,22 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 2;
+        if (current_db_version < 3)
+        {
+            try
+            {
+                final String update_001 = "alter table Message add msg_at_relay BOOLEAN NOT NULL DEFAULT false;" +
+                                          "\n"+
+                                          "CREATE INDEX index_msg_at_relay_on_Message ON Message (msg_at_relay);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 3;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;

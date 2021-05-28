@@ -45,6 +45,7 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_m
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_no_read_recvedts;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message;
+import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
 import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
@@ -450,7 +451,7 @@ public class TrifaToxService
                             // loop through all pending outgoing 1-on-1 text messages --------------
                             try
                             {
-                                final int max_resend_count_per_iteration = 10;
+                                final int max_resend_count_per_iteration = 40;
                                 int cur_resend_count_per_iteration = 0;
 
                                 List<Message> m_v1 = orma.selectFromMessage().
@@ -458,7 +459,7 @@ public class TrifaToxService
                                         TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
                                         resend_countEq(0).
                                         readEq(false).
-                                        orderBySent_timestampAsc().
+                                        orderBySent_timestampDesc().
                                         toList();
 
                                 if ((m_v1 != null) && (m_v1.size() > 0))
@@ -534,7 +535,7 @@ public class TrifaToxService
 
                         }
 
-                        if ((last_resend_pending_messages2_ms + (60 * 1000)) < System.currentTimeMillis())
+                        if ((last_resend_pending_messages2_ms + (30 * 1000)) < System.currentTimeMillis())
                         {
                             // Log.i(TAG, "send_pending_1-on-1_messages 2 ============================================");
                             last_resend_pending_messages2_ms = System.currentTimeMillis();
@@ -543,16 +544,16 @@ public class TrifaToxService
                             // loop through all pending outgoing 1-on-1 text messages V2 (resend the resend) --------------
                             try
                             {
-                                final int max_resend_count_per_iteration = 10;
+                                final int max_resend_count_per_iteration = 40;
                                 int cur_resend_count_per_iteration = 0;
 
                                 List<Message> m_v1 = orma.selectFromMessage().
                                         directionEq(1).
                                         TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
-                                        resend_countEq(1).
                                         msg_versionEq(1).
                                         readEq(false).
-                                        orderBySent_timestampAsc().
+                                        msg_at_relayEq(false).
+                                        orderBySent_timestampDesc().
                                         toList();
 
                                 // if (m_v1 != null)
@@ -594,7 +595,17 @@ public class TrifaToxService
                                                 tox_friend_by_public_key__wrapper(m_resend_v2.tox_friendpubkey),
                                                 msg_text_buffer_resend_v2, raw_data_length);
 
-                                        // Log.i(TAG, "send_pending_1-on-1_messages:v2:res=" + res);
+                                        Log.i(TAG, "send_pending_1-on-1_messages:v2:res=" + res);
+
+                                        String relay = get_relay_for_friend(m_resend_v2.tox_friendpubkey);
+                                        if (relay != null)
+                                        {
+                                            int res_relay = tox_util_friend_resend_message_v2(
+                                                    tox_friend_by_public_key__wrapper(relay), msg_text_buffer_resend_v2,
+                                                    raw_data_length);
+
+                                            Log.i(TAG, "send_pending_1-on-1_messages:v2:res_relay=" + res_relay);
+                                        }
 
                                         cur_resend_count_per_iteration++;
 

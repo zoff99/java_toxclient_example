@@ -122,6 +122,9 @@ public class Message
     @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
     boolean ft_outgoing_queued = false;
 
+    @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
+    boolean msg_at_relay = false;
+
     // ------- SWING UI elements ------- //
     JButton _swing_ok = null;
     JButton _swing_cancel = null;
@@ -155,6 +158,7 @@ public class Message
         out.raw_msgv2_bytes = in.raw_msgv2_bytes;
         out.resend_count = in.resend_count;
         out.ft_outgoing_queued = in.ft_outgoing_queued;
+        out.msg_at_relay = in.msg_at_relay;
 
         return out;
     }
@@ -169,7 +173,7 @@ public class Message
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
                ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" + ", ft_outgoing_queued=" +
-               ft_outgoing_queued;
+               ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay;
     }
 
     String sql_start = "";
@@ -221,6 +225,7 @@ public class Message
                 out.raw_msgv2_bytes = rs.getString("raw_msgv2_bytes");
                 out.resend_count = rs.getInt("resend_count");
                 out.ft_outgoing_queued = rs.getBoolean("ft_outgoing_queued");
+                out.msg_at_relay = rs.getBoolean("msg_at_relay");
 
                 if (list == null)
                 {
@@ -271,7 +276,8 @@ public class Message
                                  "msg_version," +
                                  "raw_msgv2_bytes," +
                                  "resend_count," +
-                                 "ft_outgoing_queued" +
+                                 "ft_outgoing_queued," +
+                                 "msg_at_relay" +
                                  ")" +
                                  "values" +
                                  "(" +
@@ -298,7 +304,8 @@ public class Message
                                  "'"+s(this.msg_version)+"'," +
                                  "'"+s(this.raw_msgv2_bytes)+"'," +
                                  "'"+s(this.resend_count)+"'," +
-                                 "'"+b(this.ft_outgoing_queued)+"'" +
+                                 "'"+b(this.ft_outgoing_queued)+"'," +
+                                 "'"+b(this.msg_at_relay)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -723,6 +730,40 @@ public class Message
     public Message stateNotEq(int state)
     {
         this.sql_where = this.sql_where + " and  state != '" + s(state) + "' ";
+        return this;
+    }
+
+    public Message msg_at_relay(boolean msg_at_relay)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " msg_at_relay='" + b(msg_at_relay) + "' ";
+        return this;
+    }
+
+    public Message orderBySent_timestampDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " sent_timestamp DESC ";
+        return this;
+    }
+
+    public Message msg_at_relayEq(boolean msg_at_relay)
+    {
+        this.sql_where = this.sql_where + " and  msg_at_relay='" + b(msg_at_relay) + "' ";
         return this;
     }
 }

@@ -114,8 +114,10 @@ import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
+import static com.zoffcc.applications.trifa.HelperRelay.is_any_relay;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.add_outgoing_file;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
@@ -2463,6 +2465,53 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         try
         {
+            final List<Message> m_try = orma.selectFromMessage().
+                    msg_id_hashEq(message_id_hash_as_hex_string).
+                    tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
+                    directionEq(1).
+                    readEq(false).
+                    toList();
+
+            if ((m_try == null) || (m_try.size() < 1))
+            {
+                // HINT: it must a an ACK send from a friends toxproxy to singal the receipt of the message on behalf of the friend
+
+                if (is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
+                {
+                    FriendList friend_of_relay = HelperRelay.get_friend_for_relay(
+                            HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
+
+                    if (friend_of_relay != null)
+                    {
+
+                        Message m = orma.selectFromMessage().
+                                msg_id_hashEq(message_id_hash_as_hex_string).
+                                tox_friendpubkeyEq(friend_of_relay.tox_public_key_string).
+                                directionEq(1).
+                                readEq(false).
+                                toList().get(0);
+
+                        if (m != null)
+                        {
+                            Log.i(TAG, "receipt_message_v2_cb:msgid_via_relay found");
+
+                            try
+                            {
+                                set_message_msg_at_relay_from_id(m.id, true);
+                                m.msg_at_relay = true;
+                                HelperMessage.update_single_message(m, true);
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+                return;
+            }
+
             final Message m = orma.selectFromMessage().
                     msg_id_hashEq(message_id_hash_as_hex_string).
                     tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
