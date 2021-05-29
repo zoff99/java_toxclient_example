@@ -418,7 +418,6 @@ public class HelperFriend
     }
 
     static String get_friend_name_from_pubkey(String friend_pubkey)
-    // get_friend_alias_name_wrapper_pubkey(String friend_pubkey)
     {
         String ret = "Unknown";
         String friend_alias_name = "";
@@ -573,6 +572,21 @@ public class HelperFriend
         {
             return (orma.selectFromFriendList().
                     tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    toList().get(0).TOX_CONNECTION_real);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    static int is_friend_online_real_pk(String friend_pk)
+    {
+        try
+        {
+            return (orma.selectFromFriendList().
+                    tox_public_key_stringEq(friend_pk).
                     toList().get(0).TOX_CONNECTION_real);
         }
         catch (Exception e)

@@ -36,6 +36,7 @@ import javax.swing.border.EmptyBorder;
 
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
+import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real_pk;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_H;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_W;
@@ -113,11 +114,12 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
 
             try
             {
-                final BufferedImage img = ImageIO.read(new File(f.avatar_pathname + File.separator + f.avatar_filename));
+                final BufferedImage img = ImageIO.read(
+                        new File(f.avatar_pathname + File.separator + f.avatar_filename));
                 final ImageIcon icon = new ImageIcon(img);
                 avatar.setIcon(icon);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 final BufferedImage img = new BufferedImage(1, 1, TYPE_INT_ARGB);
                 img.setRGB(0, 0, SEE_THRU.getRGB());
@@ -132,13 +134,13 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
 
             try
             {
-                if (f.TOX_CONNECTION == 2)
+                if (f.TOX_CONNECTION_real == 2)
                 {
                     status.setText("U");
                     status.setBackground(Color.GREEN);
                     status.setForeground(Color.BLACK);
                 }
-                else if (f.TOX_CONNECTION == 1)
+                else if (f.TOX_CONNECTION_real == 1)
                 {
                     status.setText("T");
                     status.setBackground(Color.ORANGE);
@@ -161,12 +163,25 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             if (get_relay_for_friend(f.tox_public_key_string) != null)
             {
                 type.setText("*");
+                int relay_connection_status = is_friend_online_real_pk(get_relay_for_friend(f.tox_public_key_string));
+                if (relay_connection_status == 2)
+                {
+                    type.setBackground(Color.GREEN);
+                }
+                else if (relay_connection_status == 1)
+                {
+                    type.setBackground(Color.ORANGE);
+                }
+                else // == 0
+                {
+                    type.setBackground(SEE_THRU);
+                }
             }
             else
             {
                 type.setText(" ");
+                type.setBackground(SEE_THRU);
             }
-            type.setBackground(SEE_THRU);
             type.setForeground(Color.BLACK);
 
             notification.setText("  ");
