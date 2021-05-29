@@ -2355,7 +2355,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                                 Log.i(TAG, "friend_sync_message_v2_cb:potentially double message");
                                 // ok it's a "potentially" double message
                                 // just ignore it, but still send "receipt" to proxy so it won't send this message again
-                                send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer);
+                                send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer,
+                                                                   (System.currentTimeMillis() / 1000));
                                 return;
                             }
                         }
@@ -2369,14 +2370,16 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         // send_friend_msg_receipt_v2_wrapper
                         //ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
 
-                        send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer);
+                        send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer,
+                                                           (System.currentTimeMillis() / 1000));
                     }
                     else
                     {
                         // sync message from unkown original sender
                         // still send "receipt" to our relay, or else it will send us this message forever
                         Log.i(TAG, "friend_sync_message_v2_cb:send receipt for unknown message");
-                        send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+                        send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
+                                                           (System.currentTimeMillis() / 1000));
 
                         return;
                     }
@@ -2395,7 +2398,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             }
 
             // send message receipt v2 to own relay
-            send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+            send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer, (System.currentTimeMillis() / 1000));
         }
         else if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_ANSWER.value)
         {
@@ -2433,13 +2436,15 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         e.printStackTrace();
                     }
-                    send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+                    send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
+                                                       (System.currentTimeMillis() / 1000));
                 }
             }
             catch (Exception e)
             {
                 // e.printStackTrace();
-                send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer);
+                send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
+                                                   (System.currentTimeMillis() / 1000));
             }
         }
     }
