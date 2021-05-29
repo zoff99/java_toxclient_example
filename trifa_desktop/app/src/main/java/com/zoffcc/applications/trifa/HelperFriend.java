@@ -26,7 +26,6 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
@@ -502,15 +501,6 @@ public class HelperFriend
                 @Override
                 public void run()
                 {
-                    // delay sending of msg receipt for x milliseconds
-                    try
-                    {
-                        Thread.sleep(DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
 
                     // send msg receipt on main thread
                     final Runnable myRunnable = new Runnable()

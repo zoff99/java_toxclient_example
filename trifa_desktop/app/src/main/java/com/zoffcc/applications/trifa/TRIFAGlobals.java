@@ -78,7 +78,6 @@ public class TRIFAGlobals
     static long global_last_activity_for_battery_savings_ts = -1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_NOW = Long.MAX_VALUE - 1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_OFFLINE = -1;
-    public static final int DELAY_SENDING_FRIEND_RECEIPT_TO_RELAY_MS = 4 * 1000; // 4 sec.
 
     public static final Color CHAT_MSG_BG_SELF_COLOR = new Color(0xff33b5e5, true);
     public static final Color CHAT_MSG_BG_OTHER_COLOR = new Color(0xffffbb33, true);
