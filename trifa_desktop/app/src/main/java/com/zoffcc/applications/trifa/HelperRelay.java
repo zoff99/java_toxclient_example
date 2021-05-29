@@ -23,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
+import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY;
@@ -335,6 +337,21 @@ public class HelperRelay
         try
         {
             ret = orma.selectFromRelayListDB().own_relayEq(true).toList().get(0).tox_public_key_string;
+        }
+        catch (Exception e)
+        {
+        }
+
+        return ret;
+    }
+
+    static int get_own_relay_connection_status_real()
+    {
+        int ret = 0;
+
+        try
+        {
+            return is_friend_online_real(tox_friend_by_public_key__wrapper(get_own_relay_pubkey()));
         }
         catch (Exception e)
         {

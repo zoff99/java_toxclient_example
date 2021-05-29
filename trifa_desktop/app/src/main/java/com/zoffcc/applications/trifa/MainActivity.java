@@ -113,10 +113,13 @@ import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
+import static com.zoffcc.applications.trifa.HelperRelay.get_own_relay_connection_status_real;
+import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.is_any_relay;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.add_outgoing_file;
@@ -900,6 +903,34 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         });
 
         addKeyBinding(getRootPane(), "F11", new FullscreenToggleAction(this));
+
+        try
+        {
+            if (have_own_relay())
+            {
+                int relay_connection_status_real = get_own_relay_connection_status_real();
+
+                if (relay_connection_status_real == 2)
+                {
+                    draw_main_top_icon(0x04b431, true);
+                }
+                else if (relay_connection_status_real == 1)
+                {
+                    draw_main_top_icon(0xffce00, true);
+                }
+                else
+                {
+                    draw_main_top_icon(0xff0000, true);
+                }
+            }
+            else
+            {
+                draw_main_top_icon(Color.GRAY.getRGB(), true);
+            }
+        }
+        catch (Exception e)
+        {
+        }
     }
 
     static void set_message_panel(int i)
@@ -2123,26 +2154,41 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f_real, true);
                     }
                 }
-            }
-
-            HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
-
-            if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
-            {
-                f.TOX_CONNECTION_real = a_TOX_CONNECTION;
-                f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
-                HelperFriend.update_friend_in_db_connection_status_real(f);
-            }
-
-            if (friend_number == tox_friend_by_public_key__wrapper(Callstate.friend_pubkey))
-            {
-                try
+                else // is own relay
                 {
-                    //**//update_calling_friend_connection_status(a_TOX_CONNECTION);
+                    if (a_TOX_CONNECTION == 2)
+                    {
+                        draw_main_top_icon(0x04b431, false);
+                    }
+                    else if (a_TOX_CONNECTION == 1)
+                    {
+                        draw_main_top_icon(0xffce00, false);
+                    }
+                    else
+                    {
+                        draw_main_top_icon(0xff0000, false);
+                    }
                 }
-                catch (Exception e)
-                {
-                }
+            }
+        }
+
+        HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
+
+        if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
+        {
+            f.TOX_CONNECTION_real = a_TOX_CONNECTION;
+            f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
+            HelperFriend.update_friend_in_db_connection_status_real(f);
+        }
+
+        if (friend_number == tox_friend_by_public_key__wrapper(Callstate.friend_pubkey))
+        {
+            try
+            {
+                //**//update_calling_friend_connection_status(a_TOX_CONNECTION);
+            }
+            catch (Exception e)
+            {
             }
         }
     }
@@ -3948,6 +3994,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             Log.i(TAG, "FileDropTargetListener:drop");
         }
+
     }
 
     @Override

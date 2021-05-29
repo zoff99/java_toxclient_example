@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -33,6 +34,9 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
+import javax.swing.BorderFactory;
+import javax.swing.border.Border;
+
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -41,6 +45,7 @@ import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.mainwindow_has_focus;
+import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.get_current_friendnum;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -1119,5 +1124,22 @@ public class HelperGeneric
         //       or in chat view (if visible)
         HelperFriend.update_single_friend_in_friendlist_view(
                 main_get_friend(tox_friend_by_public_key__wrapper(friend_pubkey)));
+    }
+
+    static void draw_main_top_icon(int blur_color, boolean is_fg)
+    {
+        EventQueue.invokeLater(() -> {
+            try
+            {
+                Color col = new Color(blur_color, false);
+                Border ownProfileShortBorder = BorderFactory.createLineBorder(col);
+                ownProfileShort.setBorder(BorderFactory.createCompoundBorder(ownProfileShortBorder,
+                                                                             BorderFactory.createEmptyBorder(2, 0, 0,
+                                                                                                             0)));
+            }
+            catch (Exception e)
+            {
+            }
+        });
     }
 }
