@@ -115,7 +115,7 @@ public class Filetransfer
 
     public List<Filetransfer> toList()
     {
-        List<Filetransfer> fl = null;
+        List<Filetransfer> fl = new ArrayList<>();
 
         try
         {
@@ -146,10 +146,6 @@ public class Filetransfer
                 out.current_position = rs.getLong("current_position");
                 out.message_id = rs.getLong("message_id");
 
-                if (fl == null)
-                {
-                    fl = new ArrayList<Filetransfer>();
-                }
                 fl.add(out);
             }
         }
@@ -170,7 +166,7 @@ public class Filetransfer
             // @formatter:off
             Statement statement = sqldb.createStatement();
 
-            final String sql_str="insert into Filetransfer" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "tox_public_key_string,"	+
                                  "direction,"+
@@ -220,6 +216,71 @@ public class Filetransfer
 
         return ret;
     }
+
+    public Filetransfer get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public Filetransfer limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
 
     public Filetransfer directionEq(int direction)
     {
@@ -411,55 +472,6 @@ public class Filetransfer
         }
         this.sql_set = this.sql_set + " current_position='" + s(current_position) + "' ";
         return this;
-    }
-
-    public void execute()
-    {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            statement.executeUpdate(sql);
-        }
-        catch (Exception e2)
-        {
-            e2.printStackTrace();
-            Log.i(TAG, "EE1:" + e2.getMessage());
-        }
-    }
-
-    public int count()
-    {
-        int ret = 0;
-
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            this.sql_start = "SELECT count(*) as count FROM Filetransfer";
-
-            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-
-            ResultSet rs = statement.executeQuery(sql);
-
-            if (rs.next())
-            {
-                ret = rs.getInt("count");
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return ret;
     }
 
     public Filetransfer ft_accepted(boolean ft_accepted)

@@ -87,6 +87,44 @@ public class FileDB
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
 
+    public List<FileDB> toList()
+    {
+        List<FileDB> list = new ArrayList<>();
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next())
+            {
+                FileDB out = new FileDB();
+
+                out.id = rs.getLong("id");
+                out.kind = rs.getInt("kind");
+                out.direction = rs.getInt("direction");
+                out.tox_public_key_string = rs.getString("tox_public_key_string");
+                out.path_name = rs.getString("path_name");
+                out.file_name = rs.getString("file_name");
+                out.filesize = rs.getLong("filesize");
+                out.is_in_VFS = rs.getBoolean("is_in_VFS");
+
+                list.add(out);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public long insert()
     {
         long ret = -1;
@@ -95,7 +133,7 @@ public class FileDB
         {
             // @formatter:off
             Statement statement = sqldb.createStatement();
-            final String sql_str="insert into FileDB" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "kind,"	+
                                  "direction,"+
@@ -134,6 +172,71 @@ public class FileDB
         return ret;
     }
 
+    public FileDB get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public FileDB limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
+
     public FileDB tox_public_key_stringEq(String tox_public_key_string)
     {
         this.sql_where = this.sql_where + " and tox_public_key_string='" + s(tox_public_key_string) + "' ";
@@ -159,48 +262,6 @@ public class FileDB
         this.sql_orderby = this.sql_orderby + " id DESC ";
         return this;
 
-    }
-
-    public List<FileDB> toList()
-    {
-        List<FileDB> list = null;
-
-        try
-        {
-            Statement statement = sqldb.createStatement();
-
-            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next())
-            {
-                FileDB out = new FileDB();
-
-                out.id = rs.getLong("id");
-                out.kind = rs.getInt("kind");
-                out.direction = rs.getInt("direction");
-                out.tox_public_key_string = rs.getString("tox_public_key_string");
-                out.path_name = rs.getString("path_name");
-                out.file_name = rs.getString("file_name");
-                out.filesize = rs.getLong("filesize");
-                out.is_in_VFS = rs.getBoolean("is_in_VFS");
-
-                if (list == null)
-                {
-                    list = new ArrayList<FileDB>();
-                }
-                list.add(out);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return list;
     }
 
     public FileDB path_nameEq(String path_name)

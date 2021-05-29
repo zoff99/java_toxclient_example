@@ -100,7 +100,7 @@ public class ConferenceDB
 
     public List<ConferenceDB> toList()
     {
-        List<ConferenceDB> list = null;
+        List<ConferenceDB> list = new ArrayList<>();
 
         try
         {
@@ -121,10 +121,6 @@ public class ConferenceDB
                 out.conference_active = rs.getBoolean("conference_active");
                 out.notification_silent = rs.getBoolean("notification_silent");
 
-                if (list == null)
-                {
-                    list = new ArrayList<ConferenceDB>();
-                }
                 list.add(out);
             }
         }
@@ -144,7 +140,7 @@ public class ConferenceDB
         {
             // @formatter:off
             Statement statement = sqldb.createStatement();
-            final String sql_str="insert into ConferenceDB" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "conference_identifier,"	+
                                  "name,"+
@@ -181,6 +177,71 @@ public class ConferenceDB
 
         return ret;
     }
+
+    public ConferenceDB get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public ConferenceDB limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
 
     public ConferenceDB conference_identifierEq(String conference_identifier)
     {
@@ -230,25 +291,6 @@ public class ConferenceDB
         return this;
     }
 
-    public void execute()
-    {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            statement.executeUpdate(sql);
-        }
-        catch (Exception e2)
-        {
-            e2.printStackTrace();
-            Log.i(TAG, "EE1:" + e2.getMessage());
-        }
-    }
-
     public ConferenceDB orderByConference_activeDesc()
     {
         if (this.sql_orderby.equals(""))
@@ -287,11 +329,6 @@ public class ConferenceDB
     {
         this.sql_where = this.sql_where + " and conference_active='" + b(b) + "' ";
         return this;
-    }
-
-    public ConferenceDB get(int i)
-    {
-        return this.toList().get(0);
     }
 
     public ConferenceDB name(String name)

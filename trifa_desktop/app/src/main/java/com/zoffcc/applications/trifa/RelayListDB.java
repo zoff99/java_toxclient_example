@@ -89,15 +89,9 @@ public class RelayListDB
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
 
-    public RelayListDB own_relayEq(boolean own_relay)
-    {
-        this.sql_where = this.sql_where + " and  own_relay='" + b(own_relay) + "' ";
-        return this;
-    }
-
     public List<RelayListDB> toList()
     {
-        List<RelayListDB> list = null;
+        List<RelayListDB> list = new ArrayList<>();
 
         try
         {
@@ -120,10 +114,6 @@ public class RelayListDB
                 out.last_online_timestamp = rs.getLong("last_online_timestamp");
                 out.tox_public_key_string_of_owner = rs.getString("tox_public_key_string_of_owner");
 
-                if (list == null)
-                {
-                    list = new ArrayList<RelayListDB>();
-                }
                 list.add(out);
             }
         }
@@ -135,36 +125,6 @@ public class RelayListDB
         return list;
     }
 
-    public int count()
-    {
-        int ret = 0;
-
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            this.sql_start = "SELECT count(*) as count FROM RelayListDB";
-
-            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-
-            ResultSet rs = statement.executeQuery(sql);
-
-            if (rs.next())
-            {
-                ret = rs.getInt("count");
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
-
     public long insert()
     {
         long ret = -1;
@@ -173,7 +133,7 @@ public class RelayListDB
         {
             // @formatter:off
             Statement statement = sqldb.createStatement();
-            final String sql_str="insert into RelayListDB" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "tox_public_key_string,"	+
                                  "TOX_CONNECTION,"+
@@ -208,6 +168,77 @@ public class RelayListDB
         }
 
         return ret;
+    }
+
+    public RelayListDB get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public RelayListDB limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
+
+    public RelayListDB own_relayEq(boolean own_relay)
+    {
+        this.sql_where = this.sql_where + " and  own_relay='" + b(own_relay) + "' ";
+        return this;
     }
 
     public RelayListDB tox_public_key_stringEq(String tox_public_key_string)

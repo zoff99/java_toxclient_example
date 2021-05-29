@@ -124,49 +124,9 @@ public class ConferenceMessage
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
 
-    public ConferenceMessage conference_identifierEq(String current_conf_id)
-    {
-        this.sql_where = this.sql_where + " and conference_identifier='" + s(current_conf_id) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage is_new(boolean is_new)
-    {
-        if (this.sql_set.equals(""))
-        {
-            this.sql_set = " set ";
-        }
-        else
-        {
-            this.sql_set = this.sql_set + " , ";
-        }
-        this.sql_set = this.sql_set + " is_new='" + b(is_new) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage tox_peerpubkeyNotEq(String trifaSystemMessagePeerPubkey)
-    {
-        this.sql_where = this.sql_where + " and tox_peerpubkey<>'" + s(trifaSystemMessagePeerPubkey) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage orderBySent_timestampAsc()
-    {
-        if (this.sql_orderby.equals(""))
-        {
-            this.sql_orderby = " order by ";
-        }
-        else
-        {
-            this.sql_orderby = this.sql_orderby + " , ";
-        }
-        this.sql_orderby = this.sql_orderby + " Sent_timestamp ASC ";
-        return this;
-    }
-
     public List<ConferenceMessage> toList()
     {
-        List<ConferenceMessage> list = null;
+        List<ConferenceMessage> list = new ArrayList<>();
 
         try
         {
@@ -192,10 +152,6 @@ public class ConferenceMessage
                 out.tox_peername = rs.getString("tox_peername");
                 out.was_synced = rs.getBoolean("was_synced");
 
-                if (list == null)
-                {
-                    list = new ArrayList<ConferenceMessage>();
-                }
                 list.add(out);
             }
         }
@@ -207,36 +163,6 @@ public class ConferenceMessage
         return list;
     }
 
-    public ConferenceMessage tox_peerpubkeyEq(String tox_peerpubkey)
-    {
-        this.sql_where = this.sql_where + " and tox_peerpubkey='" + s(tox_peerpubkey) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage message_id_toxEq(String message_id_tox)
-    {
-        this.sql_where = this.sql_where + " and message_id_tox='" + s(message_id_tox) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage sent_timestampGt(long l)
-    {
-        this.sql_where = this.sql_where + " and sent_timestamp>'" + s(l) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage sent_timestampLt(long l)
-    {
-        this.sql_where = this.sql_where + " and sent_timestamp<'" + s(l) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage limit(int i)
-    {
-        this.sql_limit = " limit " + i + " ";
-        return this;
-    }
-
     public long insert()
     {
         long ret = -1;
@@ -245,8 +171,8 @@ public class ConferenceMessage
         {
             // @formatter:off
             Statement statement = sqldb.createStatement();
-            final String sql_str="insert into ConferenceMessage" +
-                                 "(" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
+            "(" +
                                  "conference_identifier,"+
                                  "message_id_tox,"+
                                  "tox_peerpubkey,"+
@@ -295,31 +221,29 @@ public class ConferenceMessage
         return ret;
     }
 
-    public ConferenceMessage idEq(long id)
+    public ConferenceMessage get(int i)
     {
-        this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
-        return this;
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
     }
 
-
-    public ConferenceMessage orderByIdDesc()
+    public void execute()
     {
-        if (this.sql_orderby.equals(""))
+        try
         {
-            this.sql_orderby = " order by ";
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
         }
-        else
+        catch (Exception e2)
         {
-            this.sql_orderby = this.sql_orderby + " , ";
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
         }
-        this.sql_orderby = this.sql_orderby + " id DESC ";
-        return this;
-    }
-
-    public ConferenceMessage is_newEq(boolean is_new)
-    {
-        this.sql_where = this.sql_where + " and is_new='" + b(is_new) + "' ";
-        return this;
     }
 
     public int count()
@@ -329,7 +253,7 @@ public class ConferenceMessage
         try
         {
             Statement statement = sqldb.createStatement();
-            this.sql_start = "SELECT count(*) as count FROM ConferenceMessage";
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
 
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
             if (ORMA_TRACE)
@@ -352,22 +276,105 @@ public class ConferenceMessage
         return ret;
     }
 
-    public void execute()
+    public ConferenceMessage limit(int i)
     {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            statement.executeUpdate(sql);
-        }
-        catch (Exception e2)
-        {
-            e2.printStackTrace();
-            Log.i(TAG, "EE1:" + e2.getMessage());
-        }
+        this.sql_limit = " limit " + i + " ";
+        return this;
     }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
+
+
+    public ConferenceMessage conference_identifierEq(String current_conf_id)
+    {
+        this.sql_where = this.sql_where + " and conference_identifier='" + s(current_conf_id) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage is_new(boolean is_new)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " is_new='" + b(is_new) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage tox_peerpubkeyNotEq(String trifaSystemMessagePeerPubkey)
+    {
+        this.sql_where = this.sql_where + " and tox_peerpubkey<>'" + s(trifaSystemMessagePeerPubkey) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage orderBySent_timestampAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " Sent_timestamp ASC ";
+        return this;
+    }
+
+    public ConferenceMessage tox_peerpubkeyEq(String tox_peerpubkey)
+    {
+        this.sql_where = this.sql_where + " and tox_peerpubkey='" + s(tox_peerpubkey) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage message_id_toxEq(String message_id_tox)
+    {
+        this.sql_where = this.sql_where + " and message_id_tox='" + s(message_id_tox) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage sent_timestampGt(long l)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp>'" + s(l) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage sent_timestampLt(long l)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp<'" + s(l) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage idEq(long id)
+    {
+        this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
+        return this;
+    }
+
+    public ConferenceMessage orderByIdDesc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " id DESC ";
+        return this;
+    }
+
+    public ConferenceMessage is_newEq(boolean is_new)
+    {
+        this.sql_where = this.sql_where + " and is_new='" + b(is_new) + "' ";
+        return this;
+    }
+
 }

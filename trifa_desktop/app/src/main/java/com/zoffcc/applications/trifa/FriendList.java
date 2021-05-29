@@ -153,15 +153,9 @@ public class FriendList
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
 
-    public FriendList tox_public_key_stringEq(String tox_public_key_string)
-    {
-        this.sql_where = this.sql_where + " and tox_public_key_string='" + s(tox_public_key_string) + "' ";
-        return this;
-    }
-
     public List<FriendList> toList()
     {
-        List<FriendList> fl = null;
+        List<FriendList> fl = new ArrayList<>();
 
         try
         {
@@ -197,10 +191,6 @@ public class FriendList
                 f.avatar_update_timestamp = rs.getLong("avatar_update_timestamp");
                 f.added_timestamp = rs.getLong("added_timestamp");
 
-                if (fl == null)
-                {
-                    fl = new ArrayList<FriendList>();
-                }
                 fl.add(f);
             }
         }
@@ -220,8 +210,8 @@ public class FriendList
         {
             // @formatter:off
             Statement statement = sqldb.createStatement();
-            final String sql_str="insert into FriendList" +
-                                "(" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
+                                 "(" +
                                  "tox_public_key_string,"	+
                                  "name,"+
                                  "alias_name,"+
@@ -263,7 +253,7 @@ public class FriendList
                                  "'"+s(this.last_online_timestamp_real)+"'," +
                                  "'"+s(this.added_timestamp)+"'," +
                                  "'"+b(this.is_relay)+"'" +
-                                  ")";
+                                 ")";
 
             if (ORMA_TRACE)
             {
@@ -283,6 +273,31 @@ public class FriendList
         return ret;
     }
 
+    public FriendList get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
     public int count()
     {
         int ret = 0;
@@ -290,7 +305,7 @@ public class FriendList
         try
         {
             Statement statement = sqldb.createStatement();
-            this.sql_start = "SELECT count(*) as count FROM FriendList";
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
 
             final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
             if (ORMA_TRACE)
@@ -311,6 +326,22 @@ public class FriendList
         }
 
         return ret;
+    }
+
+    public FriendList limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
+
+    public FriendList tox_public_key_stringEq(String tox_public_key_string)
+    {
+        this.sql_where = this.sql_where + " and tox_public_key_string='" + s(tox_public_key_string) + "' ";
+        return this;
     }
 
     public FriendList is_relayNotEq(boolean b)
@@ -443,25 +474,6 @@ public class FriendList
         return this;
     }
 
-    public void execute()
-    {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            statement.executeUpdate(sql);
-        }
-        catch (Exception e2)
-        {
-            e2.printStackTrace();
-            Log.i(TAG, "EE1:" + e2.getMessage());
-        }
-    }
-
     public FriendList TOX_CONNECTION_real(int TOX_CONNECTION_real)
     {
         if (this.sql_set.equals(""))
@@ -542,12 +554,6 @@ public class FriendList
         }
         this.sql_set = this.sql_set + " is_relay='" + b(is_relay) + "' ";
         return this;
-    }
-
-    public FriendList get(int i)
-    {
-        this.sql_limit = " limit " + i + ",1 ";
-        return this.toList().get(0);
     }
 
     public FriendList alias_name(String alias_name)

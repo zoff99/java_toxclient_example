@@ -184,7 +184,7 @@ public class Message
 
     public List<Message> toList()
     {
-        List<Message> list = null;
+        List<Message> list = new ArrayList<>();
 
         try
         {
@@ -227,10 +227,6 @@ public class Message
                 out.ft_outgoing_queued = rs.getBoolean("ft_outgoing_queued");
                 out.msg_at_relay = rs.getBoolean("msg_at_relay");
 
-                if (list == null)
-                {
-                    list = new ArrayList<Message>();
-                }
                 list.add(out);
             }
         }
@@ -251,7 +247,7 @@ public class Message
             // @formatter:off
             Statement statement = sqldb.createStatement();
 
-            final String sql_str="insert into Message" +
+            final String sql_str="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "message_id," +
                                  "tox_friendpubkey," +
@@ -325,6 +321,71 @@ public class Message
 
         return ret;
     }
+
+    public Message get(int i)
+    {
+        this.sql_limit = " limit " + i + ",1 ";
+        return this.toList().get(0);
+    }
+
+    public void execute()
+    {
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+            statement.executeUpdate(sql);
+        }
+        catch (Exception e2)
+        {
+            e2.printStackTrace();
+            Log.i(TAG, "EE1:" + e2.getMessage());
+        }
+    }
+
+    public int count()
+    {
+        int ret = 0;
+
+        try
+        {
+            Statement statement = sqldb.createStatement();
+            this.sql_start = "SELECT count(*) as count FROM " + this.getClass().getSimpleName();
+
+            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
+            if (ORMA_TRACE)
+            {
+                Log.i(TAG, "sql=" + sql);
+            }
+
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next())
+            {
+                ret = rs.getInt("count");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    public Message limit(int i)
+    {
+        this.sql_limit = " limit " + i + " ";
+        return this;
+    }
+
+    // ----------------------------------- //
+    // ----------------------------------- //
+    // ----------------------------------- //
 
     public Message tox_friendpubkeyEq(String tox_friendpubkey)
     {
@@ -402,25 +463,6 @@ public class Message
         }
         this.sql_set = this.sql_set + " message_id='" + s(message_id) + "' ";
         return this;
-    }
-
-    public void execute()
-    {
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            final String sql = this.sql_start + " " + this.sql_set + " " + this.sql_where;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-            statement.executeUpdate(sql);
-        }
-        catch (Exception e2)
-        {
-            e2.printStackTrace();
-            Log.i(TAG, "EE1:" + e2.getMessage());
-        }
     }
 
     public Message text(String text)
@@ -641,36 +683,6 @@ public class Message
         }
         this.sql_set = this.sql_set + " filetransfer_id='" + s(filetransfer_id) + "' ";
         return this;
-    }
-
-    public int count()
-    {
-        int ret = 0;
-
-        try
-        {
-            Statement statement = sqldb.createStatement();
-            this.sql_start = "SELECT count(*) as count FROM Message";
-
-            final String sql = this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit;
-            if (ORMA_TRACE)
-            {
-                Log.i(TAG, "sql=" + sql);
-            }
-
-            ResultSet rs = statement.executeQuery(sql);
-
-            if (rs.next())
-            {
-                ret = rs.getInt("count");
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return ret;
     }
 
     public Message ft_outgoing_started(boolean ft_outgoing_started)
