@@ -19,20 +19,29 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.awt.Checkbox;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__show_image_thumbnails;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
@@ -40,31 +49,40 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 
 public class SettingsActivity extends JFrame
 {
-    public static int width = 640;
-    public static int height = 480;
+    public static int width = 800;
+    public static int height = 700;
 
     private JLabel label_name = new JLabel(lo.getString("settings_name"));
     private JTextField text_name = new JTextField(20);
+
+    private Checkbox chkbox_001;
+    private JTextArea text_001 = new JTextArea(lo.getString("settings_show_image_thumbnails_desc"));
+
+    private JPanel setting_main_panel = null;
 
     SettingsActivity()
     {
         super("TRIfA - " + lo.getString("settings_title"));
 
         setSize(width / 2, height / 2);
-        this.isVisible();
+        setPreferredSize(new Dimension(width / 2, height / 2));
 
-        JPanel newPanel = new JPanel(new GridBagLayout());
+        setting_main_panel = new JPanel(true);
+        setting_main_panel.setLayout(new BoxLayout(setting_main_panel, BoxLayout.PAGE_AXIS));
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(10, 10, 10, 10);
+        // ----------- Tox settings -----------
+        JPanel panel_tox = new JPanel(new GridBagLayout());
 
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        newPanel.add(label_name, constraints);
+        GridBagConstraints constraints_tox = new GridBagConstraints();
+        constraints_tox.anchor = GridBagConstraints.WEST;
+        constraints_tox.insets = new Insets(0, 0, 0, 0);
 
-        constraints.gridx = 1;
-        newPanel.add(text_name, constraints);
+        constraints_tox.gridx = 0;
+        constraints_tox.gridy = 0;
+        panel_tox.add(label_name, constraints_tox);
+
+        constraints_tox.gridx = 1;
+        panel_tox.add(text_name, constraints_tox);
 
         String current_name = global_my_name;
         text_name.setText(current_name);
@@ -86,13 +104,67 @@ public class SettingsActivity extends JFrame
             }
         });
 
-        newPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
-                                                            lo.getString("settings_category_001")));
+        panel_tox.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                                                             lo.getString("settings_category_001")));
 
-        add(newPanel);
+        // ----------- General settings -----------
+
+        JPanel panel_general = new JPanel(new GridBagLayout());
+
+        GridBagConstraints constraints_general = new GridBagConstraints();
+        constraints_general.anchor = GridBagConstraints.WEST;
+        constraints_general.insets = new Insets(0, 0, 0, 0);
+
+
+        chkbox_001 = new Checkbox(lo.getString("settings_show_image_thumbnails_title"), PREF__show_image_thumbnails);
+        chkbox_001.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__show_image_thumbnails", "true");
+                    PREF__show_image_thumbnails = true;
+                }
+                else
+                {
+                    set_g_opts("PREF__show_image_thumbnails", "false");
+                    PREF__show_image_thumbnails = false;
+                }
+            }
+        });
+
+        text_001.setEditable(false);
+        text_001.setLineWrap(true);
+        text_001.setWrapStyleWord(true);
+
+        constraints_tox.gridx = 0;
+        constraints_tox.gridy = 0;
+        panel_general.add(text_001, constraints_general);
+
+        constraints_tox.gridy = 1;
+        panel_general.add(chkbox_001, constraints_general);
+
+
+        panel_general.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                                                                 lo.getString("settings_category_002")));
+
+        // ----------------------------------------
+
+        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
+
+        setting_main_panel.add(panel_general);
+        setting_main_panel.add(panel_tox);
+
+        JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.add(setting_main_panel);
+        scrollPane1.setViewportView(setting_main_panel);
+        add(scrollPane1);
+
         pack();
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.isVisible();
     }
 
     void process_name_change(DocumentEvent e)

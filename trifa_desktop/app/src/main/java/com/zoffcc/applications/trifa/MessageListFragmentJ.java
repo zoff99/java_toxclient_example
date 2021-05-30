@@ -82,6 +82,8 @@ public class MessageListFragmentJ extends JPanel
 {
     private static final String TAG = "trifa.MsgListFrgnt";
 
+    private static final boolean USE_TABLE = false;
+
     static int global_typing = 0;
     static Thread typing_flag_thread = null;
     final static int TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS = 1000; // 1 second
@@ -95,6 +97,8 @@ public class MessageListFragmentJ extends JPanel
 
     private static JList<Message> messagelistitems;
     static DefaultListModel<Message> messagelistitems_model;
+    // private static JTable messagelistitems_t;
+    // static DefaultTableModel messagelistitems_model_t;
     static JScrollPane MessageScrollPane = null;
 
     public MessageListFragmentJ()
@@ -103,8 +107,16 @@ public class MessageListFragmentJ extends JPanel
         friendnum = -1;
         current_pk = null;
 
-        messagelistitems_model = new DefaultListModel<>();
+        // messagelistitems_model_t = new DefaultTableModel();
+        // messagelistitems_t = new JTable(messagelistitems_model_t);
+        // messagelistitems_t.setShowGrid(false);
+        // messagelistitems_t.setShowHorizontalLines(false);
+        // messagelistitems_t.setShowVerticalLines(false);
+        // messagelistitems_t.setRowMargin(0);
+        // messagelistitems_t.setIntercellSpacing(new Dimension(0, 0));
+        // messagelistitems_t.setFillsViewportHeight(true);
 
+        messagelistitems_model = new DefaultListModel<>();
         messagelistitems = new JList<>();
         messagelistitems.setModel(messagelistitems_model);
         messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -455,6 +467,7 @@ public class MessageListFragmentJ extends JPanel
                 }
             }
         });
+
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));

@@ -115,6 +115,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
+import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
@@ -263,6 +264,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static boolean PREF__auto_accept_video = true;
     static boolean PREF__auto_accept_all_upto = true;
     static int PREF__audio_play_volume_percent = 100;
+    static int PREF__udp_enabled = 1;
+    static int PREF__orbot_enabled_to_int = 0;
+    static int PREF__local_discovery_enabled = 1;
+    static int PREF__ipv6_enabled = 1;
+    static int PREF__force_udp_only = 0;
+    static boolean PREF__show_image_thumbnails = true;
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
@@ -305,6 +312,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         super("TRIfA - Desktop - " + Version + "   ");
 
         // Thread.currentThread().setName("t_main_act");
+
+        load_prefs();
 
         try
         {
@@ -933,6 +942,41 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
     }
 
+    static void load_prefs()
+    {
+        if (get_g_opts("PREF__udp_enabled") != null)
+        {
+            if (get_g_opts("PREF__udp_enabled").equals("true"))
+            {
+                PREF__udp_enabled = 1;
+            }
+            else
+            {
+                PREF__udp_enabled = 0;
+            }
+        }
+        else
+        {
+            PREF__udp_enabled = 1;
+        }
+
+        if (get_g_opts("PREF__show_image_thumbnails") != null)
+        {
+            if (get_g_opts("PREF__show_image_thumbnails").equals("true"))
+            {
+                PREF__show_image_thumbnails = true;
+            }
+            else
+            {
+                PREF__show_image_thumbnails = false;
+            }
+        }
+        else
+        {
+            PREF__show_image_thumbnails = true;
+        }
+    }
+
     static void set_message_panel(int i)
     {
         EventQueue.invokeLater(() -> {
@@ -1220,13 +1264,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         if (!TrifaToxService.TOX_SERVICE_STARTED)
         {
-            int PREF__udp_enabled = 1;
-            int PREF__orbot_enabled_to_int = 0;
             String ORBOT_PROXY_HOST = "";
             long ORBOT_PROXY_PORT = 0;
-            int PREF__local_discovery_enabled = 1;
-            int PREF__ipv6_enabled = 1;
-            int PREF__force_udp_only = 0;
 
             app_files_directory = "." + File.separator;
 

@@ -45,6 +45,7 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.newColorWithAlpha;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__show_image_thumbnails;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_MSG_DATE_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
@@ -53,6 +54,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
@@ -213,11 +215,24 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
                     try
                     {
-                        BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                        Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                newMaxSize.height);
-                        message_image.setImage(resizedImg);
+                        if (PREF__show_image_thumbnails)
+                        {
+                            BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
+                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
+                                                                    newMaxSize.height);
+                            message_image.setImage(resizedImg);
+                        }
+                        else
+                        {
+                            String asset_filename =
+                                    "." + File.separator + "assets" + File.separator + IMAGE_THUMBNAIL_PLACEHOLDER;
+                            BufferedImage bi = ImageIO.read(new File(asset_filename));
+                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
+                                                                    newMaxSize.height);
+                            message_image.setImage(resizedImg);
+                        }
 
                         if (m.direction == 0)
                         {
@@ -253,11 +268,24 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                     // show image on component
                     try
                     {
-                        BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                        Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                        BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                newMaxSize.height);
-                        message_image.setImage(resizedImg);
+                        if (PREF__show_image_thumbnails)
+                        {
+                            BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
+                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
+                                                                    newMaxSize.height);
+                            message_image.setImage(resizedImg);
+                        }
+                        else
+                        {
+                            String asset_filename =
+                                    "." + File.separator + "assets" + File.separator + IMAGE_THUMBNAIL_PLACEHOLDER;
+                            BufferedImage bi = ImageIO.read(new File(asset_filename));
+                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
+                                                                    newMaxSize.height);
+                            message_image.setImage(resizedImg);
+                        }
                         message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
                         message_image_label.setIcon(message_image);
                         add(message_image_label_line);
