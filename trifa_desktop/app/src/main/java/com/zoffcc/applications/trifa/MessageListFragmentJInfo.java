@@ -54,12 +54,12 @@ public class MessageListFragmentJInfo extends JPanel
         MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
         MessageTextArea.setCharacterAttributes(mainStyle, true);
         // @formatter:off
-        MessageTextArea.replaceSelection("\n\n\n\n\n\n" +
-                                         "             Welcome to\n" +
-                                         "             TRIfA - Desktop\n" +
+        MessageTextArea.replaceSelection("\n\n\n\n" +
+                                         "         Welcome to\n" +
+                                         "         TRIfA - Desktop\n" +
                                          "\n" +
-                                         "             Your Tox Client for the Desktop\n" +
-                                         "             v" + MainActivity.Version +
+                                         "         Your Tox Client for the Desktop\n" +
+                                         "         v" + MainActivity.Version +
                                          "\n");
         // @formatter:on
 
@@ -81,8 +81,51 @@ public class MessageListFragmentJInfo extends JPanel
         // @formatter:off
         MessageTextArea.replaceSelection("\n" +
                                          "\n" +
-                                         "         https://github.com/zoff99/java_toxclient_example/\n" +
+                                         "     https://github.com/zoff99/java_toxclient_example/\n" +
                                          "\n");
         // @formatter:on
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(mainStyle, true);
+
+        try
+        {
+            if (default_bg != null)
+            {
+                MessageTextArea.setBackground(default_bg);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+
+        // @formatter:off
+        MessageTextArea.replaceSelection("\n" +
+                                         "         Join us on Matrix\n"
+                                         );
+        // @formatter:on
+
+        MessageTextArea.setSelectionStart(MessageTextArea.getText().length());
+        MessageTextArea.setSelectionEnd(MessageTextArea.getText().length());
+        MessageTextArea.setCharacterAttributes(blueSmallStyle, true);
+
+        try
+        {
+            if (default_bg != null)
+            {
+                MessageTextArea.setBackground(default_bg);
+            }
+        }
+        catch (Exception e)
+        {
+        }
+
+        // @formatter:off
+        MessageTextArea.replaceSelection("\n" +
+                                         "     https://matrix.to/#/#trifa:matrix.org\n" +
+                                         "\n");
+        // @formatter:on
+
     }
 }
