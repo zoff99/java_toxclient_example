@@ -164,7 +164,7 @@ public class RelayListDB
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return ret;

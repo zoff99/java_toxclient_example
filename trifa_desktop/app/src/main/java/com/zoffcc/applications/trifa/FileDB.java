@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,7 +167,7 @@ public class FileDB
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return ret;

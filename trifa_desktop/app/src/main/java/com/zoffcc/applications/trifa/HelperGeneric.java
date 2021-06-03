@@ -78,15 +78,16 @@ public class HelperGeneric
     {
         try
         {
-            String ret = null;
-            Statement statement = sqldb.createStatement();
-            ResultSet rs = statement.executeQuery(
-                    "select key, value from TRIFADatabaseGlobalsNew where key='" + s(key) + "'");
-            if (rs.next())
+            if (orma.selectFromTRIFADatabaseGlobalsNew().keyEq(key).count() == 1)
             {
-                ret = rs.getString("value");
+                TRIFADatabaseGlobalsNew g_opts = orma.selectFromTRIFADatabaseGlobalsNew().keyEq(key).get(0);
+                // Log.i(TAG, "get_g_opts:(SELECT):key=" + key);
+                return g_opts.value;
             }
-            return ret;
+            else
+            {
+                return null;
+            }
         }
         catch (Exception e)
         {
@@ -106,21 +107,16 @@ public class HelperGeneric
 
             try
             {
-                Statement statement = sqldb.createStatement();
-                statement.execute("insert into TRIFADatabaseGlobalsNew (key, value) values('" + s(g_opts.key) + "', '" +
-                                  s(g_opts.value) + "')");
-                Log.i(TAG, "set_g_opts:(INSERT):key=" + key + " value=" + g_opts.value);
+                orma.insertIntoTRIFADatabaseGlobalsNew(g_opts);
+                Log.i(TAG, "set_g_opts:(INSERT):key=" + key + " value=" + "xxxxxxxxxxxxx");
             }
             catch (Exception e)
             {
+                // e.printStackTrace();
                 try
                 {
-                    Statement statement = sqldb.createStatement();
-                    statement.executeUpdate(
-                            "update TRIFADatabaseGlobalsNew set key='" + s(g_opts.key) + "' where value='" +
-                            s(g_opts.value) + "'");
-
-                    Log.i(TAG, "set_g_opts:(UPDATE):key=" + key + " value=" + g_opts.value);
+                    orma.updateTRIFADatabaseGlobalsNew().keyEq(key).value(value).execute();
+                    Log.i(TAG, "set_g_opts:(UPDATE):key=" + key + " value=" + "xxxxxxxxxxxxxxx");
                 }
                 catch (Exception e2)
                 {
@@ -129,10 +125,24 @@ public class HelperGeneric
                 }
             }
         }
+        catch (Exception e4)
+        {
+            e4.printStackTrace();
+            Log.i(TAG, "set_g_opts:EE2:" + e4.getMessage());
+        }
+    }
+
+    static void del_g_opts(String key)
+    {
+        try
+        {
+            orma.deleteFromTRIFADatabaseGlobalsNew().keyEq(key).execute();
+            Log.i(TAG, "del_g_opts:(DELETE):key=" + key);
+        }
         catch (Exception e)
         {
             e.printStackTrace();
-            Log.i(TAG, "set_g_opts:EE2:" + e.getMessage());
+            Log.i(TAG, "del_g_opts:EE2:" + e.getMessage());
         }
     }
 

@@ -211,7 +211,7 @@ public class Filetransfer
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return ret;

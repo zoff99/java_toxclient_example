@@ -20,7 +20,10 @@ public class OrmaDatabase
     {
     }
 
-    /* escape to prevent SQL injection, very basic and bad! */
+    /*
+     * escape to prevent SQL injection, very basic and bad!
+     * TODO: make me better (and later use prepared statements)
+     */
     public static String s(String str)
     {
         // TODO: bad!! use prepared statements
@@ -146,9 +149,9 @@ public class OrmaDatabase
         {
             try
             {
-                final String update_001 = "alter table Message add ft_outgoing_queued BOOLEAN NOT NULL DEFAULT false;" +
-                                          "\n"+
-                                          "CREATE INDEX index_ft_outgoing_queued_on_Message ON Message (ft_outgoing_queued);";
+                final String update_001 =
+                        "alter table Message add ft_outgoing_queued BOOLEAN NOT NULL DEFAULT false;" + "\n" +
+                        "CREATE INDEX index_ft_outgoing_queued_on_Message ON Message (ft_outgoing_queued);";
                 run_multi_sql(update_001);
             }
             catch (Exception e)
@@ -161,9 +164,9 @@ public class OrmaDatabase
         {
             try
             {
-                final String update_001 = "alter table Message add msg_at_relay BOOLEAN NOT NULL DEFAULT false;" +
-                                          "\n"+
-                                          "CREATE INDEX index_msg_at_relay_on_Message ON Message (msg_at_relay);";
+                final String update_001 =
+                        "alter table Message add msg_at_relay BOOLEAN NOT NULL DEFAULT false;" + "\n" +
+                        "CREATE INDEX index_msg_at_relay_on_Message ON Message (msg_at_relay);";
                 run_multi_sql(update_001);
             }
             catch (Exception e)
@@ -403,6 +406,38 @@ public class OrmaDatabase
     public long insertIntoRelayListDB(RelayListDB f)
     {
         return f.insert();
+    }
+
+    public long insertIntoTRIFADatabaseGlobalsNew(TRIFADatabaseGlobalsNew o)
+    {
+        return o.insert();
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE TRIFADatabaseGlobalsNew ...}.
+     */
+    public TRIFADatabaseGlobalsNew updateTRIFADatabaseGlobalsNew()
+    {
+        TRIFADatabaseGlobalsNew ret = new TRIFADatabaseGlobalsNew();
+        ret.sql_start = "UPDATE TRIFADatabaseGlobalsNew";
+        return ret;
+    }
+
+    public TRIFADatabaseGlobalsNew deleteFromTRIFADatabaseGlobalsNew()
+    {
+        TRIFADatabaseGlobalsNew ret = new TRIFADatabaseGlobalsNew();
+        ret.sql_start = "DELETE FROM TRIFADatabaseGlobalsNew";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM TRIFADatabaseGlobalsNew ...}.
+     */
+    public TRIFADatabaseGlobalsNew selectFromTRIFADatabaseGlobalsNew()
+    {
+        TRIFADatabaseGlobalsNew ret = new TRIFADatabaseGlobalsNew();
+        ret.sql_start = "SELECT * FROM TRIFADatabaseGlobalsNew";
+        return ret;
     }
 }
 
