@@ -41,6 +41,7 @@ import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
@@ -181,11 +182,18 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
 
         m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
-        // m_date_time.setBorder(new LineBorder(Color.GREEN));
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);
-        // setBorder(new LineBorder(Color.BLUE));
 
         date_line.setBorder(new EmptyBorder(new Insets(-5, -5, -5, -5)));
+
+        // ------- DEBUG -------
+        // ------- DEBUG -------
+        // setBorder(new LineBorder(Color.BLUE));
+        // m_date_time.setBorder(new LineBorder(Color.GREEN));
+        // date_line.setBorder(new LineBorder(Color.ORANGE));
+        // ------- DEBUG -------
+        // ------- DEBUG -------
+
 
         date_line.add(m_date_time);
         add(m_text);
