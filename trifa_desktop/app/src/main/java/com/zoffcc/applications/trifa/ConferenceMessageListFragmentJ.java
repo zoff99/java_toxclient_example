@@ -49,7 +49,6 @@ import static com.zoffcc.applications.trifa.HelperConference.insert_into_confere
 import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
-import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
@@ -314,14 +313,14 @@ public class ConferenceMessageListFragmentJ extends JPanel
     public static void add_item(ConferenceMessage new_item)
     {
         conf_messagelistitems_model.addElement(new_item);
-        MessagePanel.revalidate();
+        MessagePanelConferences.revalidate();
     }
 
     static void setConfName()
     {
         try
         {
-            if (MessagePanel != null)
+            if (MessagePanelConferences != null)
             {
                 EventQueue.invokeLater(() -> {
                     try
