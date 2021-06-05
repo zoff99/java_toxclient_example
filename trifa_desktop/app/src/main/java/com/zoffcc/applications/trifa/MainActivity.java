@@ -908,6 +908,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         EventQueue.invokeLater(() -> {
             this.toFront();
+            this.pack();
+            setSize(600, 400);
             this.revalidate();
         });
 
