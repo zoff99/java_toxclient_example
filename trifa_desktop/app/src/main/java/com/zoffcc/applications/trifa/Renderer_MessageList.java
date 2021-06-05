@@ -41,7 +41,6 @@ import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
