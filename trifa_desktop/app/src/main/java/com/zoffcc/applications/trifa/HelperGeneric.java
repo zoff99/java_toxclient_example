@@ -993,7 +993,7 @@ public class HelperGeneric
         return out;
     }
 
-    static void conference_message_add_from_sync(long conference_number, long peer_number2, String peer_pubkey, int a_TOX_MESSAGE_TYPE, String message, long length, long sent_timestamp_in_ms)
+    static void conference_message_add_from_sync(long conference_number, long peer_number2, String peer_pubkey, int a_TOX_MESSAGE_TYPE, String message, long length, long sent_timestamp_in_ms, String message_id)
     {
         // Log.i(TAG, "conference_message_add_from_sync:cf_num=" + conference_number + " pnum=" + peer_number2 + " msg=" +
         //            message);
@@ -1067,6 +1067,7 @@ public class HelperGeneric
         m.sent_timestamp = sent_timestamp_in_ms;
         m.rcvd_timestamp = System.currentTimeMillis();
         m.text = message;
+        m.message_id_tox = message_id;
         m.was_synced = true;
 
         try
