@@ -37,14 +37,15 @@ jobs:
             java -version
             $JAVA_HOME/bin/java -version
             $JAVA_HOME/bin/javac -version
+            ls -al /usr/local/Cellar/openjdk/
 
     - name: cat jni headers1
       run:  |
-            cat /usr/local/Cellar/openjdk/15.0.2/include/jni_md.h
+            cat /usr/local/Cellar/openjdk/15.0.2/include/jni_md.h || exit 0
 
     - name: cat jni headers2
       run:  |
-            cat /usr/local/Cellar/openjdk/15.0.2/include/jni.h
+            cat /usr/local/Cellar/openjdk/15.0.2/include/jni.h || exit 0
 
     - name: install java
       run:  brew install java
