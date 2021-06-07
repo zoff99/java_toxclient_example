@@ -19,15 +19,15 @@
 
 package com.zoffcc.applications.trifa;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
 
-import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid;
+import static com.zoffcc.applications.trifa.HelperGeneric.get_last_rowid_pstmt;
 import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.b;
@@ -182,6 +182,7 @@ public class Message
     String sql_where = "where 1=1 "; // where
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
+    Object[] sql_bind_vars = new Object[]{};
 
     public List<Message> toList()
     {
@@ -245,10 +246,11 @@ public class Message
 
         try
         {
-            // @formatter:off
-            Statement statement = sqldb.createStatement();
+            String insert_pstmt_sql = null;
+            PreparedStatement insert_pstmt = null;
 
-            final String sql_str="insert into " + this.getClass().getSimpleName() +
+            // @formatter:off
+            insert_pstmt_sql ="insert into " + this.getClass().getSimpleName() +
                                  "(" +
                                  "message_id," +
                                  "tox_friendpubkey," +
@@ -278,42 +280,70 @@ public class Message
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(this.message_id)+"'," +
-                                 "'"+s(this.tox_friendpubkey)+"'," +
-                                 "'"+s(this.direction)+"'," +
-                                 "'"+s(this.TOX_MESSAGE_TYPE)+"'," +
-                                 "'"+s(this.TRIFA_MESSAGE_TYPE)+"'," +
-                                 "'"+s(this.state)+"'," +
-                                 "'"+b(this.ft_accepted)+"'," +
-                                 "'"+b(this.ft_outgoing_started)+"'," +
-                                 "'"+s(this.filedb_id)+"'," +
-                                 "'"+s(this.filetransfer_id)+"'," +
-                                 "'"+s(this.sent_timestamp)+"'," +
-                                 "'"+s(this.sent_timestamp_ms)+"'," +
-                                 "'"+s(this.rcvd_timestamp)+"'," +
-                                 "'"+s(this.rcvd_timestamp_ms)+"'," +
-                                 "'"+b(this.read)+"'," +
-                                 "'"+s(this.send_retries)+"'," +
-                                 "'"+b(this.is_new)+"'," +
-                                 "'"+s(this.text)+"'," +
-                                 "'"+s(this.filename_fullpath)+"'," +
-                                 "'"+s(this.msg_id_hash)+"'," +
-                                 "'"+s(this.msg_version)+"'," +
-                                 "'"+s(this.raw_msgv2_bytes)+"'," +
-                                 "'"+s(this.resend_count)+"'," +
-                                 "'"+b(this.ft_outgoing_queued)+"'," +
-                                 "'"+b(this.msg_at_relay)+"'" +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?," +
+                                 "?" +
                                  ")";
+            insert_pstmt = sqldb.prepareStatement(insert_pstmt_sql, Statement.RETURN_GENERATED_KEYS);
+
+            insert_pstmt.clearParameters();
+
+            insert_pstmt.setLong(1, this.message_id);
+            insert_pstmt.setString(2, this.tox_friendpubkey);
+            insert_pstmt.setInt(3, this.direction);
+            insert_pstmt.setInt(4, this.TOX_MESSAGE_TYPE);
+            insert_pstmt.setInt(5, this.TRIFA_MESSAGE_TYPE);
+            insert_pstmt.setInt(6, this.state);
+            insert_pstmt.setBoolean(7, this.ft_accepted);
+            insert_pstmt.setBoolean(8, this.ft_outgoing_started);
+            insert_pstmt.setLong(9, this.filedb_id);
+            insert_pstmt.setLong(10, this.filetransfer_id);
+            insert_pstmt.setLong(11, this.sent_timestamp);
+            insert_pstmt.setLong(12, this.sent_timestamp_ms);
+            insert_pstmt.setLong(13, this.rcvd_timestamp);
+            insert_pstmt.setLong(14, this.rcvd_timestamp_ms);
+            insert_pstmt.setBoolean(15, this.read);
+            insert_pstmt.setInt(16, this.send_retries);
+            insert_pstmt.setBoolean(17, this.is_new);
+            insert_pstmt.setString(18, this.text);
+            insert_pstmt.setString(19, this.filename_fullpath);
+            insert_pstmt.setString(20, this.msg_id_hash);
+            insert_pstmt.setInt(21, this.msg_version);
+            insert_pstmt.setString(22, this.raw_msgv2_bytes);
+            insert_pstmt.setInt(23, this.resend_count);
+            insert_pstmt.setBoolean(24, this.ft_outgoing_queued);
+            insert_pstmt.setBoolean(25, this.msg_at_relay);
+            // @formatter:on
 
             if (ORMA_TRACE)
             {
-                Log.i(TAG, "sql=" + sql_str);
+                Log.i(TAG, "sql=" + insert_pstmt);
             }
 
-            statement.execute(sql_str);
-            ret = get_last_rowid(statement);
-            // @formatter:on
-
+            insert_pstmt.executeUpdate();
+            ret = get_last_rowid_pstmt(insert_pstmt);
         }
         catch (Exception e)
         {

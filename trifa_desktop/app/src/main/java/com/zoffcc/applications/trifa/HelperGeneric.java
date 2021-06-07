@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
@@ -831,6 +832,29 @@ public class HelperGeneric
         {
             e.printStackTrace();
             Log.i(TAG, "get_last_rowid:EE1:" + e.getMessage());
+            return -1;
+        }
+    }
+
+    public static long get_last_rowid_pstmt(PreparedStatement statement)
+    {
+        try
+        {
+            long ret = -1;
+
+            ResultSet rs = statement.getGeneratedKeys();
+            while (rs.next())
+            {
+                ret = rs.getLong(1);
+            }
+            rs.close();
+            // Log.i(TAG, "get_last_rowid:ret=" + ret);
+            return ret;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "get_last_rowid_pstmt:EE1:" + e.getMessage());
             return -1;
         }
     }
