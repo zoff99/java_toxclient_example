@@ -67,8 +67,8 @@ dirname $(find /usr -name 'jni_md.h' 2>/dev/null|head -1) > /tmp/xx2
 export JAVADIR1=$(cat /tmp/xx1)
 export JAVADIR2=$(cat /tmp/xx2)
 
-export JAVADIR1="/usr/local/Cellar/openjdk/15.0.2/include"
-export JAVADIR2="/usr/local/Cellar/openjdk/15.0.2/include"
+export JAVADIR1="/usr/local/Cellar/openjdk/16.0.1/include"
+export JAVADIR2="/usr/local/Cellar/openjdk/16.0.1/include"
 
 if [ ! -e "$JAVADIR1" ]; then
     mkdir -p "$_INST_/jinclude/"
