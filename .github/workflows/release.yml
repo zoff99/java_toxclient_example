@@ -45,7 +45,7 @@ jobs:
              /usr/libexec/java_home -v 11
              export JAVA_HOME=$(/usr/libexec/java_home -v11)
              $JAVA_HOME/bin/java  -Djava.library.path="." -classpath ".:json-20210307.jar:emoji-java-5.1.1.jar:sqlite-jdbc-3.34.0.jar:webcam-capture-0.3.12.jar:bridj-0.7.0.jar:slf4j-api-1.7.2.jar:flatlaf-1.0.jar" com.zoffcc.applications.trifa.MainActivity > trifa.log 2>&1 &
-             sleep 40
+             sleep 80
              cat ./trifa.log|head -20
              cat ./trifa.log | grep 'MyToxID:' | cut -d':' -f 8
              mkdir -p /Users/runner/work/artefacts
