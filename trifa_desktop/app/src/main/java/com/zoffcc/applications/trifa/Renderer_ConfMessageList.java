@@ -38,10 +38,13 @@ import static com.zoffcc.applications.trifa.HelperGeneric.darkenColor;
 import static com.zoffcc.applications.trifa.HelperGeneric.hash_to_bucket;
 import static com.zoffcc.applications.trifa.HelperGeneric.isColorDarkBrightness;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
+import static com.zoffcc.applications.trifa.Identicon.bytesToHex;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
-import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOXIRC_PUBKEY;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOXIRC_TOKTOK_CONFID;
 import static java.awt.Font.PLAIN;
 
 public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
@@ -63,7 +66,28 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
     {
         ConferenceMessage m = (ConferenceMessage) value;
 
-        m_text.setText(m.text);
+        String message__text = m.text;
+        String message__tox_peername = m.tox_peername;
+        String message__tox_peerpubkey = m.tox_peerpubkey;
+
+        boolean handle_special_name = false;
+
+        name_test_pk res = correct_pubkey(m);
+        if (res.changed)
+        {
+            try
+            {
+                message__tox_peername = res.tox_peername;
+                message__text = res.text;
+                message__tox_peerpubkey = res.tox_peerpubkey;
+                handle_special_name = true;
+            }
+            catch (Exception e)
+            {
+            }
+        }
+
+        m_text.setText(message__text);
         m_text.setLineWrap(true);
         m_text.setWrapStyleWord(true);
         m_text.setOpaque(true);
@@ -78,8 +102,8 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
             try
             {
                 Color peer_color_bg = ChatColors.get_shade(
-                        ChatColors.PeerAvatarColors[hash_to_bucket(m.tox_peerpubkey, ChatColors.get_size())],
-                        m.tox_peerpubkey);
+                        ChatColors.PeerAvatarColors[hash_to_bucket(message__tox_peerpubkey, ChatColors.get_size())],
+                        message__tox_peerpubkey);
                 // peer_color_bg_with_alpha = (peer_color_bg & 0x00FFFFFF) | (alpha_value << 24);
                 m_text.setForeground(Color.BLACK);
 
@@ -124,11 +148,11 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
 
         try
         {
-            String peer_name = tox_conference_peer_get_name__wrapper(m.conference_identifier, m.tox_peerpubkey);
+            String peer_name = tox_conference_peer_get_name__wrapper(m.conference_identifier, message__tox_peerpubkey);
             if (peer_name == null)
             {
-                peer_name = m.tox_peername;
-                if ((peer_name == null) || (m.tox_peername.equals("")) || (peer_name.equals("-1")))
+                peer_name = message__tox_peername;
+                if ((peer_name == null) || (message__tox_peername.equals("")) || (peer_name.equals("-1")))
                 {
                     peer_name = "Unknown";
                 }
@@ -137,13 +161,13 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
             {
                 if (peer_name.equals("-1"))
                 {
-                    if ((m.tox_peername == null) || (m.tox_peername.equals("")))
+                    if ((message__tox_peername == null) || (message__tox_peername.equals("")))
                     {
                         peer_name = "Unknown";
                     }
                     else
                     {
-                        peer_name = m.tox_peername;
+                        peer_name = message__tox_peername;
                     }
                 }
             }
@@ -151,8 +175,8 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
             try
             {
                 date_time_text = date_time_text + " " + (peer_name + " / " +
-                                                         m.tox_peerpubkey.substring((m.tox_peerpubkey.length() - 6),
-                                                                                    m.tox_peerpubkey.length()));
+                                                         message__tox_peerpubkey.substring((message__tox_peerpubkey.length() - 6),
+                                                                                           message__tox_peerpubkey.length()));
             }
             catch (Exception e2)
             {
@@ -187,5 +211,58 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
         add(date_line);
 
         return this;
+    }
+
+    class name_test_pk
+    {
+        boolean changed;
+        String tox_peername;
+        String text;
+        String tox_peerpubkey;
+    }
+
+    name_test_pk correct_pubkey(ConferenceMessage m)
+    {
+        name_test_pk ret = new name_test_pk();
+        ret.changed = false;
+
+        if (m.conference_identifier.equals(TOXIRC_TOKTOK_CONFID))
+        {
+            if (m.tox_peerpubkey.equals(TOXIRC_PUBKEY))
+            {
+                // toxirc messages will be displayed in a special way
+                if (m.text.length() > (3 + 1))
+                {
+                    if (m.text.startsWith("<"))
+                    {
+                        int start_pos = m.text.indexOf("<");
+                        int end_pos = m.text.indexOf("> ");
+
+                        if ((start_pos > -1) && (end_pos > -1) && (end_pos > start_pos))
+                        {
+                            try
+                            {
+                                String peer_name_corrected = m.text.substring(start_pos + 1, end_pos);
+                                ret.tox_peername = peer_name_corrected;
+                                ret.text = m.text.substring(end_pos + 2);
+
+                                String new_fake_pubkey = bytesToHex(TrifaSetPatternActivity.sha256(
+                                        TrifaSetPatternActivity.StringToBytes2(
+                                                m.tox_peerpubkey + "--" + peer_name_corrected)));
+
+                                new_fake_pubkey = new_fake_pubkey.substring(1, new_fake_pubkey.length() - 2);
+                                ret.tox_peerpubkey = new_fake_pubkey;
+                                ret.changed = true;
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ret;
     }
 }

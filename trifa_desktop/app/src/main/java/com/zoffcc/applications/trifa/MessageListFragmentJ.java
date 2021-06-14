@@ -20,8 +20,10 @@
 package com.zoffcc.applications.trifa;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -95,7 +97,7 @@ public class MessageListFragmentJ extends JPanel
     static boolean is_at_bottom = true;
     static boolean show_only_files = false;
 
-    private static JList<Message> messagelistitems;
+    private static JlistCustom<Message> messagelistitems;
     static DefaultListModel<Message> messagelistitems_model;
     // private static JTable messagelistitems_t;
     // static DefaultTableModel messagelistitems_model_t;
@@ -117,7 +119,7 @@ public class MessageListFragmentJ extends JPanel
         // messagelistitems_t.setFillsViewportHeight(true);
 
         messagelistitems_model = new DefaultListModel<>();
-        messagelistitems = new JList<>();
+        messagelistitems = new JlistCustom<>();
         messagelistitems.setModel(messagelistitems_model);
         messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         messagelistitems.setSelectedIndex(0);
@@ -133,7 +135,7 @@ public class MessageListFragmentJ extends JPanel
                 if (index != -1)
                 {
                     // Next calculations assume that text is aligned to left, but are easy to adjust
-                    final Message element = messagelistitems.getModel().getElementAt(index);
+                    final Message element = (Message) messagelistitems.getModel().getElementAt(index);
                     final Rectangle cellBounds = messagelistitems.getCellBounds(index, index);
                     final Renderer_MessageList renderer = (Renderer_MessageList) messagelistitems.getCellRenderer();
                     final Insets insets = renderer.getInsets();
@@ -943,5 +945,104 @@ public class MessageListFragmentJ extends JPanel
         //            Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
         //        }
         // --- ??? should we do this here?
+    }
+
+
+    static class JlistCustom<M> extends JList
+    {
+        public JlistCustom()
+        {
+            super();
+        }
+
+        @Override
+        public int getFixedCellWidth()
+        {
+            Log.i(TAG, "getFixedCellWidth");
+            return super.getFixedCellWidth();
+        }
+
+        @Override
+        public int getFixedCellHeight()
+        {
+            int ret = super.getFixedCellHeight();
+            Log.i(TAG, "getFixedCellHeight=" + ret);
+            return ret;
+        }
+
+        @Override
+        public int getLeadSelectionIndex()
+        {
+            int ret = super.getLeadSelectionIndex();
+            Log.i(TAG, "getLeadSelectionIndex=" + ret);
+            return ret;
+        }
+
+        @Override
+        public int getMinSelectionIndex()
+        {
+            Log.i(TAG, "getMinSelectionIndex");
+            return super.getMinSelectionIndex();
+        }
+
+        @Override
+        public int getMaxSelectionIndex()
+        {
+            Log.i(TAG, "getMaxSelectionIndex");
+            return super.getMaxSelectionIndex();
+        }
+
+        @Override
+        public boolean getValueIsAdjusting()
+        {
+            Log.i(TAG, "paintChildren");
+            return super.getValueIsAdjusting();
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize()
+        {
+            Log.i(TAG, "paintChildren");
+            return super.getPreferredScrollableViewportSize();
+        }
+
+        @Override
+        protected void paintChildren(Graphics g)
+        {
+            Log.i(TAG, "paintChildren");
+            super.paintChildren(g);
+        }
+
+        @Override
+        public Rectangle getVisibleRect()
+        {
+            Rectangle r = super.getVisibleRect();
+            Log.i(TAG, "paintChildren=" + r);
+            return r;
+        }
+
+        @Override
+        public int getVisibleRowCount()
+        {
+            int ret = super.getVisibleRowCount();
+            Log.i(TAG, "getVisibleRowCount=" + ret);
+            return ret;
+        }
+
+        @Override
+        public int getLastVisibleIndex()
+        {
+            int ret = super.getLastVisibleIndex();
+            Log.i(TAG, "getLastVisibleIndex=" + ret);
+            return ret;
+        }
+
+        @Override
+        public int getFirstVisibleIndex()
+        {
+            int ret = super.getFirstVisibleIndex();
+            Log.i(TAG, "getFirstVisibleIndex=" + ret);
+            return ret;
+        }
     }
 }
