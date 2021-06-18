@@ -2178,7 +2178,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         }
                         else
                         {
-                            HelperRelay.invite_to_all_conferences_own_relay(f.tox_public_key_string);
+                            if (HelperRelay.is_own_relay(f.tox_public_key_string))
+                            {
+                                HelperRelay.invite_to_all_conferences_own_relay(HelperRelay.get_own_relay_pubkey());
+                            }
                         }
                     }
                 }
