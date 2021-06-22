@@ -2214,25 +2214,18 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     }
                 }
             }
-        }
 
-        HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
+            HelperGeneric.update_friend_connection_status_helper(a_TOX_CONNECTION, f, false);
 
-        if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
-        {
-            f.TOX_CONNECTION_real = a_TOX_CONNECTION;
-            f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
-            HelperFriend.update_friend_in_db_connection_status_real(f);
-        }
-
-        if (friend_number == tox_friend_by_public_key__wrapper(Callstate.friend_pubkey))
-        {
-            try
+            if (friend_number == tox_friend_by_public_key__wrapper(Callstate.friend_pubkey))
             {
-                //**//update_calling_friend_connection_status(a_TOX_CONNECTION);
-            }
-            catch (Exception e)
-            {
+                try
+                {
+                    //**//update_calling_friend_connection_status(a_TOX_CONNECTION);
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
     }
