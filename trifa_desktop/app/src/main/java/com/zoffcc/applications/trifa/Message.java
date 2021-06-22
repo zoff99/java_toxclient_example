@@ -408,9 +408,15 @@ public class Message
         return ret;
     }
 
-    public Message limit(int i)
+    public Message limit(int rowcount)
     {
-        this.sql_limit = " limit " + i + " ";
+        this.sql_limit = " limit " + rowcount + " ";
+        return this;
+    }
+
+    public Message limit(int rowcount, int offset)
+    {
+        this.sql_limit = " limit " + offset + " , " + rowcount;
         return this;
     }
 
