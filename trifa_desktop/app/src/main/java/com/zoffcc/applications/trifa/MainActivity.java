@@ -983,7 +983,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     {
         EventQueue.invokeLater(() -> {
 
-            Log.i(TAG, "set_message_panel:001:" + i);
+            // Log.i(TAG, "set_message_panel:001:" + i);
 
             //current_conf_id = "-1";
             //MessagePanel.setCurrentPK(null);
@@ -1003,7 +1003,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG, "set_message_panel:002:" + i);
+                    // Log.i(TAG, "set_message_panel:002:" + i);
                 }
                 else if (i == 1)
                 {
@@ -1015,7 +1015,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG, "set_message_panel:002:" + i);
+                    // Log.i(TAG, "set_message_panel:002:" + i);
                 }
                 else
                 {
@@ -1028,7 +1028,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
-                    Log.i(TAG, "set_message_panel:002:" + i);
+                    // Log.i(TAG, "set_message_panel:002:" + i);
                 }
 
                 myToxID.addMouseListener(new MouseAdapter()
@@ -4033,14 +4033,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     @Override
     public void windowGainedFocus(WindowEvent windowEvent)
     {
-        Log.i(TAG, "windowGainedFocus");
+        // Log.i(TAG, "windowGainedFocus");
         mainwindow_has_focus = true;
     }
 
     @Override
     public void windowLostFocus(WindowEvent windowEvent)
     {
-        Log.i(TAG, "windowLostFocus");
+        // Log.i(TAG, "windowLostFocus");
         mainwindow_has_focus = false;
     }
 

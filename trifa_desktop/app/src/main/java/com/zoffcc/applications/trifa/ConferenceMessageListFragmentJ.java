@@ -228,7 +228,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
     void update_all_messages(boolean always)
     {
-        Log.i(TAG, "update_all_messages:conf");
+        // Log.i(TAG, "update_all_messages:conf");
 
         try
         {

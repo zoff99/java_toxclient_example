@@ -697,7 +697,7 @@ public class MessageListFragmentJ extends JPanel
 
     static void update_all_messages(boolean always)
     {
-        Log.i(TAG, "update_all_messages");
+        // Log.i(TAG, "update_all_messages");
 
         try
         {
@@ -958,7 +958,7 @@ public class MessageListFragmentJ extends JPanel
         @Override
         public int getFixedCellWidth()
         {
-            Log.i(TAG, "getFixedCellWidth");
+            //Log.i(TAG, "getFixedCellWidth");
             return super.getFixedCellWidth();
         }
 
@@ -966,7 +966,7 @@ public class MessageListFragmentJ extends JPanel
         public int getFixedCellHeight()
         {
             int ret = super.getFixedCellHeight();
-            Log.i(TAG, "getFixedCellHeight=" + ret);
+            //Log.i(TAG, "getFixedCellHeight=" + ret);
             return ret;
         }
 
@@ -974,42 +974,42 @@ public class MessageListFragmentJ extends JPanel
         public int getLeadSelectionIndex()
         {
             int ret = super.getLeadSelectionIndex();
-            Log.i(TAG, "getLeadSelectionIndex=" + ret);
+            //Log.i(TAG, "getLeadSelectionIndex=" + ret);
             return ret;
         }
 
         @Override
         public int getMinSelectionIndex()
         {
-            Log.i(TAG, "getMinSelectionIndex");
+            //Log.i(TAG, "getMinSelectionIndex");
             return super.getMinSelectionIndex();
         }
 
         @Override
         public int getMaxSelectionIndex()
         {
-            Log.i(TAG, "getMaxSelectionIndex");
+            //Log.i(TAG, "getMaxSelectionIndex");
             return super.getMaxSelectionIndex();
         }
 
         @Override
         public boolean getValueIsAdjusting()
         {
-            Log.i(TAG, "paintChildren");
+            //Log.i(TAG, "paintChildren");
             return super.getValueIsAdjusting();
         }
 
         @Override
         public Dimension getPreferredScrollableViewportSize()
         {
-            Log.i(TAG, "paintChildren");
+            //Log.i(TAG, "paintChildren");
             return super.getPreferredScrollableViewportSize();
         }
 
         @Override
         protected void paintChildren(Graphics g)
         {
-            Log.i(TAG, "paintChildren");
+            //Log.i(TAG, "paintChildren");
             super.paintChildren(g);
         }
 
@@ -1017,7 +1017,7 @@ public class MessageListFragmentJ extends JPanel
         public Rectangle getVisibleRect()
         {
             Rectangle r = super.getVisibleRect();
-            Log.i(TAG, "paintChildren=" + r);
+            //Log.i(TAG, "paintChildren=" + r);
             return r;
         }
 
@@ -1025,7 +1025,7 @@ public class MessageListFragmentJ extends JPanel
         public int getVisibleRowCount()
         {
             int ret = super.getVisibleRowCount();
-            Log.i(TAG, "getVisibleRowCount=" + ret);
+            //Log.i(TAG, "getVisibleRowCount=" + ret);
             return ret;
         }
 
@@ -1033,7 +1033,7 @@ public class MessageListFragmentJ extends JPanel
         public int getLastVisibleIndex()
         {
             int ret = super.getLastVisibleIndex();
-            Log.i(TAG, "getLastVisibleIndex=" + ret);
+            //Log.i(TAG, "getLastVisibleIndex=" + ret);
             return ret;
         }
 
@@ -1041,7 +1041,7 @@ public class MessageListFragmentJ extends JPanel
         public int getFirstVisibleIndex()
         {
             int ret = super.getFirstVisibleIndex();
-            Log.i(TAG, "getFirstVisibleIndex=" + ret);
+            //Log.i(TAG, "getFirstVisibleIndex=" + ret);
             return ret;
         }
     }

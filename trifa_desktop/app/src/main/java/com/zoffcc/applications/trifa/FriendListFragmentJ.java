@@ -276,7 +276,7 @@ public class FriendListFragmentJ extends JPanel
                             if ((current_pk != null) && (pk.compareTo(current_pk) == 0))
                             {
                                 // this friend is already selected
-                                Log.i(TAG, "this friend is already selected");
+                                // Log.i(TAG, "this friend is already selected");
                                 return;
                             }
 
@@ -318,7 +318,7 @@ public class FriendListFragmentJ extends JPanel
             {
                 final Point point = e.getPoint();
                 final int index = friends_and_confs_list.locationToIndex(point);
-                Log.i(TAG, "mousePressed");
+                // Log.i(TAG, "mousePressed");
                 if (index != -1)
                 {
                     show_popup_menu(e);
@@ -330,7 +330,7 @@ public class FriendListFragmentJ extends JPanel
             {
                 final Point point = e.getPoint();
                 final int index = friends_and_confs_list.locationToIndex(point);
-                Log.i(TAG, "mouseReleased");
+                // Log.i(TAG, "mouseReleased");
                 if (index != -1)
                 {
                     show_popup_menu(e);
@@ -403,7 +403,7 @@ public class FriendListFragmentJ extends JPanel
             {
                 friends_and_confs_list.clearSelection();
                 int pos = find_friend_pubkey_in_friend_list(current_pk);
-                Log.i(TAG, "fix_selected_item=" + pos);
+                // Log.i(TAG, "fix_selected_item=" + pos);
                 friends_and_confs_list.setSelectedIndex(pos);
             }
         }
