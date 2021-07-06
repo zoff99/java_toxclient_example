@@ -38,7 +38,7 @@ https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-desktop
 
 TRIfA Desktop is primarily distributed under the terms of both the GNU General Public License (version 2) and the GNU General Public License (version 3).
 
-See LICENSE-GPLv2 and LICENSE-GPLv3 for details.
+See LICENSE-zzGPLv2 and LICENSE-GPLv3 for details.
 
 Translations are under the terms of GNU General Public License (version 3 or later).
 
