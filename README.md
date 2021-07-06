@@ -34,3 +34,12 @@ https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-desktop
 
 **HINT:** if you get this error ```Unsupported major.minor version 55.0``` you need to install java 11 (or higher) runtime to run the client
 
+## License
+
+TRIfA Desktop is primarily distributed under the terms of both the GNU General Public License (version 2) and the GNU General Public License (version 3).
+
+See LICENSE-GPLv2 and LICENSE-GPLv3 for details.
+
+Translations are under the terms of GNU General Public License (version 3 or later).
+
+See https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-fcm-companion-app/#information
