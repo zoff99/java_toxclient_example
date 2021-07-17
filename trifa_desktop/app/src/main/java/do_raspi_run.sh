@@ -24,7 +24,7 @@ else
 fi
 
 
-ldd libjni-c-toxcore_raspi_hwaccel.so|grep 'not found' >/dev/null 2>&1
+ldd libjni-c-toxcore_raspi.so|grep 'not found' >/dev/null 2>&1
 res=$?
 
 if [ $res -eq 0 ]; then
@@ -33,24 +33,17 @@ if [ $res -eq 0 ]; then
     echo "                                                   "
     echo "  please install the following libraries:          "
     echo "                                                   "
-    ldd libjni-c-toxcore_raspi_hwaccel.so|grep 'not found'
+    ldd libjni-c-toxcore_raspi.so|grep 'not found'
     echo "                                                   "
     echo "###################################################"
 
     exit 2
 else
     echo "copying armhf JNI lib over the x86_64 one:"
-    cp -av libjni-c-toxcore_raspi_hwaccel.so libjni-c-toxcore.so
+    cp -av libjni-c-toxcore_raspi.so libjni-c-toxcore.so
 fi
 
 echo "starting TRIfA Desktop ..."
-
-# https://stackoverflow.com/a/53351433
-# https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8214083
-# https://bugs.openjdk.java.net/browse/JDK-8225571
-# GTK2 vs. GTK3
-
-# -Djdk.gtk.version=2 \
 
 java $scale \
 -Dcom.apple.mrj.application.apple.menu.about.name=TRIfA \
