@@ -54,7 +54,7 @@ git checkout zoff99/zoxcore_local_fork
 ./autogen.sh
 
 make clean
-export CFLAGS_=" $CF2 -D_GNU_SOURCE -I$_INST_/include/ -O2 -g3 -fno-omit-frame-pointer -fstack-protector-all -fPIC "
+export CFLAGS_=" $CF2 -D_GNU_SOURCE -DHW_CODEC_CONFIG_RPI3_TBW_BIDI -I$_INST_/include/ -O2 -g3 -fno-omit-frame-pointer -fstack-protector-all -fPIC "
 export CFLAGS="$CFLAGS_"
 # export CFLAGS=" $CFLAGS -Werror=div-by-zero -Werror=format=2 -Werror=implicit-function-declaration "
 export LDFLAGS="-L$_INST_/lib -fPIC "
@@ -130,7 +130,7 @@ echo "JAVADIR2:""$JAVADIR2"
 
 # export ASAN_CLANG_FLAGS=" -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -lasan "
 export ASAN_CLANG_FLAGS=" "
-export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all -D HW_CODEC_CONFIG_RPI3_TBW_BIDI "
+export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all "
 
 
 clang_="clang"
