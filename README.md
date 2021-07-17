@@ -23,10 +23,10 @@
 - Download [trifa_desktop.zip](https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip)
 - Unzip ```trifa_desktop.zip```
 - run:
-  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Tux.svg" width="20"></a> Linux :```do_run.sh```
-  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Raspberry_Pi_Logo.svg" width="20"></a> RaspberryPI :```do_raspi_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Tux.svg" width="20"></a> Linux :```./do_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Raspberry_Pi_Logo.svg" width="20"></a> RaspberryPI :```./do_raspi_run.sh```
   -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Windows_logo_-_2012.svg" width="20"></a> Windows: ```do_run.bat```
-  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" width="20"></a> MacOS :```do_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" width="20"></a> MacOS :```./do_run.sh```
 
 ## Help Translate the App in your Language
 Use Weblate:
