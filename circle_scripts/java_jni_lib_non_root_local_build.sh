@@ -168,3 +168,6 @@ ls -al libjni-c-toxcore.so || exit 1
 pwd
 file libjni-c-toxcore.so
 
+
+# git clone https://github.com/zoff99/java_toxclient_example
+
