@@ -1,4 +1,4 @@
-# TRIfA Desktop
+# TRIfA Desktop&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Tux.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Raspberry_Pi_Logo.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Windows_logo_-_2012.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" height="45"></a>
 
 <img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/trifa_desktop_macos10.png" width="90%">
 
@@ -11,20 +11,22 @@
 [![Android CI](https://github.com/zoff99/java_toxclient_example/workflows/Nightly/badge.svg)](https://github.com/zoff99/java_toxclient_example/actions?query=workflow%3A%22Nightly%22)
 **Travis:** [![Travis Build Status](https://travis-ci.com/zoff99/java_toxclient_example.svg?branch=master)](https://travis-ci.com/zoff99/java_toxclient_example)
 
-## Installation & starting the App [Linux, Windows and MacOS]
+## Installation & starting the App [Linux, RaspberryPI, Windows and MacOS]
 
 
 
 | <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/on_github.png" width="200"></a> | <a href="https://snapcraft.io/trifa-desktop"><img src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" height="55"></a> | 
 |--------|--------|
 
+
 - Install JRE 11 or JDK 11.
 - Download [trifa_desktop.zip](https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip)
 - Unzip ```trifa_desktop.zip```
 - run:
-  -  Linux :```do_run.sh```
-  -  Windows: ```do_run.bat```
-  -  MacOS :```do_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Tux.svg" width="20"></a> Linux :```do_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Raspberry_Pi_Logo.svg" width="20"></a> RaspberryPI :```do_raspi_run.sh```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Windows_logo_-_2012.svg" width="20"></a> Windows: ```do_run.bat```
+  -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" width="20"></a> MacOS :```do_run.sh```
 
 ## Help Translate the App in your Language
 Use Weblate:
