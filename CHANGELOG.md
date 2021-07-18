@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/zoff99/java_toxclient_example/tree/HEAD)
+
+[Full Changelog](https://github.com/zoff99/java_toxclient_example/compare/1.0.24...HEAD)
+
+**Closed issues:**
+
+- Version for the Raspberry PI [\#20](https://github.com/zoff99/java_toxclient_example/issues/20)
+
+## [1.0.24](https://github.com/zoff99/java_toxclient_example/tree/1.0.24) (2021-07-18)
+
+[Full Changelog](https://github.com/zoff99/java_toxclient_example/compare/1.0.23...1.0.24)
+
 ## [1.0.23](https://github.com/zoff99/java_toxclient_example/tree/1.0.23) (2021-07-15)
 
 [Full Changelog](https://github.com/zoff99/java_toxclient_example/compare/1.0.22...1.0.23)
