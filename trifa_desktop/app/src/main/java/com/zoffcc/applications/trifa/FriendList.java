@@ -20,7 +20,6 @@
 package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +102,10 @@ public class FriendList
     @Nullable
     boolean is_relay = false;
 
+    @Column(indexed = true, defaultExpr = "", helpers = Column.Helpers.ALL)
+    @Nullable
+    String push_url;
+
     static FriendList deep_copy(FriendList in)
     {
         FriendList out = new FriendList();
@@ -125,6 +128,7 @@ public class FriendList
         out.is_relay = in.is_relay;
         out.avatar_update_timestamp = in.avatar_update_timestamp;
         out.added_timestamp = in.added_timestamp;
+        out.push_url = in.push_url;
 
         return out;
     }
@@ -140,7 +144,8 @@ public class FriendList
                    ", TOX_USER_STATUS=" + TOX_USER_STATUS + ", avatar_pathname=" + avatar_pathname +
                    ", avatar_filename=" + avatar_filename + ", notification_silent=" + notification_silent + ", sort=" +
                    sort + ", last_online_timestamp=" + last_online_timestamp + ", alias_name=" + alias_name +
-                   ", avatar_update=" + avatar_update + ", added_timestamp=" + added_timestamp;
+                   ", avatar_update=" + avatar_update + ", added_timestamp=" + added_timestamp + ", push_url=" +
+                   "*****";
         }
         catch (Exception e)
         {
@@ -191,6 +196,7 @@ public class FriendList
                 f.is_relay = rs.getBoolean("is_relay");
                 f.avatar_update_timestamp = rs.getLong("avatar_update_timestamp");
                 f.added_timestamp = rs.getLong("added_timestamp");
+                f.push_url = rs.getString("push_url");
 
                 fl.add(f);
             }
@@ -231,7 +237,8 @@ public class FriendList
                                  "last_online_timestamp,"+
                                  "last_online_timestamp_real,"+
                                  "added_timestamp,"+
-                                 "is_relay"	+
+                                 "is_relay,"	+
+                                 "push_url"	+
                                  ")" +
                                  "values" +
                                  "(" +
@@ -253,7 +260,8 @@ public class FriendList
                                  "'"+s(this.last_online_timestamp)+"'," +
                                  "'"+s(this.last_online_timestamp_real)+"'," +
                                  "'"+s(this.added_timestamp)+"'," +
-                                 "'"+b(this.is_relay)+"'" +
+                                 "'"+b(this.is_relay)+"'," +
+                                 "'"+s(this.push_url)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -416,6 +424,20 @@ public class FriendList
             this.sql_set = this.sql_set + " , ";
         }
         this.sql_set = this.sql_set + " name='" + s(name) + "' ";
+        return this;
+    }
+
+    public FriendList push_url(String push_url)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " push_url='" + s(push_url) + "' ";
         return this;
     }
 
