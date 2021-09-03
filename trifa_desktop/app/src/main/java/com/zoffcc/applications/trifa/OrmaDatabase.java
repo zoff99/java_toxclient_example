@@ -175,7 +175,22 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 3;
+        if (current_db_version < 4)
+        {
+            try
+            {
+                final String update_001 =
+                        "alter table FriendList add push_url TEXT DEFAULT NULL;" + "\n" +
+                        "CREATE INDEX index_push_url_on_FriendList ON FriendList (push_url);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 4;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;
