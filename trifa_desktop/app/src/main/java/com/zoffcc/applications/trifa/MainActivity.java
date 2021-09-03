@@ -58,6 +58,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
@@ -136,6 +137,7 @@ import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.AVATAR_INCOMING_MAX_BYTE_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PUSH_URL_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_AVATAR_FILENAME;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
@@ -2118,6 +2120,29 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                                                       HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
                 }
             }
+            else if (data[0] == (byte) CONTROL_PROXY_MESSAGE_TYPE_PUSH_URL_FOR_FRIEND.value)
+            {
+                //Log.i(TAG,
+                //      "android_tox_callback_friend_lossless_packet_cb_method:CONTROL_PROXY_MESSAGE_TYPE_PUSH_URL_FOR_FRIEND:len=" +
+                //      length);
+                if (length > ("https://".length() + 1))
+                {
+                    final String pushurl = new String(Arrays.copyOfRange(data, 1, data.length), StandardCharsets.UTF_8);
+                    //Log.i(TAG,
+                    //      "android_tox_callback_friend_lossless_packet_cb_method:CONTROL_PROXY_MESSAGE_TYPE_PUSH_URL_FOR_FRIEND:pushurl=" +
+                    //      pushurl);
+                    HelperFriend.add_pushurl_for_friend(pushurl,
+                                                        HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
+                }
+                else
+                {
+                    if (length == 0)
+                    {
+                        HelperFriend.remove_pushurl_for_friend(
+                                HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
+                    }
+                }
+            }
         }
     }
 
@@ -2134,6 +2159,32 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         if (f != null)
         {
+            if (f.TOX_CONNECTION != a_TOX_CONNECTION)
+            {
+                if (f.TOX_CONNECTION == TOX_CONNECTION_NONE.value)
+                {
+                    // ******** friend just came online ********
+                    if (HelperRelay.have_own_relay())
+                    {
+                        if (!HelperRelay.is_any_relay(f.tox_public_key_string))
+                        {
+                            HelperRelay.send_relay_pubkey_to_friend(HelperRelay.get_own_relay_pubkey(),
+                                                                    f.tox_public_key_string);
+
+                            HelperRelay.send_friend_pubkey_to_relay(HelperRelay.get_own_relay_pubkey(),
+                                                                    f.tox_public_key_string);
+                        }
+                        else
+                        {
+                            if (HelperRelay.is_own_relay(f.tox_public_key_string))
+                            {
+                                HelperRelay.invite_to_all_conferences_own_relay(HelperRelay.get_own_relay_pubkey());
+                            }
+                        }
+                    }
+                }
+            }
+
             if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
             {
                 if (a_TOX_CONNECTION == 0)
@@ -2159,32 +2210,6 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 f.TOX_CONNECTION_real = a_TOX_CONNECTION;
                 f.TOX_CONNECTION_on_off_real = HelperGeneric.get_toxconnection_wrapper(f.TOX_CONNECTION);
                 HelperFriend.update_friend_in_db_connection_status_real(f);
-            }
-
-            if (f.TOX_CONNECTION != a_TOX_CONNECTION)
-            {
-                if (f.TOX_CONNECTION == TOX_CONNECTION_NONE.value)
-                {
-                    // ******** friend just came online ********
-                    if (HelperRelay.have_own_relay())
-                    {
-                        if (!HelperRelay.is_any_relay(f.tox_public_key_string))
-                        {
-                            HelperRelay.send_relay_pubkey_to_friend(HelperRelay.get_own_relay_pubkey(),
-                                                                    f.tox_public_key_string);
-
-                            HelperRelay.send_friend_pubkey_to_relay(HelperRelay.get_own_relay_pubkey(),
-                                                                    f.tox_public_key_string);
-                        }
-                        else
-                        {
-                            if (HelperRelay.is_own_relay(f.tox_public_key_string))
-                            {
-                                HelperRelay.invite_to_all_conferences_own_relay(HelperRelay.get_own_relay_pubkey());
-                            }
-                        }
-                    }
-                }
             }
 
             if (HelperRelay.is_any_relay(f.tox_public_key_string))
