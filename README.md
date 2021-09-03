@@ -46,3 +46,4 @@ See LICENSE-zzGPLv2 and LICENSE-GPLv3 for details.
 Translations are under the terms of GNU General Public License (version 2 or later).
 
 See https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-desktop/#information
+
