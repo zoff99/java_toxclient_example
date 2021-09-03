@@ -29,6 +29,9 @@ import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_URL_PREFIX;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_URL_PREFIX_OLD;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_UP_PUSH_URL_PREFIX;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
@@ -410,4 +413,53 @@ public class HelperRelay
         }
 
         return ret;
-    }}
+    }
+
+    static String get_pushurl_for_friend(String friend_pubkey)
+    {
+        String ret = null;
+
+        try
+        {
+            ret = orma.selectFromFriendList().tox_public_key_stringEq(friend_pubkey).get(0).push_url;
+        }
+        catch (Exception e)
+        {
+        }
+
+        return ret;
+    }
+
+    static boolean is_valid_pushurl_for_friend_with_whitelist(String push_url)
+    {
+        // whitelist google FCM gateway
+        if (push_url.length() > NOTIFICATION_FCM_PUSH_URL_PREFIX.length())
+        {
+            if (push_url.startsWith(NOTIFICATION_FCM_PUSH_URL_PREFIX))
+            {
+                return true;
+            }
+        }
+
+        // whitelist OLD google FCM gateway
+        if (push_url.length() > NOTIFICATION_FCM_PUSH_URL_PREFIX_OLD.length())
+        {
+            if (push_url.startsWith(NOTIFICATION_FCM_PUSH_URL_PREFIX_OLD))
+            {
+                return true;
+            }
+        }
+
+        // whitelist unified push demo server
+        if (push_url.length() > NOTIFICATION_UP_PUSH_URL_PREFIX.length())
+        {
+            if (push_url.startsWith(NOTIFICATION_UP_PUSH_URL_PREFIX))
+            {
+                return true;
+            }
+        }
+
+        // anything else is not allowed at this time!
+        return false;
+    }
+}

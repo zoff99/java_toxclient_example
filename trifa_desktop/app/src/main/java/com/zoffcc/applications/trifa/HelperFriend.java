@@ -20,14 +20,22 @@
 package com.zoffcc.applications.trifa;
 
 import java.io.File;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
+import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
+import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class HelperFriend
 {
@@ -789,6 +797,67 @@ public class HelperFriend
         catch (Exception e)
         {
             Log.i(TAG, "remove_pushurl_for_friend:EE:" + e.getMessage());
+        }
+    }
+
+    static void friend_call_push_url(final String friend_pubkey)
+    {
+        try
+        {
+            final String pushurl_for_friend = get_pushurl_for_friend(friend_pubkey);
+
+            if (pushurl_for_friend != null)
+            {
+                if (pushurl_for_friend.length() > "https://".length())
+                {
+                    if (is_valid_pushurl_for_friend_with_whitelist(pushurl_for_friend))
+                    {
+
+                        Thread t = new Thread()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    HttpClient client = null;
+
+                                    client = HttpClient.newBuilder().
+                                            connectTimeout(Duration.of(5, SECONDS)).
+                                            build();
+
+                                    //                                   cacheControl(new CacheControl.Builder().noCache().build()).
+
+                                    HttpRequest request = HttpRequest.newBuilder().
+                                            uri(URI.create(pushurl_for_friend)).
+                                            timeout(Duration.of(5, SECONDS)).
+                                            POST(HttpRequest.BodyPublishers.ofString("ping=1")).
+                                            build();
+
+                                    try
+                                    {
+                                        HttpResponse<String> response = client.send(request,
+                                                                                    HttpResponse.BodyHandlers.ofString());
+                                        Log.i(TAG, "friend_call_push_url:url=" + pushurl_for_friend + " RES=" +
+                                                   response.statusCode());
+                                    }
+                                    catch (Exception ignored)
+                                    {
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Log.i(TAG, "friend_call_push_url:001:EE:" + e.getMessage());
+                                }
+                            }
+                        };
+                        t.start();
+                    }
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
         }
     }
 }

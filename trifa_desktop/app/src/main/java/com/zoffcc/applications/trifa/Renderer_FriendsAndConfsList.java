@@ -37,6 +37,7 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real_pk;
+import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_H;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_W;
@@ -160,9 +161,18 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
                 status.setForeground(Color.GRAY);
             }
 
+            final String pushurl_for_friend = get_pushurl_for_friend(f.tox_public_key_string);
+
             if (get_relay_for_friend(f.tox_public_key_string) != null)
             {
-                type.setText("*");
+                if ((pushurl_for_friend != null) && (pushurl_for_friend.length() > "https://".length()))
+                {
+                    type.setText("#");
+                }
+                else
+                {
+                    type.setText("*");
+                }
                 int relay_connection_status = is_friend_online_real_pk(get_relay_for_friend(f.tox_public_key_string));
                 if (relay_connection_status == 2)
                 {
@@ -179,8 +189,16 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             }
             else
             {
-                type.setText(" ");
-                type.setBackground(SEE_THRU);
+                if ((pushurl_for_friend != null) && (pushurl_for_friend.length() > "https://".length()))
+                {
+                    type.setText("_");
+                    type.setBackground(Color.PINK);
+                }
+                else
+                {
+                    type.setText(" ");
+                    type.setBackground(SEE_THRU);
+                }
             }
             type.setForeground(Color.BLACK);
 
