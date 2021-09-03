@@ -87,8 +87,8 @@ echo "JAVADIR2------------------"
 #echo "JAVADIR2:""$JAVADIR2"
 
 mkdir -p "$_INST_/jinclude/"
-cp -av "$_HOME3_"/circle_scripts/jni_md.h "$_INST_/jinclude/"
-cp -av "$_HOME3_"/circle_scripts/jni.h "$_INST_/jinclude/"
+cp -av "$_HOME3_"/jni_md.h "$_INST_/jinclude/"
+cp -av "$_HOME3_"/jni.h "$_INST_/jinclude/"
 
 export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -I$_INST_/jinclude/ -L$_INST_/lib -fstack-protector-all "
 
