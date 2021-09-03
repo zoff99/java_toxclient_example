@@ -3,6 +3,11 @@
 _HOME_="$(pwd)"
 export _HOME_
 
+_HOME2_=$(dirname $0)
+export _HOME2_
+_HOME3_=$(cd $_HOME2_;pwd)
+export _HOME3_
+
 id -a
 pwd
 ls -al
@@ -62,24 +67,27 @@ echo "JAVADIR2------------------"
 find /usr -name 'jni_md.h'
 echo "JAVADIR2------------------"
 
-dirname $(find /usr -name 'jni.h' 2>/dev/null|grep -v 'libavcodec'|head -1) > /tmp/xx1
-dirname $(find /usr -name 'jni_md.h' 2>/dev/null|head -1) > /tmp/xx2
-export JAVADIR1=$(cat /tmp/xx1)
-export JAVADIR2=$(cat /tmp/xx2)
+#dirname $(find /usr -name 'jni.h' 2>/dev/null|grep -v 'libavcodec'|head -1) > /tmp/xx1
+#dirname $(find /usr -name 'jni_md.h' 2>/dev/null|head -1) > /tmp/xx2
+#export JAVADIR1=$(cat /tmp/xx1)
+#export JAVADIR2=$(cat /tmp/xx2)
 
-export JAVADIR1="/usr/local/Cellar/openjdk/16.0.1/include"
-export JAVADIR2="/usr/local/Cellar/openjdk/16.0.1/include"
+#export JAVADIR1="/usr/local/Cellar/openjdk/16.0.1/include"
+#export JAVADIR2="/usr/local/Cellar/openjdk/16.0.1/include"
 
-if [ ! -e "$JAVADIR1" ]; then
-    mkdir -p "$_INST_/jinclude/"
-    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni_md.h "$_INST_/jinclude/"
-    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni.h "$_INST_/jinclude/"
-    export JAVADIR1="$_INST_/jinclude"
-    export JAVADIR2="$_INST_/jinclude"
-fi
+#if [ ! -e "$JAVADIR1" ]; then
+#    mkdir -p "$_INST_/jinclude/"
+#    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni_md.h "$_INST_/jinclude/"
+#    cp -av /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/jni.h "$_INST_/jinclude/"
+#    export JAVADIR1="$_INST_/jinclude"
+#    export JAVADIR2="$_INST_/jinclude"
+#fi
 
-echo "JAVADIR1:""$JAVADIR1"
-echo "JAVADIR2:""$JAVADIR2"
+#echo "JAVADIR1:""$JAVADIR1"
+#echo "JAVADIR2:""$JAVADIR2"
+
+cp -av "$_HOME3_"/circle_scripts/jni_md.h "$_INST_/jinclude/"
+cp -av "$_HOME3_"/circle_scripts/jni.h "$_INST_/jinclude/"
 
 export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all "
 
