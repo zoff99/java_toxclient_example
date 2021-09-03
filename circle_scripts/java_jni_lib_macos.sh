@@ -86,18 +86,17 @@ echo "JAVADIR2------------------"
 #echo "JAVADIR1:""$JAVADIR1"
 #echo "JAVADIR2:""$JAVADIR2"
 
+mkdir -p "$_INST_/jinclude/"
 cp -av "$_HOME3_"/circle_scripts/jni_md.h "$_INST_/jinclude/"
 cp -av "$_HOME3_"/circle_scripts/jni.h "$_INST_/jinclude/"
 
-export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -L$_INST_/lib -fstack-protector-all "
+export CFLAGS=" -fPIC -std=gnu99 -I$_INST_/include/ -I$_INST_/jinclude/ -L$_INST_/lib -fstack-protector-all "
 
 gcc $CFLAGS \
 -Wall \
 -DJAVA_LINUX \
 $C_FLAGS $CXX_FLAGS $LD_FLAGS \
 -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 \
--I$JAVADIR1/ \
--I$JAVADIR2/ \
 jni-c-toxcore.c \
 $_INST_/lib/libtoxcore.a \
 $_INST_/lib/libtoxav.a \
