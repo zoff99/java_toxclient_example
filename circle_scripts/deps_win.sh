@@ -294,7 +294,7 @@ cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
 
 autoreconf -fi
 ./configure \
-    CFLAGS=" -O2 -g " \
+    CFLAGS=" -O2 -g -DTOX_CAPABILITIES_ACTIVE " \
     --prefix="$_INST_" \
     --disable-soname-versions \
     --host="$ARCH-w64-mingw32" \

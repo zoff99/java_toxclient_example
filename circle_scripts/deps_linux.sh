@@ -287,7 +287,7 @@ cat toxcore/tox.h | grep 'TOX_GIT_COMMIT_HASH'
 
 autoreconf -fi
 ./configure \
-    CFLAGS=" -O3 -g -fPIC -fstack-protector-all $LOGG " \
+    CFLAGS=" -O3 -g -fPIC -fstack-protector-all -DTOX_CAPABILITIES_ACTIVE $LOGG " \
     --prefix="$_INST_" \
     --disable-soname-versions \
     --disable-shared \

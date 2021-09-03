@@ -54,7 +54,7 @@ git checkout zoff99/zoxcore_local_fork
 ./autogen.sh
 
 make clean
-export CFLAGS_=" $CF2 -D_GNU_SOURCE -DHW_CODEC_CONFIG_RPI3_TBW_BIDI -I$_INST_/include/ -O2 -g3 -fno-omit-frame-pointer -fstack-protector-all -fPIC "
+export CFLAGS_=" $CF2 -D_GNU_SOURCE -DTOX_CAPABILITIES_ACTIVE -DHW_CODEC_CONFIG_RPI3_TBW_BIDI -I$_INST_/include/ -O2 -g3 -fno-omit-frame-pointer -fstack-protector-all -fPIC "
 export CFLAGS="$CFLAGS_"
 # export CFLAGS=" $CFLAGS -Werror=div-by-zero -Werror=format=2 -Werror=implicit-function-declaration "
 export LDFLAGS="-L$_INST_/lib -fPIC "
