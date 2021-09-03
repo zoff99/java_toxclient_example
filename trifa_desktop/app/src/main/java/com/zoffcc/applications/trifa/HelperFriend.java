@@ -791,5 +791,4 @@ public class HelperFriend
             Log.i(TAG, "remove_pushurl_for_friend:EE:" + e.getMessage());
         }
     }
-
 }
