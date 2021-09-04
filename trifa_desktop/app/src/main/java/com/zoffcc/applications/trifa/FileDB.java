@@ -282,4 +282,10 @@ public class FileDB
         this.sql_where = this.sql_where + " and filesize='" + s(filesize) + "' ";
         return this;
     }
+
+    public FileDB idEq(long id)
+    {
+        this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
+        return this;
+    }
 }

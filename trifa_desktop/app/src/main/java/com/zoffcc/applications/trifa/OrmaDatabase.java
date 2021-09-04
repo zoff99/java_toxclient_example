@@ -454,5 +454,26 @@ public class OrmaDatabase
         ret.sql_start = "SELECT * FROM TRIFADatabaseGlobalsNew";
         return ret;
     }
+
+    public FileDB deleteFromFileDB()
+    {
+        FileDB ret = new FileDB();
+        ret.sql_start = "DELETE FROM FileDB";
+        return ret;
+    }
+
+    public Message deleteFromMessage()
+    {
+        Message ret = new Message();
+        ret.sql_start = "DELETE FROM Message";
+        return ret;
+    }
+
+    public FriendList deleteFromFriendList()
+    {
+        FriendList ret = new FriendList();
+        ret.sql_start = "DELETE FROM FriendList";
+        return ret;
+    }
 }
 

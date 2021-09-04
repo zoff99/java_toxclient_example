@@ -815,4 +815,10 @@ public class Message
         this.sql_where = this.sql_where + " and  msg_at_relay='" + b(msg_at_relay) + "' ";
         return this;
     }
+
+    public Message filedb_idEq(long filedb_id)
+    {
+        this.sql_where = this.sql_where + " and  filedb_id='" + s(filedb_id) + "' ";
+        return this;
+    }
 }
