@@ -47,6 +47,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -54,8 +55,13 @@ import javax.swing.event.ListSelectionListener;
 
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.setConfName;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
+import static com.zoffcc.applications.trifa.HelperFriend.delete_friend;
+import static com.zoffcc.applications.trifa.HelperFriend.delete_friend_all_files;
+import static com.zoffcc.applications.trifa.HelperFriend.delete_friend_all_filetransfers;
+import static com.zoffcc.applications.trifa.HelperFriend.delete_friend_all_messages;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
 import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_conferences_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.send_all_friend_pubkeys_to_relay;
@@ -63,8 +69,11 @@ import static com.zoffcc.applications.trifa.HelperRelay.send_relay_pubkey_to_all
 import static com.zoffcc.applications.trifa.HelperRelay.set_friend_as_own_relay_in_db;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
+import static com.zoffcc.applications.trifa.MainActivity.cache_pubkey_fnum;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
+import static com.zoffcc.applications.trifa.MainActivity.tox_friend_delete;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
@@ -117,6 +126,92 @@ public class FriendListFragmentJ extends JPanel
                 Log.i(TAG, "delete friend:name=" + b.getSelectedValue().friend_item.name);
                 Log.i(TAG,
                       "delete friend:tox_public_key_string=" + b.getSelectedValue().friend_item.tox_public_key_string);
+
+                final String f2_tox_public_key_string = b.getSelectedValue().friend_item.tox_public_key_string;
+
+                int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("delete_friend_msg"),
+                                                                    lo.getString("delete_friend_title"), YES_NO_OPTION);
+                if (selected_answer == YES_OPTION)
+                {
+                    try
+                    {
+                        Log.i(TAG, "do delete friend:tox_public_key_string=" +
+                                   b.getSelectedValue().friend_item.tox_public_key_string);
+
+                        Runnable myRunnable = new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    long friend_num_temp = tox_friend_by_public_key__wrapper(f2_tox_public_key_string);
+
+                                    Log.i(TAG,
+                                          "onMenuItemClick:1:fn=" + friend_num_temp + " fn_safety=" + friend_num_temp);
+
+                                    // delete friends files -------
+                                    Log.i(TAG, "onMenuItemClick:1.c:fnum=" + friend_num_temp);
+                                    delete_friend_all_files(friend_num_temp);
+                                    // delete friend  files -------
+
+                                    // delete friends FTs -------
+                                    Log.i(TAG, "onMenuItemClick:1.d:fnum=" + friend_num_temp);
+                                    delete_friend_all_filetransfers(friend_num_temp);
+                                    // delete friend  FTs -------
+
+                                    // delete friends messages -------
+                                    Log.i(TAG, "onMenuItemClick:1.b:fnum=" + friend_num_temp);
+                                    delete_friend_all_messages(friend_num_temp);
+                                    // delete friend  messages -------
+
+                                    // delete friend -------
+                                    // Log.i(TAG, "onMenuItemClick:1.a:pubkey=" + f2.tox_public_key_string);
+                                    delete_friend(f2_tox_public_key_string);
+                                    // delete friend -------
+
+                                    // delete friend - tox ----
+                                    Log.i(TAG, "onMenuItemClick:4");
+                                    if (friend_num_temp > -1)
+                                    {
+                                        int res = tox_friend_delete(friend_num_temp);
+                                        cache_pubkey_fnum.clear();
+                                        cache_fnum_pubkey.clear();
+                                        update_savedata_file_wrapper(
+                                                MainActivity.password_hash); // save toxcore datafile (friend removed)
+                                        Log.i(TAG, "onMenuItemClick:5:res=" + res);
+                                    }
+                                    // delete friend - tox ----
+
+                                    // load all friends into data list ---
+                                    Log.i(TAG, "onMenuItemClick:6");
+                                    try
+                                    {
+                                        // reload friendlist
+                                        add_all_friends_clear(200);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+
+                                    Log.i(TAG, "onMenuItemClick:7");
+                                    // load all friends into data list ---
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                    Log.i(TAG, "onMenuItemClick:8:EE:" + e.getMessage());
+                                }
+                            }
+                        };
+
+                        SwingUtilities.invokeLater(myRunnable);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
             }
         });
         popup.add(menuItem);

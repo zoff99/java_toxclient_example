@@ -62,8 +62,12 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -89,6 +93,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -260,6 +265,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     // ---- lookup cache for conference drawer ----
     static Map<String, Long> lookup_peer_listnum_pubkey = new HashMap<String, Long>();
     // ---- lookup cache for conference drawer ----
+
+    static List<Long> selected_messages = new ArrayList<Long>();
+    static List<Long> selected_messages_text_only = new ArrayList<Long>();
+    static List<Long> selected_messages_incoming_file = new ArrayList<Long>();
 
     static boolean PREF__X_battery_saving_mode = false;
     static boolean PREF__auto_accept_image = true;
@@ -4115,6 +4124,151 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     public void windowStateChanged(WindowEvent windowEvent)
     {
         // Log.i(TAG, "windowStateChanged");
+    }
+
+    static class delete_selected_messages_asynchtask extends SwingWorker<Integer, Integer>
+    {
+        boolean update_message_list = false;
+        boolean update_friend_list = false;
+
+        public delete_selected_messages_asynchtask(boolean update_message_list, boolean update_friend_list)
+        {
+            this.update_message_list = update_message_list;
+            this.update_friend_list = update_friend_list;
+        }
+
+        protected Integer doInBackground()
+        {
+            // sort ascending (lowest ID on top)
+            Collections.sort(selected_messages, new Comparator<Long>()
+            {
+                public int compare(Long o1, Long o2)
+                {
+                    return o1.compareTo(o2);
+                }
+            });
+
+            Iterator i = selected_messages.iterator();
+
+            while (i.hasNext())
+            {
+                try
+                {
+                    long mid = (Long) i.next();
+                    final Message m_to_delete = orma.selectFromMessage().idEq(mid).get(0);
+
+                    // ---------- delete fileDB if this message is an outgoing file ----------
+                    if (m_to_delete.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+                    {
+                        if (m_to_delete.direction == 1)
+                        {
+                            try
+                            {
+                                // TODO: cleanup duplicated outgoing files from provider here ************
+                                // FileDB file_ = orma.selectFromFileDB().idEq(m_to_delete.filedb_id).get(0);
+                                orma.deleteFromFileDB().idEq(m_to_delete.filedb_id).execute();
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                                Log.i(TAG, "delete_selected_messages_asynchtask:EE4:" + e.getMessage());
+                            }
+                        }
+                    }
+
+                    // ---------- delete fileDB if this message is an outgoing file ----------
+
+                    // ---------- delete fileDB and VFS file if this message is an incoming file ----------
+                    if (m_to_delete.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+                    {
+                        if (m_to_delete.direction == 0)
+                        {
+                            try
+                            {
+                                FileDB file_ = orma.selectFromFileDB().idEq(m_to_delete.filedb_id).get(0);
+
+                                try
+                                {
+                                    File f_vfs = new File(file_.path_name + "/" + file_.file_name);
+
+                                    if (f_vfs.exists())
+                                    {
+                                        f_vfs.delete();
+                                    }
+                                }
+                                catch (Exception e6)
+                                {
+                                    e6.printStackTrace();
+                                    Log.i(TAG, "delete_selected_messages_asynchtask:EE5:" + e6.getMessage());
+                                }
+
+                                orma.deleteFromFileDB().idEq(m_to_delete.filedb_id).execute();
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                                Log.i(TAG, "delete_selected_messages_asynchtask:EE4:" + e.getMessage());
+                            }
+                        }
+                    }
+
+                    // ---------- delete fileDB and VFS file if this message is an incoming file ----------
+
+                    // ---------- delete the message itself ----------
+                    try
+                    {
+                        long message_id_to_delete = m_to_delete.id;
+
+                        try
+                        {
+                            // let message delete animation finish (maybe use yet another asynctask here?) ------------
+                            try
+                            {
+                                if (update_message_list)
+                                {
+                                    Thread.sleep(50);
+                                }
+                            }
+                            catch (Exception sleep_ex)
+                            {
+                                sleep_ex.printStackTrace();
+                            }
+
+                            // let message delete animation finish (maybe use yet another asynctask here?) ------------
+                            orma.deleteFromMessage().idEq(message_id_to_delete).execute();
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                            Log.i(TAG, "delete_selected_messages_asynchtask:EE1:" + e.getMessage());
+                        }
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                        Log.i(TAG, "delete_selected_messages_asynchtask:EE2:" + e2.getMessage());
+                    }
+
+                    // ---------- delete the message itself ----------
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                    Log.i(TAG, "delete_selected_messages_asynchtask:EE3:" + e2.getMessage());
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void done()
+        {
+            selected_messages.clear();
+            selected_messages_incoming_file.clear();
+            selected_messages_text_only.clear();
+
+        }
     }
 }
 

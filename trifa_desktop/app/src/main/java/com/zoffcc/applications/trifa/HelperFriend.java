@@ -26,6 +26,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -34,6 +35,7 @@ import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -859,5 +861,92 @@ public class HelperFriend
         catch (Exception ignored)
         {
         }
+    }
+
+    static void delete_friend_all_files(final long friendnum)
+    {
+        try
+        {
+            Iterator<FileDB> i1 = orma.selectFromFileDB().tox_public_key_stringEq(
+                    tox_friend_get_public_key__wrapper(friendnum)).
+                    directionEq(TRIFA_FT_DIRECTION_INCOMING.value).
+                    toList().iterator();
+            MainActivity.selected_messages.clear();
+            MainActivity.selected_messages_text_only.clear();
+            MainActivity.selected_messages_incoming_file.clear();
+
+            while (i1.hasNext())
+            {
+                try
+                {
+                    long file_id = i1.next().id;
+                    long msg_id = orma.selectFromMessage().filedb_idEq(file_id).directionEq(0).
+                            tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).get(0).id;
+                    MainActivity.selected_messages.add(msg_id);
+                    MainActivity.selected_messages_incoming_file.add(msg_id);
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+            }
+
+            HelperMessage.delete_selected_messages(null, false, false, "deleting Messages ...");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        try
+        {
+            orma.deleteFromFileDB().tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    static void delete_friend_all_filetransfers(final long friendnum)
+    {
+        try
+        {
+            Log.i(TAG, "delete_ft:ALL for friend=" + friendnum);
+            orma.deleteFromFiletransfer().tox_public_key_stringEq(
+                    tox_friend_get_public_key__wrapper(friendnum)).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    static void delete_friend_all_messages(final long friendnum)
+    {
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                orma.deleteFromMessage().tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).execute();
+            }
+        };
+        t.start();
+    }
+
+    static void delete_friend(final String friend_pubkey)
+    {
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                orma.deleteFromFriendList().
+                        tox_public_key_stringEq(friend_pubkey).
+                        execute();
+            }
+        };
+        t.start();
     }
 }

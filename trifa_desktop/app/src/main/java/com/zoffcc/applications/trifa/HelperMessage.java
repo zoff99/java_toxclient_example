@@ -549,4 +549,19 @@ public class HelperMessage
             Log.i(TAG, "set_message_start_sending_from_id:EE:" + e.getMessage());
         }
     }
+
+    static void delete_selected_messages(final Object c, final boolean update_message_list, final boolean update_friend_list, final String dialog_text)
+    {
+        try
+        {
+            MainActivity.delete_selected_messages_asynchtask process = new MainActivity.delete_selected_messages_asynchtask(
+                    update_message_list, update_friend_list);
+            process.execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "delete_selected_messages:EE2:" + e.getMessage());
+        }
+    }
 }
