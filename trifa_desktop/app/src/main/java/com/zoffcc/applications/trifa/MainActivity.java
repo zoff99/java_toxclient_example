@@ -417,7 +417,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         // -------------- set previous size of main window --------------
         try
         {
-            Preferences prefs = Preferences.userRoot().node(MainActivity.class.getSimpleName() + "-" + "main_window");
+            Preferences prefs = Preferences.userRoot().node("trifa_desktop/main_window");
+
             setLocation(getFrameLocation(prefs, 10, 10));
             setSize(getFrameSize(prefs, 600, 400));
 
