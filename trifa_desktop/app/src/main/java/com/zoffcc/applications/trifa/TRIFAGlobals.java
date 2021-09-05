@@ -115,6 +115,7 @@ public class TRIFAGlobals
     // static boolean global_incoming_ft_active = false;
 
     static final int FRIEND_NAME_DISPLAY_MENU_MAXLEN = 50;
+    static final int CONFERENCE_NAME_DISPLAY_MENU_MAXLEN = 50;
     static final int FT_IMAGE_THUMBNAIL_WIDTH = 200;
     static final int FT_IMAGE_THUMBNAIL_HEIGHT = 90;
 

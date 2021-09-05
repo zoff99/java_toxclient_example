@@ -475,5 +475,19 @@ public class OrmaDatabase
         ret.sql_start = "DELETE FROM FriendList";
         return ret;
     }
+
+    public ConferenceMessage deleteFromConferenceMessage()
+    {
+        ConferenceMessage ret = new ConferenceMessage();
+        ret.sql_start = "DELETE FROM ConferenceMessage";
+        return ret;
+    }
+
+    public ConferenceDB deleteFromConferenceDB()
+    {
+        ConferenceDB ret = new ConferenceDB();
+        ret.sql_start = "DELETE FROM ConferenceDB";
+        return ret;
+    }
 }
 

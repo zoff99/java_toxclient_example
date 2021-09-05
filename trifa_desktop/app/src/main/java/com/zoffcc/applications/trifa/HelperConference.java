@@ -452,4 +452,57 @@ public class HelperConference
             return false;
         }
     }
+
+    static void delete_conference_all_messages(final String conference_id)
+    {
+        Thread t = new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Log.i(TAG, "delete_conference_all_messages:del");
+                    orma.deleteFromConferenceMessage().conference_identifierEq(conference_id).execute();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    Log.i(TAG, "delete_conference_all_messages:EE:" + e.getMessage());
+                }
+            }
+        };
+        t.start();
+    }
+
+    static void delete_conference(final String conference_id)
+    {
+        try
+        {
+            Log.i(TAG, "delete_conference:del");
+            orma.deleteFromConferenceDB().conference_identifierEq(conference_id).execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "delete_conference:EE:" + e.getMessage());
+        }
+    }
+
+    static void set_conference_inactive(String conference_identifier)
+    {
+        try
+        {
+            orma.updateConferenceDB().
+                    conference_identifierEq(conference_identifier).
+                    conference_active(false).
+                    tox_conference_number(-1).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_conference_inactive:EE:" + e.getMessage());
+        }
+    }
 }
