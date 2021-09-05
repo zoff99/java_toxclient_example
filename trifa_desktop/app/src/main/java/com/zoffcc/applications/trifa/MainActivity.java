@@ -32,6 +32,7 @@ import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Taskbar;
 import java.awt.Toolkit;
@@ -73,6 +74,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
+import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -94,6 +96,7 @@ import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -410,7 +413,36 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         EmojiFrame1 = new EmojiSelectionTab();
 
         setLayout(new FlowLayout());
-        setSize(600, 400);
+
+        // -------------- set previous size of main window --------------
+        try
+        {
+            Preferences prefs = Preferences.userRoot().node(MainActivity.class.getSimpleName() + "-" + "main_window");
+            setLocation(getFrameLocation(prefs, 10, 10));
+            setSize(getFrameSize(prefs, 600, 400));
+
+            CoalescedEventUpdater updater = new CoalescedEventUpdater(400, () -> updatePref(this, prefs));
+
+            addComponentListener(new ComponentAdapter()
+            {
+                @Override
+                public void componentResized(ComponentEvent e)
+                {
+                    updater.update();
+                }
+
+                @Override
+                public void componentMoved(ComponentEvent e)
+                {
+                    updater.update();
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            setSize(600, 400);
+        }
+        // -------------- set previous size of main window --------------
 
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new WindowAdapter()
@@ -919,8 +951,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         EventQueue.invokeLater(() -> {
             this.toFront();
-            this.pack();
-            setSize(600, 400);
+            // this.pack();
             this.revalidate();
         });
 
@@ -4269,6 +4300,58 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             selected_messages_text_only.clear();
 
         }
+    }
+
+    static class CoalescedEventUpdater
+    {
+        private Timer timer;
+
+        public CoalescedEventUpdater(int delay, Runnable callback)
+        {
+            timer = new Timer(delay, e -> {
+                timer.stop();
+                callback.run();
+            });
+        }
+
+        public void update()
+        {
+            if (!SwingUtilities.isEventDispatchThread())
+            {
+                SwingUtilities.invokeLater(() -> {
+                    timer.restart();
+                });
+            }
+            else
+            {
+                timer.restart();
+            }
+        }
+    }
+
+    private static void updatePref(JFrame frame, Preferences prefs)
+    {
+        System.out.println("Updating preferences");
+        Point location = frame.getLocation();
+        prefs.putInt("x", location.x);
+        prefs.putInt("y", location.y);
+        Dimension size = frame.getSize();
+        prefs.putInt("w", size.width);
+        prefs.putInt("h", size.height);
+    }
+
+    private static Dimension getFrameSize(Preferences pref, int defaultW, int defaultH)
+    {
+        int w = pref.getInt("w", defaultW);
+        int h = pref.getInt("h", defaultH);
+        return new Dimension(w, h);
+    }
+
+    private static Point getFrameLocation(Preferences pref, int defaultX, int defaultY)
+    {
+        int x = pref.getInt("x", defaultX);
+        int y = pref.getInt("y", defaultY);
+        return new Point(x, y);
     }
 }
 
