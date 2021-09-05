@@ -1585,6 +1585,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native int tox_conference_invite(long friend_number, long conference_number);
 
+    //** wait for travis to build the MacOS JNI libs **//public static native int tox_conference_set_title(long conference_number, String title);
     // --------------- Conference -------------
     // --------------- Conference -------------
     // --------------- Conference -------------
