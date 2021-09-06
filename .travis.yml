@@ -43,5 +43,3 @@ after_success:
   - shasum -a 256 /Users/runner/ToxAndroidRefImpl/jni-c-toxcore/libjni-c-toxcore.jnilib
 
 
-
-
