@@ -124,6 +124,23 @@ public class FriendListFragmentJ extends JPanel
         popup_friends.setBorder(labelBorder);
         popup_confs.setBorder(labelBorder);
 
+        JMenuItem menuItem_friend_info = new JMenuItem(lo.getString("info_friend"));
+        menuItem_friend_info.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ev)
+            {
+                final JMenuItem mitem = (JMenuItem) ev.getSource();
+                final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+                final String f2_tox_public_key_string = b.getSelectedValue().friend_item.tox_public_key_string;
+
+                FriendInfoActivity FriendInfoFrame = new FriendInfoActivity(f2_tox_public_key_string);
+                FriendInfoFrame.setVisible(true);
+            }
+        });
+        popup_friends.add(menuItem_friend_info);
+
         JMenuItem menuItem = new JMenuItem(lo.getString("delete_friend"));
         menuItem.addActionListener(new ActionListener()
         {

@@ -36,7 +36,13 @@ import java.sql.Statement;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
+import javax.swing.JEditorPane;
+import javax.swing.JTextPane;
 import javax.swing.border.Border;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import static com.zoffcc.applications.trifa.HelperFriend.friend_call_push_url;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
@@ -1181,5 +1187,40 @@ public class HelperGeneric
             {
             }
         });
+    }
+
+    static void appendToJTextPane(JTextPane tp, String msg, Color c)
+    {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+
+        // aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+        // aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+
+        int len = tp.getDocument().getLength();
+        tp.setCaretPosition(len);
+        tp.setCharacterAttributes(aset, false);
+        tp.replaceSelection(msg);
+    }
+
+    static void appendToJEditorPane(JEditorPane ep, final String msg, final Color c)
+    {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+
+        int len = ep.getDocument().getLength(); // same value as getText().length();
+        ep.setCaretPosition(len); // place caret at the end (with no selection)
+        // ep.setCharacterAttributes(aset, false);
+        String msg2 = "";
+        if (c == Color.BLACK)
+        {
+            msg2 = msg;
+        }
+        else
+        {
+            //msg2 = "<font color = FF0000>" + msg + "</font>";
+            msg2 = msg;
+        }
+        ep.replaceSelection(msg2); // there is no selection, so inserts at caret
     }
 }
