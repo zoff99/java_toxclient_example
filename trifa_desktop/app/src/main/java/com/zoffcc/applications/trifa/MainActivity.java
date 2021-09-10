@@ -309,6 +309,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     final static int TTF_FONT_FAMILY_MENU_SIZE = 12;
     final static int AVATAR_FRIENDLIST_W = 15;
     final static int AVATAR_FRIENDLIST_H = 15;
+    final static int AVATAR_FRIENDINFO_W = 90;
+    final static int AVATAR_FRIENDINFO_H = 90;
 
     static boolean mainwindow_has_focus = true;
 

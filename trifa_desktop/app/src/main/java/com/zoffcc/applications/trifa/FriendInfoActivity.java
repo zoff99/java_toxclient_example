@@ -24,9 +24,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -46,7 +50,11 @@ import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
+import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDINFO_H;
+import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDINFO_W;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class FriendInfoActivity extends JFrame
 {
@@ -63,6 +71,9 @@ public class FriendInfoActivity extends JFrame
     private JTextArea text_relay = new JTextArea("");
 
     private JPanel main_panel = null;
+
+    final JPanel avatar_container = new JPanel(new SingleComponentAspectRatioKeeperLayout(), true);
+    final JPictureBox avatar = new JPictureBox();
 
     FriendInfoActivity(String pubkey)
     {
@@ -143,6 +154,31 @@ public class FriendInfoActivity extends JFrame
 
         text_pushurl.setContentType("text/html");
 
+        avatar.setSize(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H);
+
+        avatar_container.add(avatar);
+        avatar_container.setPreferredSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H));
+        avatar_container.setMaximumSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H));
+        avatar_container.setMinimumSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H));
+
+        // ----------- avatar -----------
+        JPanel panel_avatar = new JPanel(new GridBagLayout());
+
+        GridBagConstraints constraints_avatar = new GridBagConstraints();
+        constraints_avatar.anchor = GridBagConstraints.CENTER;
+        constraints_avatar.insets = new Insets(0, 0, 0, 0);
+
+        constraints_avatar.gridx = 0;
+        constraints_avatar.gridy = 0;
+        panel_avatar.add(avatar_container, constraints_avatar);
+
+        panel_avatar.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
+                                                                lo.getString("settings_category_002")));
+
+        panel_avatar.setPreferredSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H + 40));
+        // ----------- avatar -----------
+
+
         // ----------- Tox -----------
         JPanel panel_tox = new JPanel(new GridBagLayout());
 
@@ -158,13 +194,13 @@ public class FriendInfoActivity extends JFrame
 
 
         constraints_tox.gridx = 0;
-        constraints_tox.gridy = 1;
+        constraints_tox.gridy++;
         panel_tox.add(label_pushurl, constraints_tox);
         constraints_tox.gridx = 1;
         panel_tox.add(text_pushurl, constraints_tox);
 
         constraints_tox.gridx = 0;
-        constraints_tox.gridy = 2;
+        constraints_tox.gridy++;
         panel_tox.add(label_relay, constraints_tox);
         constraints_tox.gridx = 1;
         panel_tox.add(text_relay, constraints_tox);
@@ -235,6 +271,24 @@ public class FriendInfoActivity extends JFrame
 
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 
+        try
+        {
+            final BufferedImage img = ImageIO.read(new File(fl.avatar_pathname + File.separator + fl.avatar_filename));
+            final ImageIcon icon = new ImageIcon(img);
+            avatar.setIcon(icon);
+        }
+        catch (Exception e)
+        {
+            final BufferedImage img = new BufferedImage(1, 1, TYPE_INT_ARGB);
+            img.setRGB(0, 0, SEE_THRU.getRGB());
+            final ImageIcon icon = new ImageIcon(img);
+            avatar.setIcon(icon);
+        }
+
+        avatar.setBackground(Color.ORANGE);
+        avatar.repaint();
+
+        main_panel.add(panel_avatar);
         main_panel.add(panel_tox);
 
         JScrollPane scrollPane1 = new JScrollPane();
