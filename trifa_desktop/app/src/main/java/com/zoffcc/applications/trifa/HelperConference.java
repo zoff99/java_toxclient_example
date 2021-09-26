@@ -174,26 +174,8 @@ public class HelperConference
 
     public static String tox_conference_peer_get_public_key__wrapper(long conference_number, long peer_number)
     {
-        if (MainActivity.cache_peernum_pubkey.containsKey("" + conference_number + ":" + peer_number))
-        {
-            // Log.i(TAG, "cache hit:2");
-            return MainActivity.cache_peernum_pubkey.get("" + conference_number + ":" + peer_number);
-        }
-        else
-        {
-            if (MainActivity.cache_peernum_pubkey.size() >= 100)
-            {
-                // TODO: bad!
-                MainActivity.cache_peernum_pubkey.clear();
-            }
-
-            String result = MainActivity.tox_conference_peer_get_public_key(conference_number, peer_number);
-            if ((conference_number != -1) && (peer_number != -1))
-            {
-                MainActivity.cache_peernum_pubkey.put("" + conference_number + ":" + peer_number, result);
-            }
-            return result;
-        }
+        String result = MainActivity.tox_conference_peer_get_public_key(conference_number, peer_number);
+        return result;
     }
 
     static ConferenceMessage get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey(String conference_identifier, String sender_pubkey, long sent_timestamp, String message_id_tox, int n, boolean was_synced)
@@ -229,40 +211,52 @@ public class HelperConference
 
     public static String tox_conference_peer_get_name__wrapper(String conference_identifier, String peer_pubkey)
     {
-        if (MainActivity.cache_peername_pubkey2.containsKey("" + conference_identifier + ":" + peer_pubkey))
-        {
-            // Log.i(TAG, "cache hit:2b");
-            return MainActivity.cache_peername_pubkey2.get("" + conference_identifier + ":" + peer_pubkey);
-        }
-        else
-        {
-            if (MainActivity.cache_peername_pubkey2.size() >= 100)
-            {
-                // TODO: bad!
-                MainActivity.cache_peername_pubkey2.clear();
-            }
+        long conf_num = tox_conference_by_confid__wrapper(conference_identifier);
 
-            long conf_num = tox_conference_by_confid__wrapper(conference_identifier);
+        if (conf_num > -1)
+        {
             long peer_num = get_peernum_from_peer_pubkey(conference_identifier, peer_pubkey);
 
-            if ((conf_num > -1) && (peer_num > -1))
+            if (peer_num > -1)
             {
                 String result = MainActivity.tox_conference_peer_get_name(conf_num, peer_num);
 
-                if (result.equals("-1"))
+                if ((result == null) || (result.equals("-1")))
                 {
                     return null;
                 }
                 else
                 {
-                    MainActivity.cache_peername_pubkey2.put("" + conference_identifier + ":" + peer_pubkey, result);
+                    // TODO: peername cache without locking seems to produce wrong names :-(
+                    //       disable cache for now
+                    // MainActivity.cache_peername_pubkey2.put("" + conference_identifier + ":" + peer_pubkey, result);
                     return result;
                 }
             }
             else
             {
+                long offline_peer_num = get_offline_peernum_from_peer_pubkey(conference_identifier, peer_pubkey);
+
+                if (offline_peer_num > -1)
+                {
+                    String result = MainActivity.tox_conference_offline_peer_get_name(conf_num, offline_peer_num);
+
+                    if ((result == null) || (result.equals("-1")))
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return result;
+                    }
+                }
+
                 return null;
             }
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -298,6 +292,40 @@ public class HelperConference
             return orma.selectFromConferenceDB().
                     conference_activeEq(true).
                     conference_identifierEq(conference_id.toLowerCase()).get(0).tox_conference_number;
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+    }
+
+    static long get_offline_peernum_from_peer_pubkey(String conference_id, String peer_pubkey)
+    {
+        try
+        {
+            long conf_num = tox_conference_by_confid__wrapper(conference_id);
+            long num_offline_peers = MainActivity.tox_conference_offline_peer_count(conf_num);
+
+            if (num_offline_peers > 0)
+            {
+                int i = 0;
+
+                for (i = 0; i < num_offline_peers; i++)
+                {
+                    String pubkey_try = MainActivity.tox_conference_offline_peer_get_public_key(conf_num, i);
+
+                    if (pubkey_try != null)
+                    {
+                        if (pubkey_try.equals(peer_pubkey))
+                        {
+                            // we found the offline peer number
+                            return i;
+                        }
+                    }
+                }
+            }
+
+            return -1;
         }
         catch (Exception e)
         {

@@ -149,12 +149,16 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
         try
         {
             String peer_name = tox_conference_peer_get_name__wrapper(m.conference_identifier, message__tox_peerpubkey);
+
+            final String peerpubkey_short = message__tox_peerpubkey.substring((message__tox_peerpubkey.length() - 6),
+                                                                              message__tox_peerpubkey.length());
+
             if (peer_name == null)
             {
                 peer_name = message__tox_peername;
                 if ((peer_name == null) || (message__tox_peername.equals("")) || (peer_name.equals("-1")))
                 {
-                    peer_name = "Unknown";
+                    peer_name = peerpubkey_short;
                 }
             }
             else
@@ -163,7 +167,7 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
                 {
                     if ((message__tox_peername == null) || (message__tox_peername.equals("")))
                     {
-                        peer_name = "Unknown";
+                        peer_name = peerpubkey_short;
                     }
                     else
                     {
@@ -174,9 +178,7 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
 
             try
             {
-                date_time_text = date_time_text + " " + (peer_name + " / " +
-                                                         message__tox_peerpubkey.substring((message__tox_peerpubkey.length() - 6),
-                                                                                           message__tox_peerpubkey.length()));
+                date_time_text = date_time_text + " " + (peer_name + " / " + peerpubkey_short);
             }
             catch (Exception e2)
             {

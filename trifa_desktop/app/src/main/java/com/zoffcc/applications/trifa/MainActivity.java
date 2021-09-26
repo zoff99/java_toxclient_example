@@ -259,9 +259,6 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
     static Map<Long, String> cache_fnum_pubkey = new HashMap<Long, String>();
-    static Map<String, String> cache_peernum_pubkey = new HashMap<String, String>();
-    // static Map<String, String> cache_peername_pubkey = new HashMap<String, String>();
-    static Map<String, String> cache_peername_pubkey2 = new HashMap<String, String>();
     static Map<String, Long> cache_confid_confnum = new HashMap<String, Long>();
     // ---- lookup cache ----
 
@@ -3530,6 +3527,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         // invite also my ToxProxy -------------
         Log.i(TAG, "conference_connected_cb:cf_num=" + conference_number);
         HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+
+        // TODO: bad
+        // MainActivity.cache_peername_pubkey2.clear();
+
+        cache_confid_confnum.clear();
     }
 
     static void android_tox_callback_conference_message_cb_method(long conference_number, long peer_number, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
@@ -3722,14 +3724,20 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static void android_tox_callback_conference_peer_name_cb_method(long conference_number, long peer_number, String name, long name_length)
     {
+        // TODO: bad
+        // MainActivity.cache_peername_pubkey2.clear();
     }
 
     static void android_tox_callback_conference_peer_list_changed_cb_method(long conference_number)
     {
+        // TODO: bad
+        // MainActivity.cache_peername_pubkey2.clear();
     }
 
     static void android_tox_callback_conference_namelist_change_cb_method(long conference_number, long peer_number, int a_TOX_CONFERENCE_STATE_CHANGE)
     {
+        // TODO: bad
+        // MainActivity.cache_peername_pubkey2.clear();
     }
 
     // -------- called by native Conference methods --------
