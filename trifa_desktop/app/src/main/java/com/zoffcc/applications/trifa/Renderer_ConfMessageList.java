@@ -136,13 +136,13 @@ public class Renderer_ConfMessageList extends JPanel implements ListCellRenderer
 
         String date_time_text = "";
 
-        if (m.direction == 0)
-        {
-            date_time_text = (long_date_time_format(m.rcvd_timestamp));
-        }
-        else
+        if (m.direction == 0) // incoming message
         {
             date_time_text = (long_date_time_format(m.sent_timestamp));
+        }
+        else // outgoing message
+        {
+            date_time_text = (long_date_time_format(m.rcvd_timestamp));
         }
 
 
