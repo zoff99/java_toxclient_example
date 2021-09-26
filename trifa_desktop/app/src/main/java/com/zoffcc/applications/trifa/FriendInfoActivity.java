@@ -58,11 +58,14 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class FriendInfoActivity extends JFrame
 {
-    public static int width = 600;
-    public static int height = 700;
+    public static int width = 640;
+    public static int height = 800;
 
     private JLabel label_name = new JLabel("Name");
     private JTextArea text_name = new JTextArea();
+
+    private JLabel label_toxpubkey = new JLabel("Publickey");
+    private JTextArea text_toxpubkey = new JTextArea();
 
     private JLabel label_pushurl = new JLabel("Push URL");
     private JEditorPane text_pushurl = new JEditorPane();
@@ -180,6 +183,7 @@ public class FriendInfoActivity extends JFrame
 
 
         // ----------- Tox -----------
+        final Border line_border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
         JPanel panel_tox = new JPanel(new GridBagLayout());
 
         GridBagConstraints constraints_tox = new GridBagConstraints();
@@ -191,6 +195,20 @@ public class FriendInfoActivity extends JFrame
         panel_tox.add(label_name, constraints_tox);
         constraints_tox.gridx = 1;
         panel_tox.add(text_name, constraints_tox);
+
+        constraints_tox.gridx = 0;
+        constraints_tox.gridy++;
+        panel_tox.add(label_toxpubkey, constraints_tox);
+        constraints_tox.gridx = 1;
+        panel_tox.add(text_toxpubkey, constraints_tox);
+
+
+        text_toxpubkey.setText(fl.tox_public_key_string);
+        text_toxpubkey.setLineWrap(true);
+        text_toxpubkey.setColumns(35);
+        text_toxpubkey.setEditable(false);
+        text_toxpubkey.setBorder(
+                BorderFactory.createCompoundBorder(line_border, BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
 
         constraints_tox.gridx = 0;
@@ -207,8 +225,6 @@ public class FriendInfoActivity extends JFrame
 
         String friend_relay_pubkey = get_relay_for_friend(pubkey);
         String pushurl_for_friend = get_pushurl_for_friend(pubkey);
-
-        final Border line_border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
 
         text_name.setText(fl.name);
         text_name.setLineWrap(true);
