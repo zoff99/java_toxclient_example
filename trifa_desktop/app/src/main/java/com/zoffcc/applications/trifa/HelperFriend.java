@@ -36,6 +36,9 @@ import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -975,5 +978,54 @@ public class HelperFriend
             }
         };
         t.start();
+    }
+
+    static String resolve_name_for_pubkey(String pub_key, String default_name)
+    {
+        String ret = default_name;
+
+        try
+        {
+            try
+            {
+                if (pub_key.equals(global_my_toxid.substring(0, (TOX_PUBLIC_KEY_SIZE * 2))))
+                {
+                    // its our own key
+                    ret = global_my_name;
+                    return ret;
+                }
+            }
+            catch (Exception e1)
+            {
+                e1.printStackTrace();
+            }
+
+            FriendList fl = orma.selectFromFriendList().
+                    tox_public_key_stringEq(pub_key).
+                    toList().get(0);
+
+            if (fl.name != null)
+            {
+                if (fl.name.length() > 0)
+                {
+                    ret = fl.name;
+                }
+            }
+
+            if (fl.alias_name != null)
+            {
+                if (fl.alias_name.length() > 0)
+                {
+                    ret = fl.alias_name;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+            ret = default_name;
+        }
+
+        return ret;
     }
 }

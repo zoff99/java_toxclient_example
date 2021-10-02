@@ -48,12 +48,20 @@ import static com.zoffcc.applications.trifa.HelperConference.get_conference_titl
 import static com.zoffcc.applications.trifa.HelperConference.insert_into_conference_message_db;
 import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.resolve_name_for_pubkey;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
+import static com.zoffcc.applications.trifa.MainActivity.lookup_peer_listnum_pubkey;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_offline_peer_count;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_offline_peer_get_name;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_offline_peer_get_public_key;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_count;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_get_name;
+import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_get_public_key;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
@@ -74,6 +82,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
     static String current_conf_id = "-1";
     static boolean is_at_bottom = true;
+    static boolean peerlist_in_update = false;
 
     public ConferenceMessageListFragmentJ()
     {
@@ -369,5 +378,200 @@ public class ConferenceMessageListFragmentJ extends JPanel
         {
         }
         return null;
+    }
+
+    static synchronized void update_group_all_users()
+    {
+        if (!peerlist_in_update)
+        {
+            peerlist_in_update = true;
+
+            EventQueue.invokeLater(() -> {
+                try
+                {
+                    set_peer_count_header();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                try
+                {
+                    set_peer_names_and_avatars();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+                peerlist_in_update = false;
+            });
+        }
+    }
+
+    static synchronized void set_peer_count_header()
+    {
+        final String f_name = HelperConference.get_conference_title_from_confid(current_conf_id);
+        final long conference_num = tox_conference_by_confid__wrapper(current_conf_id);
+        // Log.i(TAG, "set_peer_count_header:1:conf_id=" + conf_id + " conference_num=" + conference_num);
+        EventQueue.invokeLater(() -> {
+            try
+            {
+                long peer_count = tox_conference_peer_count(conference_num);
+                long frozen_peer_count = tox_conference_offline_peer_count(conference_num);
+                // Log.i(TAG, "set_peer_count_header:2:conf_id=" + conf_id + " conference_num=" + conference_num);
+
+                if (peer_count > -1)
+                {
+                    // ml_maintext.setText(
+                    //         f_name + "\n" + getString(R.string.GroupActivityActive) + " " + peer_count +
+                    //         " " + getString(R.string.GroupActivityOffline) + " " + frozen_peer_count);
+                }
+                else
+                {
+                    // ml_maintext.setText(f_name);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    static synchronized void set_peer_names_and_avatars()
+    {
+        if (is_conference_active(current_conf_id))
+        {
+            // Log.d(TAG, "set_peer_names_and_avatars:001");
+
+            try
+            {
+                remove_group_all_users();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            // Log.d(TAG, "set_peer_names_and_avatars:002");
+
+            final long conference_num = tox_conference_by_confid__wrapper(current_conf_id);
+            long num_peers = tox_conference_peer_count(conference_num);
+            long offline_num_peers = tox_conference_offline_peer_count(conference_num);
+
+            // Log.d(TAG, "set_peer_names_and_avatars:003:peer count=" + num_peers);
+
+            if (num_peers > 0)
+            {
+                long i = 0;
+                for (i = 0; i < num_peers; i++)
+                {
+                    try
+                    {
+                        String peer_pubkey_temp = tox_conference_peer_get_public_key(conference_num, i);
+                        String peer_name_temp = tox_conference_peer_get_name(conference_num, i);
+                        if (peer_name_temp.equals(""))
+                        {
+                            peer_name_temp = null;
+                        }
+                        // Log.d(TAG, "set_peer_names_and_avatars:004:add:" + peer_name_temp);
+                        add_group_user(peer_pubkey_temp, i, peer_name_temp, false);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+
+            if (offline_num_peers > 0)
+            {
+                long i = 0;
+                for (i = 0; i < offline_num_peers; i++)
+                {
+                    try
+                    {
+                        String peer_pubkey_temp = tox_conference_offline_peer_get_public_key(conference_num, i);
+                        String peer_name_temp = tox_conference_offline_peer_get_name(conference_num, i);
+                        if (peer_name_temp.equals(""))
+                        {
+                            peer_name_temp = null;
+                        }
+                        // Log.d(TAG, "set_peer_names_and_avatars:005:add:" + peer_name_temp);
+                        add_group_user(peer_pubkey_temp, i, peer_name_temp, true);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+        }
+    }
+
+    static synchronized void remove_group_all_users()
+    {
+        PeerListFragmentJ.peer_list_model.clear();
+    }
+
+    static long peer_pubkey_to_long_in_list(String peer_pubkey)
+    {
+        long ret = -1L;
+
+        if (lookup_peer_listnum_pubkey.containsKey(peer_pubkey))
+        {
+            ret = lookup_peer_listnum_pubkey.get(peer_pubkey);
+        }
+
+        return ret;
+    }
+
+    static synchronized void add_group_user(final String peer_pubkey, final long peernum, String name, boolean offline)
+    {
+        // Log.i(TAG, "add_group_user:peernum=" + peernum + " name=" + name + " offline=" + offline);
+
+        try
+        {
+            if (peernum != -1)
+            {
+                // -- ADD --
+                // Log.i(TAG, "add_group_user:ADD:peernum=" + peernum);
+                String name2 = "";
+                if (name != null)
+                {
+                    name2 = name;
+                }
+                else
+                {
+                    name2 = peer_pubkey.substring(peer_pubkey.length() - 5, peer_pubkey.length());
+                }
+
+                try
+                {
+                    name2 = resolve_name_for_pubkey(peer_pubkey, name2);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+                final String name3 = name2;
+
+                PeerModel pm = new PeerModel();
+                pm.offline = offline;
+                pm.name = name3;
+                pm.peernum = peernum;
+                pm.pubkey = peer_pubkey;
+                PeerListFragmentJ.peer_list_model.addElement(pm);
+            }
+            else
+            {
+                Log.i(TAG, "add_group_user:EE999:!!please report this!!");
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "add_group_user:EE:" + e.getMessage());
+        }
     }
 }

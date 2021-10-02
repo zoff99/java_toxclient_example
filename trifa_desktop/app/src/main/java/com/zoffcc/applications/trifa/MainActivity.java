@@ -233,12 +233,15 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static EmojiSelectionTab EmojiFrame1 = null;
     static JSplitPane splitPane = null;
+    static JSplitPane PeersplitPane = null;
     static FriendListFragmentJ FriendPanel;
+    static PeerListFragmentJ PeerPanel;
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
     static ConferenceMessageListFragmentJ MessagePanelConferences;
     static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
+    static JPanel PeerPanelContainer = null;
     static JPanel MessageTextInputPanel;
     static JTextArea messageInputTextField;
     static JButton sendButton;
@@ -454,9 +457,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         });
 
         splitPane = new JSplitPane();
+        PeersplitPane = new JSplitPane();
 
         FriendPanel = new FriendListFragmentJ();
         MessagePanelContainer = new JPanel(true);
+        PeerPanelContainer = new JPanel(true);
 
         MessagePanelContainer.addComponentListener(new ComponentAdapter()
         {
@@ -523,6 +528,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         MessagePanel.setCurrentPK(null);
 
         MessagePanelConferences = new ConferenceMessageListFragmentJ();
+
+        PeerPanel = new PeerListFragmentJ();
 
         MessageTextInputPanel = new JPanel(true);
 
@@ -634,6 +641,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         ownProfileShort.setVisible(true);
 
         MessagePanelContainer.setLayout(new BoxLayout(MessagePanelContainer, BoxLayout.Y_AXIS));
+        PeerPanelContainer.setLayout(new BoxLayout(PeerPanelContainer, BoxLayout.Y_AXIS));
         myToxID.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_NAME_SMALL_SIZE));
         myToxID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 70));
 
@@ -1039,6 +1047,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
 
+                    PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();
                     MessagePanelContainer.add(MessagePanel_Info);
                     MessagePanelContainer.add(MessageTextInputPanel);
@@ -1051,6 +1060,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 {
                     current_conf_id = "-1";
 
+                    PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();
                     MessagePanelContainer.add(MessagePanel);
                     MessagePanelContainer.add(MessageTextInputPanel);
@@ -1064,12 +1074,26 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
 
+                    PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();
-                    MessagePanelContainer.add(MessagePanelConferences);
-                    MessagePanelContainer.add(MessageTextInputPanel);
-                    MessagePanelContainer.add(myToxID, BorderLayout.SOUTH);
+
+                    // MessagePanelContainer.setLayout(new GridLayout());
+                    MessagePanelContainer.add(PeersplitPane);
+                    PeersplitPane.setVisible(true);
+
+                    PeersplitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+                    PeersplitPane.setLeftComponent(PeerPanel);
+                    PeersplitPane.setRightComponent(PeerPanelContainer);
+
+                    PeerPanelContainer.add(MessagePanelConferences);
+                    PeerPanelContainer.add(MessageTextInputPanel);
+                    PeerPanelContainer.add(myToxID, BorderLayout.SOUTH);
                     MessagePanelContainer.revalidate();
                     MessagePanelContainer.repaint();
+
+                    PeersplitPane.setDividerLocation(160);
+
+                    ConferenceMessageListFragmentJ.update_group_all_users();
                     // Log.i(TAG, "set_message_panel:002:" + i);
                 }
 
@@ -3726,18 +3750,21 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     {
         // TODO: bad
         // MainActivity.cache_peername_pubkey2.clear();
+        ConferenceMessageListFragmentJ.update_group_all_users();
     }
 
     static void android_tox_callback_conference_peer_list_changed_cb_method(long conference_number)
     {
         // TODO: bad
         // MainActivity.cache_peername_pubkey2.clear();
+        ConferenceMessageListFragmentJ.update_group_all_users();
     }
 
     static void android_tox_callback_conference_namelist_change_cb_method(long conference_number, long peer_number, int a_TOX_CONFERENCE_STATE_CHANGE)
     {
         // TODO: bad
         // MainActivity.cache_peername_pubkey2.clear();
+        ConferenceMessageListFragmentJ.update_group_all_users();
     }
 
     // -------- called by native Conference methods --------
