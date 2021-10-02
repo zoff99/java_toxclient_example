@@ -123,7 +123,13 @@ public class Renderer_ConfPeerList extends JPanel implements ListCellRenderer
 
         final BufferedImage img1 = new BufferedImage(1, 1, TYPE_INT_ARGB);
 
-        int res = tox_conference_peer_number_is_ours(tox_conference_by_confid__wrapper(current_conf_id), p.peernum);
+        int res = 0;
+        if (!p.offline)
+        {
+            // Log.d(TAG, current_conf_id + " " + tox_conference_by_confid__wrapper(current_conf_id) + " " + p.peernum);
+            res = tox_conference_peer_number_is_ours(tox_conference_by_confid__wrapper(current_conf_id), p.peernum);
+        }
+
         if (res == 1)
         {
             img1.setRGB(0, 0, CHAT_MSG_BG_SELF_COLOR.getRGB());
