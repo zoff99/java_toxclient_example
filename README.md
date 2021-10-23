@@ -28,6 +28,10 @@
   -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Windows_logo_-_2012.svg" width="20"></a> Windows: ```do_run.bat```
   -  <a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" width="20"></a> MacOS :```./do_run.sh```
 
+## Remove my Background from the Camera Video like Zoom or MS Teams does (Linux only!)
+check instructions on how to do it here:
+https://github.com/floe/backscrub
+
 ## Help Translate the App in your Language
 Use Weblate:
 https://hosted.weblate.org/projects/trifa-a-tox-client-for-android/trifa-desktop/
