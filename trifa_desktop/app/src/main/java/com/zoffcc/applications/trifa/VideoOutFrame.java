@@ -140,6 +140,19 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
 
         Webcam.addDiscoveryListener(this);
 
+        try
+        {
+            for (int q = 0; q < Webcam.getWebcams().size(); q++)
+            {
+                Log.i(TAG, "WEBCAM:#" + q + " device=" + Webcam.getWebcams().get(q).getDevice() + " name=" +
+                           Webcam.getWebcams().get(q).getName());
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
         if (1 == 2)
         {
             picker = new WebcamPicker();
