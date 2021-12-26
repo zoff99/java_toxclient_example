@@ -106,6 +106,12 @@ public class FriendList
     @Nullable
     String push_url;
 
+    @Column(indexed = true, defaultExpr = "0", helpers = Column.Helpers.ALL)
+    long capabilities = 0;
+
+    @Column(indexed = true, defaultExpr = "0", helpers = Column.Helpers.ALL)
+    long msgv3_capability = 0;
+
     static FriendList deep_copy(FriendList in)
     {
         FriendList out = new FriendList();
@@ -129,6 +135,8 @@ public class FriendList
         out.avatar_update_timestamp = in.avatar_update_timestamp;
         out.added_timestamp = in.added_timestamp;
         out.push_url = in.push_url;
+        out.capabilities = in.capabilities;
+        out.msgv3_capability = in.msgv3_capability;
 
         return out;
     }
@@ -197,6 +205,8 @@ public class FriendList
                 f.avatar_update_timestamp = rs.getLong("avatar_update_timestamp");
                 f.added_timestamp = rs.getLong("added_timestamp");
                 f.push_url = rs.getString("push_url");
+                f.capabilities = rs.getLong("capabilities");
+                f.msgv3_capability = rs.getLong("msgv3_capability");
 
                 fl.add(f);
             }
@@ -238,7 +248,9 @@ public class FriendList
                                  "last_online_timestamp_real,"+
                                  "added_timestamp,"+
                                  "is_relay,"	+
-                                 "push_url"	+
+                                 "push_url,"	+
+                                 "capabilities,"	+
+                                 "msgv3_capability"	+
                                  ")" +
                                  "values" +
                                  "(" +
@@ -261,7 +273,9 @@ public class FriendList
                                  "'"+s(this.last_online_timestamp_real)+"'," +
                                  "'"+s(this.added_timestamp)+"'," +
                                  "'"+b(this.is_relay)+"'," +
-                                 "'"+s(this.push_url)+"'" +
+                                 "'"+s(this.push_url)+"'," +
+                                 "'"+s(this.capabilities)+"'," +
+                                 "'"+s(this.msgv3_capability)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -646,6 +660,20 @@ public class FriendList
             this.sql_set = this.sql_set + " , ";
         }
         this.sql_set = this.sql_set + " avatar_update_timestamp='" + s(avatar_update_timestamp) + "' ";
+        return this;
+    }
+
+    public FriendList msgv3_capability(long msgv3_capability)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " msgv3_capability='" + s(msgv3_capability) + "' ";
         return this;
     }
 }

@@ -57,6 +57,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_ke
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.trim_to_utf8_length_bytes;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
@@ -77,6 +78,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CO
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_MSGV3_MAX_MESSAGE_LENGTH;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
 
@@ -541,9 +543,7 @@ public class MessageListFragmentJ extends JPanel
             else
             {
                 // send typed message to friend
-
-                msg = messageInputTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
-                                                                                  messageInputTextField.getText().length()));
+                msg = trim_to_utf8_length_bytes(messageInputTextField.getText(), TOX_MSGV3_MAX_MESSAGE_LENGTH);
 
                 Message m = new Message();
                 m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friendnum);
@@ -557,6 +557,7 @@ public class MessageListFragmentJ extends JPanel
                 m.text = msg;
                 m.msg_version = 0;
                 m.resend_count = 0; // we have tried to resend this message "0" times
+                m.sent_push = 0;
 
                 if ((msg != null) && (!msg.equalsIgnoreCase("")))
                 {
@@ -573,6 +574,13 @@ public class MessageListFragmentJ extends JPanel
                             m.msg_id_hash = result.msg_hash_hex;
                             m.msg_version = 1;
                             // msgV2 message -----------
+                        }
+
+                        if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
+                        {
+                            // msgV3 message -----------
+                            m.msg_idv3_hash = result.msg_hash_v3_hex;
+                            // msgV3 message -----------
                         }
 
                         if (!result.raw_message_buf_hex.equalsIgnoreCase(""))

@@ -41,7 +41,7 @@ public class OrmaDatabase
                     // replace("%", "\\%"). // % -> \%
                     // replace("_", "\\_"). // _ -> \_
                             replace("'", "''"). // ' -> ''
-                    replace("\\x1a", "\\Z");
+                    replace("\\x1a", "\\Z"); // \\x1a --> EOF char
             data = str;
         }
         return data;
@@ -179,9 +179,8 @@ public class OrmaDatabase
         {
             try
             {
-                final String update_001 =
-                        "alter table FriendList add push_url TEXT DEFAULT NULL;" + "\n" +
-                        "CREATE INDEX index_push_url_on_FriendList ON FriendList (push_url);";
+                final String update_001 = "alter table FriendList add push_url TEXT DEFAULT NULL;" + "\n" +
+                                          "CREATE INDEX index_push_url_on_FriendList ON FriendList (push_url);";
                 run_multi_sql(update_001);
             }
             catch (Exception e)
@@ -190,7 +189,31 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 4;
+        if (current_db_version < 5)
+        {
+            try
+            {
+                final String update_001 = "alter table Message add msg_idv3_hash TEXT DEFAULT NULL;" + "\n" +
+                                          "CREATE INDEX index_msg_idv3_hash_on_Message ON Message (msg_idv3_hash);";
+                run_multi_sql(update_001);
+                final String update_002 = "alter table Message add sent_push INTEGER DEFAULT '0';" + "\n" +
+                                          "CREATE INDEX index_sent_push_on_Message ON Message (sent_push);";
+                run_multi_sql(update_002);
+
+                final String update_003 = "alter table FriendList add capabilities INTEGER DEFAULT '0';" + "\n" +
+                                          "CREATE INDEX index_capabilities_on_FriendList ON FriendList (capabilities);";
+                run_multi_sql(update_003);
+                final String update_004 = "alter table FriendList add msgv3_capability INTEGER DEFAULT '0';" + "\n" +
+                                          "CREATE INDEX index_msgv3_capability_on_FriendList ON FriendList (msgv3_capability);";
+                run_multi_sql(update_004);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 5;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;

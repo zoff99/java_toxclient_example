@@ -126,6 +126,14 @@ public class Message
     @Column(indexed = true, defaultExpr = "false", helpers = Column.Helpers.ALL)
     boolean msg_at_relay = false;
 
+    @Column(indexed = true, helpers = Column.Helpers.ALL)
+    @Nullable
+    String msg_idv3_hash = null; // 32byte hash, used for MessageV3 Messages! and otherwise NULL
+
+    @Column(helpers = Column.Helpers.ALL)
+    @Nullable
+    int sent_push = 0;
+
     // ------- SWING UI elements ------- //
     JButton _swing_ok = null;
     JButton _swing_cancel = null;
@@ -160,6 +168,8 @@ public class Message
         out.resend_count = in.resend_count;
         out.ft_outgoing_queued = in.ft_outgoing_queued;
         out.msg_at_relay = in.msg_at_relay;
+        out.msg_idv3_hash = in.msg_idv3_hash;
+        out.sent_push = in.sent_push;
 
         return out;
     }
@@ -173,8 +183,9 @@ public class Message
                ", sent_timestamp=" + sent_timestamp + ", rcvd_timestamp=" + rcvd_timestamp + ", read=" + read +
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
-               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" + ", ft_outgoing_queued=" +
-               ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay;
+               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" +
+               ", ft_outgoing_queued=" + ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay +
+               ", sent_push=" + sent_push;
     }
 
     String sql_start = "";
@@ -228,6 +239,8 @@ public class Message
                 out.resend_count = rs.getInt("resend_count");
                 out.ft_outgoing_queued = rs.getBoolean("ft_outgoing_queued");
                 out.msg_at_relay = rs.getBoolean("msg_at_relay");
+                out.msg_idv3_hash = rs.getString("msg_idv3_hash");
+                out.sent_push = rs.getInt("sent_push");
 
                 list.add(out);
             }
@@ -276,10 +289,14 @@ public class Message
                                  "raw_msgv2_bytes," +
                                  "resend_count," +
                                  "ft_outgoing_queued," +
-                                 "msg_at_relay" +
+                                 "msg_at_relay," +
+                                 "msg_idv3_hash," +
+                                 "sent_push" +
                                  ")" +
                                  "values" +
                                  "(" +
+                                 "?," +
+                                 "?," +
                                  "?," +
                                  "?," +
                                  "?," +
@@ -335,6 +352,8 @@ public class Message
             insert_pstmt.setInt(23, this.resend_count);
             insert_pstmt.setBoolean(24, this.ft_outgoing_queued);
             insert_pstmt.setBoolean(25, this.msg_at_relay);
+            insert_pstmt.setString(26, this.msg_idv3_hash);
+            insert_pstmt.setInt(27, this.sent_push);
             // @formatter:on
 
             if (ORMA_TRACE)
@@ -819,6 +838,12 @@ public class Message
     public Message filedb_idEq(long filedb_id)
     {
         this.sql_where = this.sql_where + " and  filedb_id='" + s(filedb_id) + "' ";
+        return this;
+    }
+
+    public Message msg_idv3_hashEq(String msg_idv3_hash)
+    {
+        this.sql_where = this.sql_where + " and  msg_idv3_hash='" + s(msg_idv3_hash) + "' ";
         return this;
     }
 }

@@ -35,15 +35,105 @@ public class ToxVars
     public static final int TOX_SECRET_KEY_SIZE = 32;
     public static final int TOX_NOSPAM_SIZE = sizeof_uint32_t;
     public static final int TOX_ADDRESS_SIZE = TOX_PUBLIC_KEY_SIZE + TOX_NOSPAM_SIZE + sizeof_uint16_t;
-    // public static final int TOX_MAX_MESSAGE_LENGTH = 1372; // -> tox_max_message_length [DONE]
+    public static final int TOX_MAX_MESSAGE_LENGTH = 1372; // -> tox_max_message_length [DONE]
     public static final int TOX_HASH_LENGTH = 32;
     public static final int TOX_FILE_ID_LENGTH = 32;
     public static final int TOX_MAX_FILENAME_LENGTH = 255;
+    //
+    public static final int TOX_MSGV3_MSGID_LENGTH = 32;
+    public static final int TOX_MSGV3_TIMESTAMP_LENGTH = 4;
+    public static final int TOX_MSGV3_GUARD = 2;
+    public static final int TOX_MSGV3_MAX_MESSAGE_LENGTH  = (TOX_MAX_MESSAGE_LENGTH - TOX_MSGV3_MSGID_LENGTH - TOX_MSGV3_TIMESTAMP_LENGTH - TOX_MSGV3_GUARD);
     // TODO: get these with the appropriate JNI functions!
     // ------ global defines ------
     // ------ global defines ------
     // ------ global defines ------
 
+    public static class TOX_CAPABILITY_DECODE_RESULT
+    {
+        boolean basic = true;
+        boolean capabilities = false;
+        boolean msgv2 = false;
+        boolean toxav_h264 = false;
+        boolean msgv3 = false;
+        boolean next_implementation = false;
+    }
+
+    public static long TOX_CAPABILITY_BASIC = 0;
+    public static long TOX_CAPABILITY_CAPABILITIES = 1 << 0;
+    public static long TOX_CAPABILITY_MSGV2 = 1 << 1;
+    public static long TOX_CAPABILITY_TOXAV_H264 = 1 << 2;
+    public static long TOX_CAPABILITY_MSGV3 = 1 << 3;
+    public static long TOX_CAPABILITY_NEXT_IMPLEMENTATION = (1L << 63L);
+
+    public static TOX_CAPABILITY_DECODE_RESULT TOX_CAPABILITY_DECODE(long capabilites_encoded)
+    {
+        TOX_CAPABILITY_DECODE_RESULT res = new TOX_CAPABILITY_DECODE_RESULT();
+
+        if ((capabilites_encoded & TOX_CAPABILITY_CAPABILITIES) != 0)
+        {
+            res.capabilities = true;
+        }
+
+        if ((capabilites_encoded & TOX_CAPABILITY_MSGV2) != 0)
+        {
+            res.msgv2 = true;
+        }
+
+        if ((capabilites_encoded & TOX_CAPABILITY_TOXAV_H264) != 0)
+        {
+            res.toxav_h264 = true;
+        }
+
+        if ((capabilites_encoded & TOX_CAPABILITY_MSGV3) != 0)
+        {
+            res.msgv3 = true;
+        }
+
+        if ((capabilites_encoded & TOX_CAPABILITY_NEXT_IMPLEMENTATION) != 0)
+        {
+            res.next_implementation = true;
+        }
+
+        return res;
+    }
+
+    public static String TOX_CAPABILITY_DECODE_TO_STRING(TOX_CAPABILITY_DECODE_RESULT in)
+    {
+        String res = "";
+
+        if (in.basic)
+        {
+            res = res + " BASIC ";
+        }
+
+        if (in.capabilities)
+        {
+            res = res + " CAPABILITIES ";
+        }
+
+        if (in.msgv2)
+        {
+            res = res + " MSGV2 ";
+        }
+
+        if (in.toxav_h264)
+        {
+            res = res + " TOXAV_H264 ";
+        }
+
+        if (in.msgv3)
+        {
+            res = res + " MSGV3 ";
+        }
+
+        if (in.next_implementation)
+        {
+            res = res + " NEXT_IMPLEMENTATION ";
+        }
+
+        return res;
+    }
 
     // --------- TOXAV ------------
     // --------- TOXAV ------------
@@ -467,14 +557,25 @@ public class ToxVars
         /**
          * Normal text message. Similar to PRIVMSG on IRC.
          */
-        TOX_MESSAGE_TYPE_NORMAL,
+        TOX_MESSAGE_TYPE_NORMAL(0),
 
         /**
          * A message describing an user action. This is similar to /me (CTCP ACTION)
          * on IRC.
          */
-        TOX_MESSAGE_TYPE_ACTION,
+        TOX_MESSAGE_TYPE_ACTION(1),
 
+        /**
+         * A high level ACK for MSG ID (MSG V3 functionality)
+         */
+        TOX_MESSAGE_TYPE_HIGH_LEVEL_ACK(2);
+
+        public int value;
+
+        private TOX_MESSAGE_TYPE(int value)
+        {
+            this.value = value;
+        }
     }
 
 
