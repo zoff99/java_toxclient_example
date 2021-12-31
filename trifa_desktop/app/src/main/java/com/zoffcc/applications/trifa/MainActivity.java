@@ -119,6 +119,7 @@ import static com.zoffcc.applications.trifa.HelperConference.get_last_conference
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_msgv3_capability;
+import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_num;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -126,7 +127,13 @@ import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_k
 import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
+import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_messageid;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_msg_idv3_hash;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_no_read_recvedts;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
+import static com.zoffcc.applications.trifa.HelperMessage.update_single_message;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
 import static com.zoffcc.applications.trifa.HelperRelay.get_own_relay_connection_status_real;
@@ -150,6 +157,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_T
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_AVATAR_FILENAME;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
@@ -668,7 +676,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         messageInputTextField.append("\n");
                         return;
                     }
-                    Log.i(TAG, "Enter key pressed");
+                    // Log.i(TAG, "Enter key pressed");
                     if (message_panel_displayed == 1)
                     {
                         MessageListFragmentJ.send_message_onclick();
@@ -2264,13 +2272,72 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
             if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
             {
+                if (f.TOX_CONNECTION_real == TOX_CONNECTION_NONE.value)
+                {
+                    // ******** friend just came online ********
+                    // resend latest msgV3 message that was not "read"
+                    try
+                    {
+                        if (get_friend_msgv3_capability(friend_number) == 1)
+                        {
+                            Message m_v1_single = orma.selectFromMessage().
+                                    directionEq(1).
+                                    msg_versionEq(0).
+                                    TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
+                                    resend_countLt(MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION).
+                                    tox_friendpubkeyEq(f.tox_public_key_string).
+                                    readEq(false).
+                                    orderBySent_timestampDesc().
+                                    toList().get(0);
+
+                            if (m_v1_single != null)
+                            {
+                                // Log.i(TAG, "resend_msvg3_lastest_msg:fn=" +
+                                //           get_friend_name_from_pubkey(f.tox_public_key_string) + " mtext=" +
+                                //           m_v1_single.text);
+
+                                MainActivity.send_message_result result = tox_friend_send_message_wrapper(
+                                        tox_friend_by_public_key__wrapper(m_v1_single.tox_friendpubkey), 0,
+                                        m_v1_single.text);
+                                long res = result.msg_num;
+
+                                if (res > -1) // sending was OK
+                                {
+                                    m_v1_single.message_id = res;
+                                    update_message_in_db_messageid(m_v1_single);
+
+                                    if ((result.msg_hash_v3_hex != null) &&
+                                        (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
+                                    {
+                                        // msgV3 message -----------
+                                        m_v1_single.msg_idv3_hash = result.msg_hash_v3_hex;
+                                        // msgV3 message -----------
+                                        update_message_in_db_msg_idv3_hash(m_v1_single);
+                                    }
+
+                                    m_v1_single.resend_count++; // we sent the message successfully
+                                    update_message_in_db_no_read_recvedts(m_v1_single);
+                                    update_message_in_db_resend_count(m_v1_single);
+                                    update_single_message(m_v1_single, true);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+
+            if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
+            {
                 if (a_TOX_CONNECTION == 0)
                 {
-                    Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":went offline");
+                    // Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":went offline");
                     // TODO: stop any active calls to/from this friend
                     try
                     {
-                        Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":stop any calls");
+                        // Log.i(TAG, "friend_connection_status:friend:" + friend_number + ":stop any calls");
                         toxav_call_control(friend_number, ToxVars.TOXAV_CALL_CONTROL.TOXAV_CALL_CONTROL_CANCEL.value);
 
                         if (tox_friend_by_public_key__wrapper(Callstate.friend_pubkey) == friend_number)
@@ -2428,6 +2495,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             return;
         }
 
+        Log.i(TAG, "friend_sync_message_v2_cb::IN:fn=" + get_friend_name_from_num(friend_number));
+
         if (PREF__X_battery_saving_mode)
         {
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:006:*PING*");
@@ -2462,8 +2531,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                                                                        msg_id_buffer_wrapped_compat.limit());
         Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
 
+        Log.i(TAG, "friend_sync_message_v2_cb::IN:msgv2_type=" + msgv2_type);
+
         if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_SEND.value)
         {
+
+            Log.i(TAG, "friend_sync_message_v2_cb::0001");
             long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
             long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
             Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
@@ -2499,6 +2572,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     // pubkey does NOT belong to a friend. it is probably a conference id
                     // check it here
 
+                    Log.i(TAG, "friend_sync_message_v2_cb::0002");
+
                     // Log.i(TAG, "friend_sync_message_v2_cb:LL:" + orma.selectFromConferenceDB().toList());
                     String real_conference_id = real_sender_as_hex_string;
 
@@ -2506,6 +2581,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     // Log.i(TAG, "friend_sync_message_v2_cb:conference_num=" + conference_num);
                     if (conference_num > -1)
                     {
+                        Log.i(TAG, "friend_sync_message_v2_cb::0003");
+
                         String real_sender_peer_pubkey = wrapped_msg_text_as_string.substring(0, 64);
                         long real_text_length = (text_length - 64 - 9);
                         String real_sender_text_ = wrapped_msg_text_as_string.substring(64);
@@ -2567,6 +2644,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         // sync message from unkown original sender
                         // still send "receipt" to our relay, or else it will send us this message forever
+                        Log.i(TAG, "friend_sync_message_v2_cb::0004");
+
                         Log.i(TAG, "friend_sync_message_v2_cb:send receipt for unknown message");
                         send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                            (System.currentTimeMillis() / 1000));
@@ -2576,6 +2655,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 }
                 else
                 {
+                    Log.i(TAG, "friend_sync_message_v2_cb::0005");
+
                     HelperGeneric.receive_incoming_message(2, 0,
                                                            tox_friend_by_public_key__wrapper(real_sender_as_hex_string),
                                                            wrapped_msg_text_as_string, raw_data, raw_data_length,
@@ -2587,6 +2668,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 e2.printStackTrace();
             }
 
+            Log.i(TAG, "friend_sync_message_v2_cb::0006");
+
             // send message receipt v2 to own relay
             send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer, (System.currentTimeMillis() / 1000));
         }
@@ -2595,6 +2678,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             // we got an "msg receipt" from the relay
             // Log.i(TAG, "friend_sync_message_v2_cb:TOX_FILE_KIND_MESSAGEV2_ANSWER");
             final String message_id_hash_as_hex_string = msg_id_as_hex_string_wrapped;
+
+            Log.i(TAG, "friend_sync_message_v2_cb::0007");
 
             try
             {
@@ -2608,10 +2693,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         readEq(false).
                         toList().get(0);
 
+                Log.i(TAG, "friend_sync_message_v2_cb::0008");
+
                 if (m != null)
                 {
                     try
                     {
+                        Log.i(TAG, "friend_sync_message_v2_cb::0009");
+
                         long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
                         long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
                         m.raw_msgv2_bytes = "";
@@ -2626,17 +2715,21 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         e.printStackTrace();
                     }
+                    Log.i(TAG, "friend_sync_message_v2_cb::0010");
                     send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                        (System.currentTimeMillis() / 1000));
                 }
             }
             catch (Exception e)
             {
+                Log.i(TAG, "friend_sync_message_v2_cb::0011");
+
                 // e.printStackTrace();
                 send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                    (System.currentTimeMillis() / 1000));
             }
         }
+        Log.i(TAG, "friend_sync_message_v2_cb::0999");
     }
 
     static void android_tox_callback_friend_read_receipt_message_v2_cb_method(final long friend_number, long ts_sec, byte[] msg_id)
@@ -2649,7 +2742,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         msg_id_buffer.put(msg_id, 0, (int) TOX_HASH_LENGTH);
 
-        Log.i(TAG, "receipt_message_v2_cb:MSGv2HASH:2=" + msg_id.length);
+        Log.i(TAG,
+              "receipt_message_v2_cb:MSGv2HASH:2=" + msg_id.length + " fn=" + get_friend_name_from_num(friend_number));
 
         ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
 
@@ -2667,17 +2761,24 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     readEq(false).
                     toList();
 
+            Log.i(TAG, "receipt_message_v2_cb:list=" + m_try);
+
             if ((m_try == null) || (m_try.size() < 1))
             {
                 // HINT: it must a an ACK send from a friends toxproxy to singal the receipt of the message on behalf of the friend
 
+                Log.i(TAG, "receipt_message_v2_cb:0001");
+
                 if (is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
                 {
+                    Log.i(TAG, "receipt_message_v2_cb:0002");
                     FriendList friend_of_relay = HelperRelay.get_friend_for_relay(
                             HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
 
                     if (friend_of_relay != null)
                     {
+
+                        Log.i(TAG, "receipt_message_v2_cb:0003");
 
                         Message m = orma.selectFromMessage().
                                 msg_id_hashEq(message_id_hash_as_hex_string).
@@ -2690,8 +2791,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         {
                             Log.i(TAG, "receipt_message_v2_cb:msgid_via_relay found");
 
+                            Log.i(TAG, "receipt_message_v2_cb:0004");
+
                             try
                             {
+                                Log.i(TAG, "receipt_message_v2_cb:0005");
+
                                 set_message_msg_at_relay_from_id(m.id, true);
                                 m.msg_at_relay = true;
                                 HelperMessage.update_single_message(m, true);
@@ -2704,8 +2809,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     }
                 }
 
+                Log.i(TAG, "receipt_message_v2_cb:0006");
+
                 return;
             }
+
+            Log.i(TAG, "receipt_message_v2_cb:0007");
 
             final Message m = orma.selectFromMessage().
                     msg_id_hashEq(message_id_hash_as_hex_string).
@@ -2716,19 +2825,27 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
             if (m != null)
             {
+                Log.i(TAG, "receipt_message_v2_cb:0008");
+
                 // Log.i(TAG, "receipt_message_v2_cb:m id=" + m.id);
                 Log.i(TAG, "receipt_message_v2_cb:msgid found");
 
                 try
                 {
+                    Log.i(TAG, "receipt_message_v2_cb:0009");
+
                     if (!HelperRelay.is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
                     {
+                        Log.i(TAG, "receipt_message_v2_cb:0010");
+
                         // only update if the "read receipt" comes from a friend, but not it's relay!
                         m.raw_msgv2_bytes = "";
                         m.rcvd_timestamp = System.currentTimeMillis();
                         m.read = true;
                         HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
                     }
+
+                    Log.i(TAG, "receipt_message_v2_cb:0011");
 
                     m.resend_count = 2;
                     HelperMessage.update_message_in_db_resend_count(m);
@@ -2748,6 +2865,9 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             e.printStackTrace();
         }
+
+        Log.i(TAG, "receipt_message_v2_cb:0999");
+
     }
 
     static void android_tox_callback_file_recv_control_cb_method(long friend_number, long file_number, int a_TOX_FILE_CONTROL)
@@ -3080,7 +3200,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         if (a_TOX_FILE_KIND == TOX_FILE_KIND_AVATAR.value)
         {
-            Log.i(TAG, "file_recv:TOX_FILE_KIND_AVATAR");
+            // Log.i(TAG, "file_recv:TOX_FILE_KIND_AVATAR");
 
             if (file_size > AVATAR_INCOMING_MAX_BYTE_SIZE)
             {
@@ -3274,12 +3394,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         Filetransfer f = null;
 
         // @formatter:off
-        Log.D(TAG,
-              "DEBUG_FT:IN:file_recv_chunk:file_number=" +
-              file_number +
-              " fn=" + friend_number +
-              " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)
-              );
+        //Log.D(TAG,
+        //      "DEBUG_FT:IN:file_recv_chunk:file_number=" +
+        //      file_number +
+        //      " fn=" + friend_number +
+        //      " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)
+        //      );
         // @formatter:on
 
         try
@@ -3300,14 +3420,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             }
 
             // @formatter:off
-            Log.D(TAG,
-                  "DEBUG_FT:IN:file_recv_chunk:file_number=" +
-                  file_number +
-                  " fn=" + friend_number +
-                  " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
-                  " path_name="+f.path_name+
-                  " file_name=" + f.file_name
-            );
+            //Log.D(TAG,
+            //      "DEBUG_FT:IN:file_recv_chunk:file_number=" +
+            //      file_number +
+            //      " fn=" + friend_number +
+            //      " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
+            //      " path_name="+f.path_name+
+            //      " file_name=" + f.file_name
+            //);
             // @formatter:on
 
             if (position == 0)
@@ -3324,17 +3444,17 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
             return;
         }
 
         if (length == 0)
         {
-            Log.i(TAG, "file_recv_chunk:END-O-F:filesize==" + f.filesize);
+            // Log.i(TAG, "file_recv_chunk:END-O-F:filesize==" + f.filesize);
 
             try
             {
-                Log.i(TAG, "file_recv_chunk:file fully received");
+                // Log.i(TAG, "file_recv_chunk:file fully received");
                 HelperGeneric.move_tmp_file_to_real_file(f.path_name, f.file_name,
                                                          VFS_PREFIX + VFS_FILE_DIR + "/" + f.tox_public_key_string +
                                                          "/", f.file_name);
@@ -3398,7 +3518,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     }
                     catch (Exception e)
                     {
-                        Log.i(TAG, "file_recv_chunk:file_READY:EE:" + e.getMessage());
+                        // Log.i(TAG, "file_recv_chunk:file_READY:EE:" + e.getMessage());
                     }
                 }
 
@@ -3407,8 +3527,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
-                Log.i(TAG, "file_recv_chunk:EE2:" + e2.getMessage());
+                // e2.printStackTrace();
+                // Log.i(TAG, "file_recv_chunk:EE2:" + e2.getMessage());
             }
         }
         else // normal chunck recevied ---------- (NOT start, and NOT end)
@@ -3420,15 +3540,15 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     RandomAccessFile fos = new RandomAccessFile(f.path_name + "/" + f.file_name, "rw");
 
                     // @formatter:off
-                    Log.D(TAG,
-                          "DEBUG_FT:IN:file_recv_chunk:file_number=" +
-                          file_number +
-                          " fn=" + friend_number +
-                          " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
-                          " path_name="+f.path_name+
-                          " file_name=" + f.file_name+
-                          " fos="+fos
-                    );
+                    // Log.D(TAG,
+                    //       "DEBUG_FT:IN:file_recv_chunk:file_number=" +
+                    //       file_number +
+                    //       " fn=" + friend_number +
+                    //       " pk="+HelperFriend.tox_friend_get_public_key__wrapper(friend_number)+
+                    //       " path_name="+f.path_name+
+                    //       " file_name=" + f.file_name+
+                    //       " fos="+fos
+                    // );
                     // @formatter:on
 
                     fos.seek(position);
@@ -3437,7 +3557,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 }
                 catch (Exception ex)
                 {
-                    ex.printStackTrace();
+                    // ex.printStackTrace();
                 }
 
                 if (f.filesize < UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES)
@@ -3445,7 +3565,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     if ((f.current_position + UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES) < position)
                     {
                         f.current_position = position;
-                        Log.i(TAG, "file_recv_chunk:filesize==:2:" + f.filesize);
+                        // Log.i(TAG, "file_recv_chunk:filesize==:2:" + f.filesize);
                         HelperFiletransfer.update_filetransfer_db_current_position(f);
 
                         if (f.kind != TOX_FILE_KIND_AVATAR.value)
@@ -3491,8 +3611,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                Log.i(TAG, "file_recv_chunk:EE1:" + e.getMessage());
+                // e.printStackTrace();
+                // Log.i(TAG, "file_recv_chunk:EE1:" + e.getMessage());
             }
         }
 
@@ -4391,7 +4511,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     private static void updatePref(JFrame frame, Preferences prefs)
     {
-        System.out.println("Updating preferences");
+        // System.out.println("Updating preferences");
         Point location = frame.getLocation();
         prefs.putInt("x", location.x);
         prefs.putInt("y", location.y);

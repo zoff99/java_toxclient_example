@@ -526,7 +526,7 @@ public class MessageListFragmentJ extends JPanel
     /* HINT: send a message to a friend */
     synchronized public static void send_message_onclick()
     {
-        Log.i(TAG, "send_message_onclick:---start");
+        // Log.i(TAG, "send_message_onclick:---start");
 
         if (friendnum == -1)
         {

@@ -105,12 +105,12 @@ public class HelperFiletransfer
         try
         {
             row_id = orma.insertIntoFiletransfer(f);
-            Log.i(TAG, "insert_into_filetransfer_db:row_id=" + row_id);
+            // Log.i(TAG, "insert_into_filetransfer_db:row_id=" + row_id);
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            Log.i(TAG, "insert_into_filetransfer_db:EE:" + e.getMessage());
+            // Log.i(TAG, "insert_into_filetransfer_db:EE:" + e.getMessage());
             return -1;
         }
 
@@ -135,8 +135,8 @@ public class HelperFiletransfer
         }
         catch (Exception e)
         {
-            Log.i(TAG, "insert_into_filetransfer_db:EE:" + e.getMessage());
-            e.printStackTrace();
+            // Log.i(TAG, "insert_into_filetransfer_db:EE:" + e.getMessage());
+            // e.printStackTrace();
             return -1;
         }
     }

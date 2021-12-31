@@ -397,6 +397,11 @@ public class HelperConference
 
     static String get_conference_title_from_confid(String conference_id)
     {
+        if (conference_id.equals("-1"))
+        {
+            return "Unknown Conference";
+        }
+
         try
         {
             // try in the database
@@ -414,8 +419,8 @@ public class HelperConference
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            Log.i(TAG, "get_conference_title_from_confid:EE:2:" + e.getMessage());
+            // e.printStackTrace();
+            Log.i(TAG, "get_conference_title_from_confid:EE:2:" + e.getMessage() + " conf_id=" + conference_id);
         }
 
         try
@@ -439,7 +444,7 @@ public class HelperConference
             }
             catch (Exception e2)
             {
-                e2.printStackTrace();
+                // e2.printStackTrace();
                 Log.i(TAG, "get_conference_title_from_confid:EE:3:" + e2.getMessage());
             }
 
@@ -447,7 +452,7 @@ public class HelperConference
         }
         catch (Exception e2)
         {
-            e2.printStackTrace();
+            // e2.printStackTrace();
             Log.i(TAG, "get_conference_title_from_confid:EE:4:" + e2.getMessage());
         }
 
@@ -468,6 +473,11 @@ public class HelperConference
 
     static boolean is_conference_active(String conference_identifier)
     {
+        if (conference_identifier.equals("-1"))
+        {
+            return false;
+        }
+
         try
         {
             return (orma.selectFromConferenceDB().
@@ -476,7 +486,8 @@ public class HelperConference
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            // e.printStackTrace();
+            Log.i(TAG, "is_conference_active:EE:conf_id=" + conference_identifier);
             return false;
         }
     }

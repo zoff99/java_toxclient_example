@@ -290,7 +290,7 @@ public class HelperFriend
                 // ---- auto add all friends ----
                 // ---- auto add all friends ----
                 long friendnum = MainActivity.tox_friend_add_norequest(friend_public_key); // add friend
-                Log.d(TAG, "add_friend_to_system:fnum add=" + friendnum);
+                // Log.d(TAG, "add_friend_to_system:fnum add=" + friendnum);
 
                 if (friendnum == 4294967295L) // 0xffffffff == UINT32_MAX
                 {
@@ -725,6 +725,52 @@ public class HelperFriend
         }
     }
 
+    static int is_friend_online_real_and_has_msgv3(long friendnum)
+    {
+        try
+        {
+            final FriendList f = orma.selectFromFriendList().
+                    tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    toList().get(0);
+            if ((f.TOX_CONNECTION_real != 0) && (f.msgv3_capability == 1))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    static int is_friend_online_real_and_hasnot_msgv3(long friendnum)
+    {
+        try
+        {
+            final FriendList f = orma.selectFromFriendList().
+                    tox_public_key_stringEq(tox_friend_get_public_key__wrapper(friendnum)).
+                    toList().get(0);
+            if ((f.TOX_CONNECTION_real != 0) && (f.msgv3_capability != 1))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
     static void del_friend_avatar(String friend_pubkey, String avatar_path_name, String avatar_file_name)
     {
         try
@@ -1119,9 +1165,9 @@ public class HelperFriend
                     get(0);
             if (f != null)
             {
-                Log.i(TAG, "get_friend_msgv3_capability:f=" +
-                           get_friend_name_from_pubkey(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)) +
-                           " f=" + f.msgv3_capability);
+                // Log.i(TAG, "get_friend_msgv3_capability:f=" +
+                //           get_friend_name_from_pubkey(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)) +
+                //           " f=" + f.msgv3_capability);
                 ret = f.msgv3_capability;
             }
 

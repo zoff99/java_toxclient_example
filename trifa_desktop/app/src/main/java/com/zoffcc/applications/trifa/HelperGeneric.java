@@ -191,7 +191,7 @@ public class HelperGeneric
 
     public static MainActivity.send_message_result tox_friend_send_message_wrapper(long friendnum, int a_TOX_MESSAGE_TYPE, String message)
     {
-        Log.d(TAG, "tox_friend_send_message_wrapper:" + friendnum);
+        // Log.d(TAG, "tox_friend_send_message_wrapper:" + friendnum);
         long friendnum_to_use = friendnum;
         FriendList f = main_get_friend(friendnum);
         boolean need_call_push_url = false;
@@ -205,7 +205,7 @@ public class HelperGeneric
                 msgv1 = false;
             }
 
-            Log.d(TAG, "tox_friend_send_message_wrapper:msgv1="+msgv1+" f conn" + f.TOX_CONNECTION_real);
+            // Log.d(TAG, "tox_friend_send_message_wrapper:msgv1="+msgv1+" f conn" + f.TOX_CONNECTION_real);
 
             if (f.TOX_CONNECTION_real == TOX_CONNECTION_NONE.value)
             {
@@ -216,7 +216,7 @@ public class HelperGeneric
                     // friend has a relay
                     friendnum_to_use = tox_friend_by_public_key__wrapper(relay_pubkey);
                     msgv1 = false;
-                    Log.d(TAG, "tox_friend_send_message_wrapper:friendnum_to_use=" + friendnum_to_use);
+                    // Log.d(TAG, "tox_friend_send_message_wrapper:friendnum_to_use=" + friendnum_to_use);
                 }
                 else // if friend is NOT online and does not have a relay, try if he has a push url
                 {
@@ -228,12 +228,12 @@ public class HelperGeneric
         if (msgv1)
         {
             // old msgV1 message
-            Log.d(TAG, "tox_friend_send_message_wrapper:old msgV1 message:" + friendnum);
+            // Log.d(TAG, "tox_friend_send_message_wrapper:old msgV1 message:" + friendnum);
 
             ByteBuffer hash_bytes = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
             int res_hash = MainActivity.tox_messagev3_get_new_message_id(hash_bytes);
-            Log.i(TAG, "tox_friend_send_message_wrapper:hash_v3:" + res_hash + " " +
-                       bytebuffer_to_hexstring(hash_bytes, true));
+            // Log.i(TAG, "tox_friend_send_message_wrapper:hash_v3:" + res_hash + " " +
+            //            bytebuffer_to_hexstring(hash_bytes, true));
             MainActivity.send_message_result result = new MainActivity.send_message_result();
 
             long t_sec = (System.currentTimeMillis() / 1000);
@@ -269,7 +269,7 @@ public class HelperGeneric
                 Log.i(TAG, "global_last_activity_for_battery_savings_ts:002:*PING*");
             }
             global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
-            Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
+            // Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
 
             ByteBufferCompat raw_message_length_buf_compat = new ByteBufferCompat(raw_message_length_buf);
             int raw_message_length_int = raw_message_length_buf_compat.
@@ -290,8 +290,8 @@ public class HelperGeneric
                 ByteBufferCompat raw_message_buf_compat = new ByteBufferCompat(raw_message_buf);
                 result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(),
                                                         raw_message_buf_compat.arrayOffset(), raw_message_length_int);
-                Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
-                           result.raw_message_buf_hex);
+                // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
+                //            result.raw_message_buf_hex);
 
                 if (need_call_push_url)
                 {
@@ -351,7 +351,7 @@ public class HelperGeneric
         // (msg_type == 2) msgV2 relay message     -> msg_type, friend_number, friend_message_text_utf8, raw_message, raw_message_length, original_sender_pubkey
         if (msg_type == 0)
         {
-            Log.i(TAG, "friend_message:friend:" + friend_number + " msgV3hash:" + msgV3hash_bin);
+            // Log.i(TAG, "friend_message:friend:" + friend_number + " msgV3hash:" + msgV3hash_bin);
 
             String msgV3hash_hex_string = null;
             if (msgV3hash_bin != null)
@@ -363,8 +363,8 @@ public class HelperGeneric
                         directionEq(0).
                         msg_idv3_hashEq(msgV3hash_hex_string).count();
 
-                Log.i(TAG, "friend_message:friend:" + friend_number + " msgV3hash_hex_string:" + msgV3hash_hex_string +
-                           " got_messages=" + got_messages);
+                // Log.i(TAG, "friend_message:friend:" + friend_number + " msgV3hash_hex_string:" + msgV3hash_hex_string +
+                //            " got_messages=" + got_messages);
 
                 if (got_messages > 0)
                 {
@@ -389,8 +389,8 @@ public class HelperGeneric
                         directionEq(1).
                         msg_idv3_hashEq(msgV3hash_hex_string).count();
 
-                Log.i(TAG, "update_friend_msgv3_capability:got_messages_mirrored=" + got_messages_mirrored + " hash1=" +
-                           msgV3hash_bin + " " + msgV3hash_hex_string);
+                // Log.i(TAG, "update_friend_msgv3_capability:got_messages_mirrored=" + got_messages_mirrored + " hash1=" +
+                //           msgV3hash_bin + " " + msgV3hash_hex_string);
                 if (got_messages_mirrored > 0)
                 {
                     update_friend_msgv3_capability(friend_number, 0);
@@ -402,7 +402,7 @@ public class HelperGeneric
             }
             else
             {
-                Log.i(TAG, "update_friend_msgv3_capability:hash0=" + msgV3hash_bin + " " + msgV3hash_hex_string);
+                // Log.i(TAG, "update_friend_msgv3_capability:hash0=" + msgV3hash_bin + " " + msgV3hash_hex_string);
                 update_friend_msgv3_capability(friend_number, 0);
             }
 
@@ -472,8 +472,8 @@ public class HelperGeneric
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+                // e.printStackTrace();
+                // Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
             }
 
             if (do_notification)
@@ -564,7 +564,7 @@ public class HelperGeneric
             m.text = friend_message_text_utf8;
             m.msg_version = 1;
             m.msg_id_hash = msg_id_as_hex_string;
-            Log.i(TAG, "TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
+            // Log.i(TAG, "TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
 
             if (get_current_friendnum() == friend_number)
             {
@@ -592,8 +592,8 @@ public class HelperGeneric
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+                // e.printStackTrace();
+                // Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
             }
 
             if (do_notification)
@@ -631,10 +631,10 @@ public class HelperGeneric
             long ts_sec = MainActivity.tox_messagev2_get_ts_sec(raw_message_buf);
             long ts_ms = MainActivity.tox_messagev2_get_ts_ms(raw_message_buf);
             ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
-            Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:raw_msg=" + bytes_to_hex(raw_message));
+            // Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:raw_msg=" + bytes_to_hex(raw_message));
             String msg_id_as_hex_string = bytesToHex(msg_id_buffer_compat.array(), msg_id_buffer_compat.arrayOffset(),
                                                      msg_id_buffer_compat.limit());
-            Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:MSGv2HASH:2=" + msg_id_as_hex_string);
+            // Log.i(TAG, "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:MSGv2HASH:2=" + msg_id_as_hex_string);
             int already_have_message = orma.selectFromMessage().tox_friendpubkeyEq(
                     HelperFriend.tox_friend_get_public_key__wrapper(friend_number_real_sender)).msg_id_hashEq(
                     msg_id_as_hex_string).count();
@@ -655,12 +655,12 @@ public class HelperGeneric
 
             if (!do_badge_update)
             {
-                Log.i(TAG, "noti_and_badge:004a:");
+                // Log.i(TAG, "noti_and_badge:004a:");
                 m.is_new = false;
             }
             else
             {
-                Log.i(TAG, "noti_and_badge:004b:");
+                // Log.i(TAG, "noti_and_badge:004b:");
                 m.is_new = true;
             }
 
@@ -681,8 +681,8 @@ public class HelperGeneric
             m.text = friend_message_text_utf8;
             m.msg_version = 1;
             m.msg_id_hash = msg_id_as_hex_string;
-            Log.i(TAG,
-                  "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
+            // Log.i(TAG,
+            //       "receive_incoming_message:TOX_FILE_KIND_MESSAGEV2_SEND:" + long_date_time_format(m.rcvd_timestamp));
 
             if (get_current_friendnum() == friend_number_real_sender)
             {
@@ -710,8 +710,8 @@ public class HelperGeneric
             }
             catch (Exception e)
             {
-                e.printStackTrace();
-                Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
+                // e.printStackTrace();
+                // Log.i(TAG, "update *new* status:EE1:" + e.getMessage());
             }
 
             if (do_notification)
@@ -1105,11 +1105,11 @@ public class HelperGeneric
             dst_dir.mkdirs();
             f1.renameTo(f2);
 
-            Log.i(TAG, "move_tmp_file_to_real_file:OK");
+            // Log.i(TAG, "move_tmp_file_to_real_file:OK");
         }
         catch (Exception e)
         {
-            Log.i(TAG, "move_tmp_file_to_real_file:EE:" + e.getMessage());
+            // Log.i(TAG, "move_tmp_file_to_real_file:EE:" + e.getMessage());
             e.printStackTrace();
         }
     }

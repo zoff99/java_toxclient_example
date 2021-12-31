@@ -846,4 +846,24 @@ public class Message
         this.sql_where = this.sql_where + " and  msg_idv3_hash='" + s(msg_idv3_hash) + "' ";
         return this;
     }
+
+    public Message msg_idv3_hash(String msg_idv3_hash)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " msg_idv3_hash='" + s(msg_idv3_hash) + "' ";
+        return this;
+    }
+
+    public Message resend_countLt(int resend_count)
+    {
+        this.sql_where = this.sql_where + " and  resend_count<'" + s(filetransfer_id) + "' ";
+        return this;
+    }
 }

@@ -233,6 +233,21 @@ public class HelperMessage
         }
     }
 
+    static void update_message_in_db_msg_idv3_hash(final Message m)
+    {
+        try
+        {
+            orma.updateMessage().
+                    idEq(m.id).
+                    msg_idv3_hash(m.msg_idv3_hash).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public static void update_single_message(Message m, boolean force)
     {
         try
@@ -243,7 +258,7 @@ public class HelperMessage
                     (MainActivity.update_all_messages_global_timestamp + MainActivity.UPDATE_MESSAGES_NORMAL_MILLIS <
                      System.currentTimeMillis()))
                 {
-                    Log.i(TAG, "update_single_message:friend:008");
+                    // Log.i(TAG, "update_single_message:friend:008");
 
                     MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
                     modify_message(m);
@@ -253,7 +268,7 @@ public class HelperMessage
         catch (Exception e)
         {
             // e.printStackTrace();
-            Log.i(TAG, "update_message_view:EE:" + e.getMessage());
+            // Log.i(TAG, "update_message_view:EE:" + e.getMessage());
         }
     }
 

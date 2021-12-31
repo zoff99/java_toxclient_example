@@ -393,7 +393,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    // e.printStackTrace();
                 }
 
                 try
@@ -402,7 +402,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    // e.printStackTrace();
                 }
 
                 peerlist_in_update = false;
@@ -412,9 +412,14 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
     static synchronized void set_peer_count_header()
     {
+        if (current_conf_id.equals("-1"))
+        {
+            return;
+        }
+
         final String f_name = HelperConference.get_conference_title_from_confid(current_conf_id);
         final long conference_num = tox_conference_by_confid__wrapper(current_conf_id);
-        // Log.i(TAG, "set_peer_count_header:1:conf_id=" + conf_id + " conference_num=" + conference_num);
+        // Log.i(TAG, "set_peer_count_header:1:conf_id=" + current_conf_id + " conference_num=" + conference_num);
         EventQueue.invokeLater(() -> {
             try
             {
