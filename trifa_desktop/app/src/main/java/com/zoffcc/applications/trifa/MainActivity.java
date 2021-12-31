@@ -213,7 +213,7 @@ import static javax.swing.JOptionPane.YES_OPTION;
 public class MainActivity extends JFrame implements WindowListener, WindowFocusListener, WindowStateListener
 {
     private static final String TAG = "trifa.MainActivity";
-    static final String Version = "1.0.31";
+    static final String Version = "1.0.32";
     // --------- global config ---------
     // --------- global config ---------
     final static boolean CTOXCORE_NATIVE_LOGGING = false; // set "false" for release builds
