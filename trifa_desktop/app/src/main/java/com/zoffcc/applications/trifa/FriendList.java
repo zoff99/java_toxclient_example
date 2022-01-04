@@ -676,4 +676,18 @@ public class FriendList
         this.sql_set = this.sql_set + " msgv3_capability='" + s(msgv3_capability) + "' ";
         return this;
     }
+
+    public FriendList capabilities(long capabilities)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " capabilities='" + s(capabilities) + "' ";
+        return this;
+    }
 }

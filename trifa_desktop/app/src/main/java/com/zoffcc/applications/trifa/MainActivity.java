@@ -124,6 +124,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperFriend.update_friend_in_db_capabilities;
 import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
@@ -1509,6 +1510,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native String tox_friend_get_public_key(long friend_number);
 
+    public static native long tox_friend_get_capabilities(long friend_number);
+
     public static native long[] tox_self_get_friend_list();
 
     public static native int tox_self_set_name(String name);
@@ -2246,6 +2249,19 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             if (f.TOX_CONNECTION != a_TOX_CONNECTION)
             {
+                if (f.TOX_CONNECTION_real != a_TOX_CONNECTION)
+                {
+                    if (f.TOX_CONNECTION_real == TOX_CONNECTION_NONE.value)
+                    {
+                        // ******** friend just came online ********
+                        // update and save this friends TOX CAPABILITIES
+                        long friend_capabilities = tox_friend_get_capabilities(friend_number);
+                        // Log.i(TAG, "" + get_friend_name_from_num(friend_number) + " friend_capabilities: " + friend_capabilities + " decoded:" + TOX_CAPABILITY_DECODE_TO_STRING(TOX_CAPABILITY_DECODE(friend_capabilities)) + " " + (1L << 63L));
+                        f.capabilities = friend_capabilities;
+                        update_friend_in_db_capabilities(f);
+                    }
+                }
+
                 if (f.TOX_CONNECTION == TOX_CONNECTION_NONE.value)
                 {
                     // ******** friend just came online ********

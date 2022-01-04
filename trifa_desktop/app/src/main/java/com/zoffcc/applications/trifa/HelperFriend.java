@@ -327,6 +327,7 @@ public class HelperFriend
                 f.name = friend_public_key.substring(friend_public_key.length() - 5, friend_public_key.length());
                 f.avatar_pathname = null;
                 f.avatar_filename = null;
+                f.capabilities = 0;
 
                 try
                 {
@@ -455,6 +456,14 @@ public class HelperFriend
         {
             e.printStackTrace();
         }
+    }
+
+    synchronized static void update_friend_in_db_capabilities(FriendList f)
+    {
+        orma.updateFriendList().
+                tox_public_key_stringEq(f.tox_public_key_string).
+                capabilities(f.capabilities).
+                execute();
     }
 
     synchronized static void update_friend_in_db_connection_status(FriendList f)
