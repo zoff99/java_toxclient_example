@@ -271,12 +271,18 @@ public class HelperGeneric
             global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
             // Log.d(TAG, "tox_friend_send_message_wrapper:res=" + res);
 
+            // Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf:" + raw_message_length_buf.get(0));
+            // Log.d(TAG, "tox_friend_send_message_wrapper:raw_message_length_buf:" + raw_message_length_buf.get(1));
+
             ByteBufferCompat raw_message_length_buf_compat = new ByteBufferCompat(raw_message_length_buf);
-            int raw_message_length_int = raw_message_length_buf_compat.
-                    array()[raw_message_length_buf_compat.arrayOffset()] & 0xFF + (raw_message_length_buf_compat.
+            final int len_low_byte = raw_message_length_buf_compat.
+                    array()[raw_message_length_buf_compat.arrayOffset()] & 0xFF;
+            final int len_high_byte = (raw_message_length_buf_compat.
                     array()[raw_message_length_buf_compat.arrayOffset() + 1] & 0xFF) * 256;
-            // Log.i(TAG,
-            //      "tox_friend_send_message_wrapper:message=" + message + " res=" + res + " len=" + raw_message_length_int);
+            final int raw_message_length_int = len_low_byte + len_high_byte;
+
+            // Log.i(TAG, "tox_friend_send_message_wrapper:message=" + message.length() + " res=" + res + " len=" +
+            //           raw_message_length_int);
             result.error_num = res;
 
             if (res == -9999)
@@ -290,8 +296,8 @@ public class HelperGeneric
                 ByteBufferCompat raw_message_buf_compat = new ByteBufferCompat(raw_message_buf);
                 result.raw_message_buf_hex = bytesToHex(raw_message_buf_compat.array(),
                                                         raw_message_buf_compat.arrayOffset(), raw_message_length_int);
-                // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex" +
-                //            result.raw_message_buf_hex);
+                // Log.i(TAG, "tox_friend_send_message_wrapper:hash_hex=" + result.msg_hash_hex + " raw_msg_hex=" +
+                //           result.raw_message_buf_hex);
 
                 if (need_call_push_url)
                 {
