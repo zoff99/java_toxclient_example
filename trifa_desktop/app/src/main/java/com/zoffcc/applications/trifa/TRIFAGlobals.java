@@ -55,6 +55,8 @@ public class TRIFAGlobals
     static int GLOBAL_VIDEO_BITRATE = NORMAL_GLOBAL_VIDEO_BITRATE; // this works nice: 2500;
     static int GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE; // allowed values: (xx>=6) && (xx<=510)
 
+    static final String GENERIC_TOR_USERAGENT = "Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0";
+
     static final int VIDEO_CODEC_VP8 = 0;
     static final int VIDEO_CODEC_H264 = 1;
 

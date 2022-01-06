@@ -28,12 +28,14 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GENERIC_TOR_USERAGENT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
@@ -919,13 +921,14 @@ public class HelperFriend
                                     HttpClient client = null;
 
                                     client = HttpClient.newBuilder().
-                                            connectTimeout(Duration.of(5, SECONDS)).
+                                            connectTimeout(Duration.of(8, SECONDS)).
                                             build();
 
                                     //                                   cacheControl(new CacheControl.Builder().noCache().build()).
 
                                     HttpRequest request = HttpRequest.newBuilder().
                                             uri(URI.create(pushurl_for_friend)).
+                                            header("User-Agent", GENERIC_TOR_USERAGENT).
                                             timeout(Duration.of(5, SECONDS)).
                                             POST(HttpRequest.BodyPublishers.ofString("ping=1")).
                                             build();
