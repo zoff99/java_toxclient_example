@@ -69,7 +69,6 @@ import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
-import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
@@ -558,6 +557,9 @@ public class MessageListFragmentJ extends JPanel
                 m.msg_version = 0;
                 m.resend_count = 0; // we have tried to resend this message "0" times
                 m.sent_push = 0;
+                m.msg_idv3_hash = "";
+                m.msg_id_hash = "";
+                m.raw_msgv2_bytes = "";
 
                 if ((msg != null) && (!msg.equalsIgnoreCase("")))
                 {
@@ -623,6 +625,14 @@ public class MessageListFragmentJ extends JPanel
                         // Log.i(TAG, "tox_friend_send_message_wrapper:store pending message" + m);
 
                         m.message_id = -1;
+
+                        if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
+                        {
+                            // msgV3 message -----------
+                            m.msg_idv3_hash = result.msg_hash_v3_hex;
+                            // msgV3 message -----------
+                        }
+
                         long row_id = insert_into_message_db(m, true);
                         m.id = row_id;
 
@@ -703,7 +713,7 @@ public class MessageListFragmentJ extends JPanel
         SwingUtilities.invokeLater(myRunnable);
     }
 
-    static void update_all_messages(boolean always)
+    static void update_all_messages(boolean always, int limit)
     {
         // Log.i(TAG, "update_all_messages");
 
@@ -725,11 +735,9 @@ public class MessageListFragmentJ extends JPanel
         {
             if (always)
             {
-                // Log.i(TAG, "data_values:005a");
-
                 messagelistitems_model.removeAllElements();
                 // MessagePanel.revalidate();
-                // Log.i(TAG, "data_values:005b");
+                long t2 = System.currentTimeMillis();
                 if (show_only_files)
                 {
                     // TODO:
@@ -738,11 +746,32 @@ public class MessageListFragmentJ extends JPanel
                 {
                     try
                     {
-                        List<Message> ml = orma.selectFromMessage().
-                                tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
-                                orderBySent_timestampAsc().
-                                orderBySent_timestamp_msAsc().
-                                toList();
+                        List<Message> ml = null;
+                        if (limit > 1)
+                        {
+                            // HINT: just in case new messages have come in between those 2 SQLs
+                            final int margin = 100;
+                            int count_messages = orma.selectFromMessage().
+                                    tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                                    orderBySent_timestampAsc().
+                                    orderBySent_timestamp_msAsc().
+                                    count();
+
+                            ml = orma.selectFromMessage().
+                                    tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                                    orderBySent_timestampAsc().
+                                    orderBySent_timestamp_msAsc().
+                                    limit(limit + margin, (count_messages - limit)).
+                                    toList();
+                        }
+                        else
+                        {
+                            ml = orma.selectFromMessage().
+                                    tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
+                                    orderBySent_timestampAsc().
+                                    orderBySent_timestamp_msAsc().
+                                    toList();
+                        }
 
                         if (ml != null)
                         {
@@ -757,7 +786,8 @@ public class MessageListFragmentJ extends JPanel
                         e.printStackTrace();
                     }
                 }
-                // Log.i(TAG, "data_values:005c");
+                long t3 = System.currentTimeMillis();
+                Log.i(TAG, "data_values:005c:" + (t3 - t2) + "ms");
             }
             // Log.i(TAG, "data_values:005d");
         }

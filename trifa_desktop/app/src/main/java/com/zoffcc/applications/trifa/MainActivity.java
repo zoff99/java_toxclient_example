@@ -21,6 +21,8 @@ package com.zoffcc.applications.trifa;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
+import org.imgscalr.Scalr;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -128,13 +130,7 @@ import static com.zoffcc.applications.trifa.HelperFriend.update_friend_in_db_cap
 import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
-import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
-import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_messageid;
-import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_msg_idv3_hash;
-import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_no_read_recvedts;
-import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
-import static com.zoffcc.applications.trifa.HelperMessage.update_single_message;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
 import static com.zoffcc.applications.trifa.HelperRelay.get_own_relay_connection_status_real;
@@ -156,9 +152,11 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PUSH_URL_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FRIEND_AVATAR_FILENAME;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
@@ -201,6 +199,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static com.zoffcc.applications.trifa.TrifaToxService.resend_v3_messages;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_started_actions;
@@ -268,6 +267,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static JTextArea ownProfileShort;
     static JPanel FriendAddPanel;
     static PopupToxIDQrcode QrcodeFrame = null;
+    static BufferedImage PLACEHOLDER_IMG_RESIZED = null;
 
     // ---- lookup cache ----
     static Map<String, Long> cache_pubkey_fnum = new HashMap<String, Long>();
@@ -1255,6 +1255,20 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         catch (Exception ex2)
         {
             System.err.println("Failed to initialize LaF");
+        }
+
+        try
+        {
+            final String asset_filename =
+                    "." + File.separator + "assets" + File.separator + IMAGE_THUMBNAIL_PLACEHOLDER;
+            final BufferedImage bi = ImageIO.read(new File(asset_filename));
+            final Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+            PLACEHOLDER_IMG_RESIZED = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width, newMaxSize.height);
+        }
+        catch (Exception e)
+        {
+            PLACEHOLDER_IMG_RESIZED = null;
+            e.printStackTrace();
         }
 
         orma = new OrmaDatabase();
@@ -2296,47 +2310,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         if (get_friend_msgv3_capability(friend_number) == 1)
                         {
-                            Message m_v1_single = orma.selectFromMessage().
-                                    directionEq(1).
-                                    msg_versionEq(0).
-                                    TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
-                                    resend_countLt(MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION).
-                                    tox_friendpubkeyEq(f.tox_public_key_string).
-                                    readEq(false).
-                                    orderBySent_timestampDesc().
-                                    toList().get(0);
-
-                            if (m_v1_single != null)
-                            {
-                                // Log.i(TAG, "resend_msvg3_lastest_msg:fn=" +
-                                //           get_friend_name_from_pubkey(f.tox_public_key_string) + " mtext=" +
-                                //           m_v1_single.text);
-
-                                MainActivity.send_message_result result = tox_friend_send_message_wrapper(
-                                        tox_friend_by_public_key__wrapper(m_v1_single.tox_friendpubkey), 0,
-                                        m_v1_single.text);
-                                long res = result.msg_num;
-
-                                if (res > -1) // sending was OK
-                                {
-                                    m_v1_single.message_id = res;
-                                    update_message_in_db_messageid(m_v1_single);
-
-                                    if ((result.msg_hash_v3_hex != null) &&
-                                        (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
-                                    {
-                                        // msgV3 message -----------
-                                        m_v1_single.msg_idv3_hash = result.msg_hash_v3_hex;
-                                        // msgV3 message -----------
-                                        update_message_in_db_msg_idv3_hash(m_v1_single);
-                                    }
-
-                                    m_v1_single.resend_count++; // we sent the message successfully
-                                    update_message_in_db_no_read_recvedts(m_v1_single);
-                                    update_message_in_db_resend_count(m_v1_single);
-                                    update_single_message(m_v1_single, true);
-                                }
-                            }
+                            resend_v3_messages(f.tox_public_key_string);
                         }
                     }
                     catch (Exception e)

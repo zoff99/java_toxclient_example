@@ -480,7 +480,7 @@ public class FriendListFragmentJ extends JPanel
                             //System.out.println(
                             //        "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
 
-                            update_all_messages(true);
+                            update_all_messages(true, -1);
                             setFriendName();
                         }
                     }

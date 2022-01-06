@@ -45,6 +45,7 @@ import javax.swing.border.EmptyBorder;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
 import static com.zoffcc.applications.trifa.HelperGeneric.newColorWithAlpha;
+import static com.zoffcc.applications.trifa.MainActivity.PLACEHOLDER_IMG_RESIZED;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__show_image_thumbnails;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_MSG_DATE_SIZE;
@@ -232,13 +233,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                         }
                         else
                         {
-                            String asset_filename =
-                                    "." + File.separator + "assets" + File.separator + IMAGE_THUMBNAIL_PLACEHOLDER;
-                            BufferedImage bi = ImageIO.read(new File(asset_filename));
-                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                    newMaxSize.height);
-                            message_image.setImage(resizedImg);
+                            message_image.setImage(PLACEHOLDER_IMG_RESIZED);
                         }
 
                         if (m.direction == 0)
@@ -285,13 +280,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
                         }
                         else
                         {
-                            String asset_filename =
-                                    "." + File.separator + "assets" + File.separator + IMAGE_THUMBNAIL_PLACEHOLDER;
-                            BufferedImage bi = ImageIO.read(new File(asset_filename));
-                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                    newMaxSize.height);
-                            message_image.setImage(resizedImg);
+                            message_image.setImage(PLACEHOLDER_IMG_RESIZED);
                         }
                         message_image_label_line.setBackground(CHAT_MSG_BG_SELF_COLOR);
                         message_image_label.setIcon(message_image);
