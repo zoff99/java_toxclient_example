@@ -3,6 +3,7 @@ package com.zoffcc.applications.trifa;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,6 +22,41 @@ public class OrmaDatabase
     }
 
     /*
+     * repair or finally replace a string that is not correct UTF-8
+     */
+    static String safe_string_sql(String in)
+    {
+        if (in == null)
+        {
+            return null;
+        }
+
+        if (in.equals(""))
+        {
+            return "";
+        }
+
+        try
+        {
+            byte[] bytes = in.getBytes(StandardCharsets.UTF_8);
+            for (int i = 0; i < bytes.length; i++)
+            {
+                if (bytes[i] == 0)
+                {
+                    bytes[i] = '_';
+                }
+            }
+            return (new String(bytes, StandardCharsets.UTF_8));
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG, "safe_string_sql:EE:" + e.getMessage());
+            e.printStackTrace();
+        }
+        return "__ERROR_IN_STRING__";
+    }
+
+    /*
      * escape to prevent SQL injection, very basic and bad!
      * TODO: make me better (and later use prepared statements)
      */
@@ -28,6 +64,8 @@ public class OrmaDatabase
     {
         // TODO: bad!! use prepared statements
         String data = "";
+
+        str = safe_string_sql(str);
 
         if (str == null || str.length() == 0)
         {
@@ -44,6 +82,7 @@ public class OrmaDatabase
                     replace("\\x1a", "\\Z"); // \\x1a --> EOF char
             data = str;
         }
+
         return data;
     }
 
