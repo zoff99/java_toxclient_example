@@ -35,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Random;
 
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -1485,5 +1486,16 @@ public class HelperGeneric
         }
 
         return null;
+    }
+
+    static void set_new_random_nospam_value()
+    {
+        // Log.i(TAG, "old ToxID=" + MainActivity.get_my_toxid());
+        // Log.i(TAG, "old NOSPAM=" + MainActivity.tox_self_get_nospam());
+        Random random = new Random();
+        long new_nospam = (long) random.nextInt() + (1L << 31);
+        // Log.i(TAG, "generated NOSPAM=" + new_nospam);
+        MainActivity.tox_self_set_nospam(new_nospam);
+        update_savedata_file_wrapper(MainActivity.password_hash); // set new random nospam
     }
 }

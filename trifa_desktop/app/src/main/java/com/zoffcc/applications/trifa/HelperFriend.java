@@ -370,12 +370,12 @@ public class HelperFriend
                     e.printStackTrace();
                 }
 
-                //**//if (MainActivity.PREF__U_keep_nospam == false)
+                if (MainActivity.PREF__U_keep_nospam == false)
                 {
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
-                    //**//HelperGeneric.set_new_random_nospam_value();
+                    HelperGeneric.set_new_random_nospam_value();
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----

@@ -287,6 +287,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static boolean PREF__auto_accept_image = true;
     static boolean PREF__auto_accept_video = true;
     static boolean PREF__auto_accept_all_upto = true;
+    static boolean PREF__U_keep_nospam = false;
     static int PREF__audio_play_volume_percent = 100;
     static int PREF__udp_enabled = 1;
     static int PREF__orbot_enabled_to_int = 0;
