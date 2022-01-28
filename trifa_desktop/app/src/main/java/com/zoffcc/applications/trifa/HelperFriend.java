@@ -28,13 +28,14 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
+import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
+import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GENERIC_TOR_USERAGENT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
@@ -376,6 +377,28 @@ public class HelperFriend
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
                     HelperGeneric.set_new_random_nospam_value();
+                    final String my_tox_id_local = get_my_toxid();
+                    global_my_toxid = my_tox_id_local;
+
+                    Runnable myRunnable = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                myToxID.setEditable(true);
+                                myToxID.setText(my_tox_id_local);
+                                myToxID.setEditable(false);
+                            }
+                            catch (Exception e)
+                            {
+
+                            }
+                        }
+                    };
+
+                    SwingUtilities.invokeLater(myRunnable);
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
                     // ---- set new random nospam value after each added friend ----
