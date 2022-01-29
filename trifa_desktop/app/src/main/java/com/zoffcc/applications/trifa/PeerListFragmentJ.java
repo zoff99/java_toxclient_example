@@ -54,7 +54,7 @@ public class PeerListFragmentJ extends JPanel
         add_all_peers_clear(1);
     }
 
-    synchronized static void add_all_peers_clear(final int delay)
+    static void add_all_peers_clear(final int delay)
     {
     }
 }

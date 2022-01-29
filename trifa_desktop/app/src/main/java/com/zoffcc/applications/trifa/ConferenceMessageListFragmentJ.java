@@ -380,7 +380,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         return null;
     }
 
-    static synchronized void update_group_all_users()
+    static void update_group_all_users()
     {
         if (!peerlist_in_update)
         {
@@ -410,7 +410,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         }
     }
 
-    static synchronized void set_peer_count_header()
+    static void set_peer_count_header()
     {
         if (current_conf_id.equals("-1"))
         {
@@ -445,7 +445,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         });
     }
 
-    static synchronized void set_peer_names_and_avatars()
+    static void set_peer_names_and_avatars()
     {
         if (is_conference_active(current_conf_id))
         {
@@ -514,7 +514,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         }
     }
 
-    static synchronized void remove_group_all_users()
+    static void remove_group_all_users()
     {
         PeerListFragmentJ.peer_list_model.clear();
     }
@@ -531,7 +531,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         return ret;
     }
 
-    static synchronized void add_group_user(final String peer_pubkey, final long peernum, String name, boolean offline)
+    static void add_group_user(final String peer_pubkey, final long peernum, String name, boolean offline)
     {
         // Log.i(TAG, "add_group_user:peernum=" + peernum + " name=" + name + " offline=" + offline);
 

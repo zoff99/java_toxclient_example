@@ -83,7 +83,7 @@ public class JPictureBox extends JComponent
         return icon;
     }
 
-    public synchronized void setIcon(Icon icon)
+    public void setIcon(Icon icon)
     {
         this.icon = icon;
         ii = (ImageIcon) icon;

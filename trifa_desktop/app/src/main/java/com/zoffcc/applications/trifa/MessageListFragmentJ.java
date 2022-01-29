@@ -688,7 +688,7 @@ public class MessageListFragmentJ extends JPanel
         }
     }
 
-    synchronized static void add_message(final Message m)
+    static void add_message(final Message m)
     {
         Runnable myRunnable = () -> {
             try
@@ -810,7 +810,7 @@ public class MessageListFragmentJ extends JPanel
         MessagePanel.revalidate();
     }
 
-    synchronized static void modify_message(final Message m)
+    static void modify_message(final Message m)
     {
         try
         {

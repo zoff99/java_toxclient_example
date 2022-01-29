@@ -641,7 +641,7 @@ public class FriendListFragmentJ extends JPanel
         }
     }
 
-    synchronized static void add_all_friends_clear(final int delay)
+    static void add_all_friends_clear(final int delay)
     {
         // Log.i(TAG, "add_all_friends_clear");
         try
@@ -752,7 +752,7 @@ public class FriendListFragmentJ extends JPanel
         // Log.i(TAG, "add_all_friends_clear:READY");
     }
 
-    synchronized void modify_friend(final CombinedFriendsAndConferences c, boolean is_friend)
+    void modify_friend(final CombinedFriendsAndConferences c, boolean is_friend)
     {
         // Log.i(TAG, "modify_friend");
 
