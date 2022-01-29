@@ -159,7 +159,13 @@ public class VideoInFrame extends JFrame
                                         {
                                             // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
                                             // e.printStackTrace();
-                                            imageIn.setRGB(i, j, 0);
+                                            try
+                                            {
+                                                imageIn.setRGB(i, j, 0);
+                                            }
+                                            catch(Exception e2)
+                                            {
+                                            }
                                         }
                                     }
                                 }
@@ -187,7 +193,13 @@ public class VideoInFrame extends JFrame
                                         {
                                             // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
                                             // e.printStackTrace();
-                                            imageIn.setRGB(i, j, 0);
+                                            try
+                                            {
+                                                imageIn.setRGB(i, j, 0);
+                                            }
+                                            catch(Exception e2)
+                                            {
+                                            }
                                         }
                                     }
                                 }
@@ -215,7 +227,13 @@ public class VideoInFrame extends JFrame
                                         {
                                             // Log.i(TAG, "new_video_in_frame:EE01:" + e.getMessage());
                                             // e.printStackTrace();
-                                            imageIn.setRGB(i, j, 0);
+                                            try
+                                            {
+                                                imageIn.setRGB(i, j, 0);
+                                            }
+                                            catch(Exception e2)
+                                            {
+                                            }
                                         }
                                     }
                                 }
