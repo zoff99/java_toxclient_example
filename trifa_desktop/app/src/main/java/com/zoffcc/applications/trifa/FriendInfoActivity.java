@@ -24,6 +24,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -38,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SizeRequirements;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.text.Element;
 import javax.swing.text.View;
@@ -47,6 +50,8 @@ import javax.swing.text.html.InlineView;
 import javax.swing.text.html.ParagraphView;
 
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
+import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
+import static com.zoffcc.applications.trifa.HelperOSFile.show_file_in_explorer;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
@@ -164,6 +169,36 @@ public class FriendInfoActivity extends JFrame
         avatar_container.setMaximumSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H));
         avatar_container.setMinimumSize(new Dimension(AVATAR_FRIENDINFO_W, AVATAR_FRIENDINFO_H));
 
+        avatar_container.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(final MouseEvent e)
+            {
+                try
+                {
+                    String avatar_filename = fl.avatar_pathname + File.separator + fl.avatar_filename;
+                    File avatar_file = new File(avatar_filename);
+                    if (SwingUtilities.isLeftMouseButton(e))
+                    {
+                        if ((avatar_file.exists()) && (avatar_file.isFile()) && (avatar_file.length() > 0))
+                        {
+                            run_file(avatar_filename);
+                        }
+                    }
+                    else
+                    {
+                        if ((avatar_file.exists()) && (avatar_file.isFile()) && (avatar_file.length() > 0))
+                        {
+                            show_file_in_explorer(avatar_filename);
+                        }
+                    }
+                }
+                catch (Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+            }
+        });
         // ----------- avatar -----------
         JPanel panel_avatar = new JPanel(new GridBagLayout());
 
