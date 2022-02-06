@@ -28,6 +28,7 @@ fi
 # https://bugs.openjdk.java.net/browse/JDK-8225571
 # GTK2 vs. GTK3
 
+# -XX:+PreserveFramePointer \
 # -Djdk.gtk.version=2 \
 
 java $scale \
