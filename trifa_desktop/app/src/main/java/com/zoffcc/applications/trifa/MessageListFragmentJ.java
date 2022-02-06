@@ -63,6 +63,7 @@ import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_f
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
+import static com.zoffcc.applications.trifa.HelperOSFile.show_file_in_explorer;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
@@ -422,8 +423,16 @@ public class MessageListFragmentJ extends JPanel
                             {
                                 if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
                                 {
-                                    run_file(element.filename_fullpath);
-                                    Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                    if (SwingUtilities.isLeftMouseButton(e))
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                        run_file(element.filename_fullpath);
+                                    }
+                                    else
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
+                                        show_file_in_explorer(element.filename_fullpath);
+                                    }
                                 }
                             }
                             // FT (canceled or in progress) and outgoing
@@ -432,8 +441,16 @@ public class MessageListFragmentJ extends JPanel
                             {
                                 if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
                                 {
-                                    run_file(element.filename_fullpath);
-                                    Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                    if (SwingUtilities.isLeftMouseButton(e))
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                        run_file(element.filename_fullpath);
+                                    }
+                                    else
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
+                                        show_file_in_explorer(element.filename_fullpath);
+                                    }
                                 }
                             }
                             //else if (element.direction == 1)
