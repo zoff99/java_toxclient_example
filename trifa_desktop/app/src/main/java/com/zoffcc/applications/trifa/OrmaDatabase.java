@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperOSFile.sha256sum_of_file;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
@@ -346,6 +347,14 @@ public class OrmaDatabase
         Message ret = new Message();
         ret.sql_start = "SELECT * FROM Message";
         return ret;
+    }
+
+    public List<Message> selectFromMessageCustomSQL(String statement)
+    {
+        Message ret = new Message();
+        ret.sql_where = "";
+        ret.sql_start = "SELECT * FROM Message " + statement;
+        return ret.toList();
     }
 
     /**
