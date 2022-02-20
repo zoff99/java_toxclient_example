@@ -354,8 +354,8 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                 driver_options4 = "";
                 driver_options5 = "";
                 driver_options6 = "";
-                driver_options7 = "-show_region";
-                driver_options8 = "1";
+                driver_options7 = "";
+                driver_options8 = "";
             }
 
             // @formatter:off
@@ -379,6 +379,27 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
                     "-", // output to stdout
             };
             // @formatter:on
+
+            if (Platform.isMacOSX())
+            {
+                // HINT: ffmpeg installed with "brew" doesn't like the default command, so here we go with this
+                // @formatter:off
+                cmd_array = new String[]{
+                        FFmpegScreenDriver.getCommand(path),
+                        "-loglevel", "panic",
+                        "-framerate", "30",
+                        "-video_size", captured_screen_res,
+                        "-f", captureDriver,
+                        driver_options1, driver_options2,
+                        "-vcodec", "rawvideo",
+                        "-filter:v", "scale=" + getResolutionString().replace("x", ":")+ ":flags=neighbor",
+                        "-f", "rawvideo",
+                        "-vsync", "vfr", // avoid frame duplication
+                        "-pix_fmt", "bgr24", // output format as bgr24
+                        "-", // output to stdout
+                };
+                // @formatter:on
+            }
         }
 
         Log.i(TAG, "cmd_array=" + Arrays.toString(cmd_array));
