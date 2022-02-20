@@ -336,7 +336,20 @@ public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAcce
             else if (Platform.isMacOSX())
             {
                 driver_options1 = "-i";
-                driver_options2 = "default:none";
+                // HINT:
+                /*
+                 * find screen capture device number with command:
+                 * ffmpeg -f avfoundation -list_devices true -i ""
+                 *
+                 * output:
+                 * [AVFoundation input device @ 0x7fc2de40e840] AVFoundation video devices:
+                 * [AVFoundation input device @ 0x7fc2de40e840] [0] FaceTime HD Camera
+                 * [AVFoundation input device @ 0x7fc2de40e840] [1] Capture screen 0
+                 * [AVFoundation input device @ 0x7fc2de40e840] AVFoundation audio devices:
+                 * [AVFoundation input device @ 0x7fc2de40e840] [0] Built-in Microphone
+                 *
+                 */
+                driver_options2 = "1";
                 driver_options3 = "";
                 driver_options4 = "";
                 driver_options5 = "";
