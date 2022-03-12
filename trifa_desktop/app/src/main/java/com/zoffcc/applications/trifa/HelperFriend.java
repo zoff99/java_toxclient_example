@@ -32,12 +32,16 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
+import static com.zoffcc.applications.trifa.HelperMessage.get_message_in_db_sent_push_is_read;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_sent_push_set;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.is_valid_pushurl_for_friend_with_whitelist;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GENERIC_TOR_USERAGENT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.LAST_ONLINE_TIMSTAMP_ONLINE_NOW;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.PUSH_URL_TRIGGER_AGAIN_MAX_COUNT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.PUSH_URL_TRIGGER_AGAIN_SECONDS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
@@ -921,7 +925,8 @@ public class HelperFriend
         }
     }
 
-    static void friend_call_push_url(final String friend_pubkey)
+
+    static void friend_call_push_url(final String friend_pubkey, final long message_timestamp_circa)
     {
         try
         {
@@ -941,35 +946,26 @@ public class HelperFriend
                             {
                                 try
                                 {
-                                    HttpClient client = null;
-
-                                    client = HttpClient.newBuilder().
-                                            connectTimeout(Duration.of(8, SECONDS)).
-                                            build();
-
-                                    //                                   cacheControl(new CacheControl.Builder().noCache().build()).
-
-                                    HttpRequest request = HttpRequest.newBuilder().
-                                            uri(URI.create(pushurl_for_friend)).
-                                            header("User-Agent", GENERIC_TOR_USERAGENT).
-                                            timeout(Duration.of(5, SECONDS)).
-                                            POST(HttpRequest.BodyPublishers.ofString("ping=1")).
-                                            build();
-
-                                    try
+                                    friend_do_actual_weburl_call(friend_pubkey, pushurl_for_friend,
+                                                                 message_timestamp_circa, true);
+                                    // HINT: trigger push again after PUSH_URL_TRIGGER_AGAIN_SECONDS seconds to
+                                    //       make sure iphones actually get online and receive the message
+                                    boolean res = false;
+                                    for (int j = 0; j < PUSH_URL_TRIGGER_AGAIN_MAX_COUNT; j++)
                                     {
-                                        HttpResponse<String> response = client.send(request,
-                                                                                    HttpResponse.BodyHandlers.ofString());
-                                        Log.i(TAG, "friend_call_push_url:url=" + pushurl_for_friend + " RES=" +
-                                                   response.statusCode());
-                                    }
-                                    catch (Exception ignored)
-                                    {
+                                        Thread.sleep(PUSH_URL_TRIGGER_AGAIN_SECONDS * 1000);
+                                        res = friend_do_actual_weburl_call(friend_pubkey, pushurl_for_friend,
+                                                                           message_timestamp_circa, false);
+                                        if (res)
+                                        {
+                                            Log.i(TAG, "friend_call_push_url:BREAK");
+                                            break;
+                                        }
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.i(TAG, "friend_call_push_url:001:EE:" + e.getMessage());
+                                    Log.i(TAG, "friend_call_push_url:EE2:" + e.getMessage());
                                 }
                             }
                         };
@@ -981,6 +977,70 @@ public class HelperFriend
         catch (Exception ignored)
         {
         }
+    }
+
+    /*
+     * return true if we should stop triggering push notifications
+     *        false otherwise
+     */
+    static boolean friend_do_actual_weburl_call(final String friend_pubkey, final String pushurl_for_friend, final long message_timestamp_circa, final boolean update_message_flag)
+    {
+        try
+        {
+            if (!update_message_flag)
+            {
+                if (get_message_in_db_sent_push_is_read(friend_pubkey, message_timestamp_circa))
+                {
+                    // message is "read" (received) so stop triggering push notifications
+                    return true;
+                }
+            }
+
+            try
+            {
+                HttpClient client = null;
+
+                client = HttpClient.newBuilder().
+                        connectTimeout(Duration.of(8, SECONDS)).
+                        build();
+
+                //                                   cacheControl(new CacheControl.Builder().noCache().build()).
+
+                HttpRequest request = HttpRequest.newBuilder().
+                        uri(URI.create(pushurl_for_friend)).
+                        header("User-Agent", GENERIC_TOR_USERAGENT).
+                        timeout(Duration.of(5, SECONDS)).
+                        POST(HttpRequest.BodyPublishers.ofString("ping=1")).
+                        build();
+
+                try
+                {
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    Log.i(TAG, "friend_call_push_url:url=" + pushurl_for_friend + " RES=" + response.statusCode());
+
+                    if ((response.statusCode() < 300) && (response.statusCode() > 199))
+                    {
+                        if (update_message_flag)
+                        {
+                            update_message_in_db_sent_push_set(friend_pubkey, message_timestamp_circa);
+                        }
+                    }
+                }
+                catch (Exception ignored)
+                {
+                }
+            }
+            catch (Exception e)
+            {
+                Log.i(TAG, "friend_call_push_url:001:EE:" + e.getMessage());
+            }
+
+        }
+        catch (Exception ignored)
+        {
+        }
+
+        return false;
     }
 
     static void delete_friend_all_files(final long friendnum)
@@ -1187,6 +1247,27 @@ public class HelperFriend
         }
         catch (Exception e)
         {
+        }
+    }
+
+    static long get_friend_msgv3_capability(String friend_public_key_string)
+    {
+        long ret = 0;
+        try
+        {
+            FriendList f = orma.selectFromFriendList().
+                    tox_public_key_stringEq(friend_public_key_string).
+                    get(0);
+            if (f != null)
+            {
+                ret = f.msgv3_capability;
+            }
+
+            return ret;
+        }
+        catch (Exception e)
+        {
+            return 0;
         }
     }
 

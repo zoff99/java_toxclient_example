@@ -580,97 +580,78 @@ public class MessageListFragmentJ extends JPanel
 
                 if ((msg != null) && (!msg.equalsIgnoreCase("")))
                 {
-                    MainActivity.send_message_result result = tox_friend_send_message_wrapper(friendnum, 0, msg);
-                    long res = result.msg_num;
-                    // Log.i(TAG, "tox_friend_send_message_wrapper:result=" + res + " m=" + m);
+                    MainActivity.send_message_result result = tox_friend_send_message_wrapper(
+                            tox_friend_get_public_key__wrapper(friendnum), 0, msg, (m.sent_timestamp / 1000));
 
-                    if (res > -1) // sending was OK
+
+                    if (result == null)
                     {
-                        m.message_id = res;
-                        if (!result.msg_hash_hex.equalsIgnoreCase(""))
-                        {
-                            // msgV2 message -----------
-                            m.msg_id_hash = result.msg_hash_hex;
-                            m.msg_version = 1;
-                            // msgV2 message -----------
-                        }
+                        return;
+                    }
 
-                        if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
-                        {
-                            // msgV3 message -----------
-                            m.msg_idv3_hash = result.msg_hash_v3_hex;
-                            // msgV3 message -----------
-                        }
 
-                        if (!result.raw_message_buf_hex.equalsIgnoreCase(""))
-                        {
-                            // save raw message bytes of this v2 msg into the database
-                            // we need it if we want to resend it later
-                            m.raw_msgv2_bytes = result.raw_message_buf_hex;
-                        }
+                    long res = result.msg_num;
 
+                    if (res > -1)
+                    {
                         m.resend_count = 1; // we sent the message successfully
-
-                        long row_id = insert_into_message_db(m, true);
-                        m.id = row_id;
-                        // Log.i(TAG, "MESSAGEV2_SEND:row_id=" + row_id);
-                        // Log.i(TAG, "MESSAGEV2_SEND:MSGv2HASH:3=" + m.msg_id_hash);
-                        // Log.i(TAG, "MESSAGEV2_SEND:MSGv2HASH:3raw=" + m.raw_msgv2_bytes);
-
-                        Runnable myRunnable = new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                try
-                                {
-                                    messageInputTextField.setText("");
-                                }
-                                catch (Exception e)
-                                {
-                                }
-                            }
-                        };
-                        SwingUtilities.invokeLater(myRunnable);
-
-                        stop_self_typing_indicator_s();
+                        m.message_id = res;
                     }
                     else
                     {
-                        // sending was NOT ok
-
-                        // Log.i(TAG, "tox_friend_send_message_wrapper:store pending message" + m);
-
+                        m.resend_count = 0; // sending was NOT successfull
                         m.message_id = -1;
-
-                        if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
-                        {
-                            // msgV3 message -----------
-                            m.msg_idv3_hash = result.msg_hash_v3_hex;
-                            // msgV3 message -----------
-                        }
-
-                        long row_id = insert_into_message_db(m, true);
-                        m.id = row_id;
-
-                        Runnable myRunnable = new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                try
-                                {
-                                    messageInputTextField.setText("");
-                                }
-                                catch (Exception e)
-                                {
-                                }
-                            }
-                        };
-                        SwingUtilities.invokeLater(myRunnable);
-
-                        stop_self_typing_indicator_s();
                     }
+
+                    if (result.msg_v2)
+                    {
+                        m.msg_version = 1;
+                    }
+                    else
+                    {
+                        m.msg_version = 0;
+                    }
+
+                    if ((result.msg_hash_hex != null) && (!result.msg_hash_hex.equalsIgnoreCase("")))
+                    {
+                        // msgV2 message -----------
+                        m.msg_id_hash = result.msg_hash_hex;
+                        // msgV2 message -----------
+                    }
+
+                    if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
+                    {
+                        // msgV3 message -----------
+                        m.msg_idv3_hash = result.msg_hash_v3_hex;
+                        // msgV3 message -----------
+                    }
+
+                    if ((result.raw_message_buf_hex != null) && (!result.raw_message_buf_hex.equalsIgnoreCase("")))
+                    {
+                        // save raw message bytes of this v2 msg into the database
+                        // we need it if we want to resend it later
+                        m.raw_msgv2_bytes = result.raw_message_buf_hex;
+                    }
+
+                    long row_id = insert_into_message_db(m, true);
+                    m.id = row_id;
+                    Runnable myRunnable = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                messageInputTextField.setText("");
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+                    };
+                    SwingUtilities.invokeLater(myRunnable);
+
+                    stop_self_typing_indicator_s();
                 }
             }
         }

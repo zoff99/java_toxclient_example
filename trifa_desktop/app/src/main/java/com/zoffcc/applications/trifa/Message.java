@@ -183,9 +183,8 @@ public class Message
                ", sent_timestamp=" + sent_timestamp + ", rcvd_timestamp=" + rcvd_timestamp + ", read=" + read +
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
-               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" +
-               ", ft_outgoing_queued=" + ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay +
-               ", sent_push=" + sent_push;
+               ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" + ", ft_outgoing_queued=" +
+               ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay + ", sent_push=" + sent_push;
     }
 
     String sql_start = "";
@@ -864,6 +863,39 @@ public class Message
     public Message resend_countLt(int resend_count)
     {
         this.sql_where = this.sql_where + " and  resend_count<'" + s(filetransfer_id) + "' ";
+        return this;
+    }
+
+    public Message sent_pushEq(int sent_push)
+    {
+        this.sql_where = this.sql_where + " and  sent_push='" + s(sent_push) + "' ";
+        return this;
+    }
+
+    public Message sent_timestampLt(long sent_timestamp)
+    {
+        this.sql_where = this.sql_where + " and  sent_timestamp<'" + s(sent_timestamp) + "' ";
+        return this;
+    }
+
+    public Message sent_timestampBetween(long sent_timestamp1, long sent_timestamp2)
+    {
+        this.sql_where = this.sql_where + " and  sent_timestamp>'" + s(sent_timestamp1) + "' and sent_timestamp<'" +
+                         s(sent_timestamp2) + "' ";
+        return this;
+    }
+
+    public Message sent_push(int sent_push)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " sent_push='" + s(sent_push) + "' ";
         return this;
     }
 }

@@ -56,6 +56,10 @@ public class TRIFAGlobals
     static int GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE; // allowed values: (xx>=6) && (xx<=510)
 
     static final String GENERIC_TOR_USERAGENT = "Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0";
+    static final int PUSH_URL_TRIGGER_AGAIN_MAX_COUNT = 8;
+    static final int PUSH_URL_TRIGGER_AGAIN_SECONDS = 21;
+    static final int PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_prev = 100;
+    static final int PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_after = 1000;
 
     static final int VIDEO_CODEC_VP8 = 0;
     static final int VIDEO_CODEC_H264 = 1;
@@ -92,6 +96,7 @@ public class TRIFAGlobals
     public static final Color SEE_THRU = new Color(0x00111111, true);
 
     static int MESSAGE_SYNC_DOUBLE_INTERVAL_SECS = 20;
+    static long MESSAGE_V2_MSG_SENT_OK = (Long.MAX_VALUE - 1);
     static int global_self_connection_status = ToxVars.TOX_CONNECTION.TOX_CONNECTION_NONE.value;
 
     final static String VFS_TMP_FILE_DIR = "./tempdir/files/";

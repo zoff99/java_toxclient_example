@@ -29,12 +29,10 @@ import static com.zoffcc.applications.trifa.HelperConference.new_or_updated_conf
 import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.start_outgoing_ft;
 import static com.zoffcc.applications.trifa.HelperFriend.add_friend_real;
+import static com.zoffcc.applications.trifa.HelperFriend.friend_call_push_url;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_msgv3_capability;
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real;
-import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real_and_has_msgv3;
-import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real_and_hasnot_msgv3;
 import static com.zoffcc.applications.trifa.HelperFriend.set_all_friends_offline;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
@@ -47,10 +45,8 @@ import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_resend_msgv3_wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_messageid;
-import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_msg_idv3_hash;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_no_read_recvedts;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
-import static com.zoffcc.applications.trifa.HelperMessage.update_single_message;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
@@ -98,6 +94,7 @@ public class TrifaToxService
     static long last_resend_pending_messages1_ms = -1;
     static long last_resend_pending_messages2_ms = -1;
     static long last_resend_pending_messages3_ms = -1;
+    static long last_resend_pending_messages4_ms = -1;
     static long last_start_queued_fts_ms = -1;
 
     void tox_thread_start_fg()
@@ -444,10 +441,16 @@ public class TrifaToxService
                     // --- send pending 1-on-1 text messages here --------------
                     if (global_self_connection_status != TOX_CONNECTION_NONE.value)
                     {
+                        if ((last_resend_pending_messages4_ms + (5 * 1000)) < System.currentTimeMillis())
+                        {
+                            last_resend_pending_messages4_ms = System.currentTimeMillis();
+                            resend_push_for_v3_messages();
+                        }
+
                         if ((last_resend_pending_messages0_ms + (30 * 1000)) < System.currentTimeMillis())
                         {
                             last_resend_pending_messages0_ms = System.currentTimeMillis();
-                            resend_old_messages();
+                            resend_old_messages(null);
                         }
 
                         if ((last_resend_pending_messages1_ms + (30 * 1000)) < System.currentTimeMillis())
@@ -571,6 +574,44 @@ public class TrifaToxService
 
     // ------------------------------
 
+    static void resend_push_for_v3_messages()
+    {
+        try
+        {
+            // HINT: if we have not received a "read receipt" for msgV3 within 10 seconds, then we trigger a push again
+            final long cutoff_sent_time = System.currentTimeMillis() - (10 * 1000);
+
+            List<Message> m_push = orma.selectFromMessage().
+                    directionEq(1).
+                    msg_versionEq(0).
+                    TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
+                    sent_pushEq(0).
+                    readEq(false).
+                    orderBySent_timestampAsc().
+                    sent_timestampLt(cutoff_sent_time).
+                    toList();
+
+            if ((m_push != null) && (m_push.size() > 0))
+            {
+                Iterator<Message> ii = m_push.iterator();
+                while (ii.hasNext())
+                {
+                    Message m_resend_push = ii.next();
+                    if ((m_resend_push.msg_idv3_hash != null) && (m_resend_push.msg_idv3_hash.length() > 3))
+                    {
+                        friend_call_push_url(m_resend_push.tox_friendpubkey, m_resend_push.sent_timestamp);
+                    }
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "resend_push_for_v3_messages:EE:" + e.getMessage());
+        }
+    }
+
     static void resend_v3_messages(String friend_pubkey)
     {
         // loop through "old msg version" msgV3 1-on-1 text messages that have "resend_count < MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION" --------------
@@ -580,7 +621,7 @@ public class TrifaToxService
 
             if (friend_pubkey != null)
             {
-                max_resend_count_per_iteration = 5;
+                max_resend_count_per_iteration = 20;
             }
 
             int cur_resend_count_per_iteration = 0;
@@ -616,9 +657,15 @@ public class TrifaToxService
                 while (ii.hasNext())
                 {
                     Message m_resend_v1 = ii.next();
-                    if ((is_friend_online_real(tox_friend_by_public_key__wrapper(m_resend_v1.tox_friendpubkey)) == 0) ||
-                        (get_friend_msgv3_capability(tox_friend_by_public_key__wrapper(m_resend_v1.tox_friendpubkey)) ==
-                         0))
+                    if (friend_pubkey == null)
+                    {
+                        if (is_friend_online_real(tox_friend_by_public_key__wrapper(m_resend_v1.tox_friendpubkey)) == 0)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (get_friend_msgv3_capability(m_resend_v1.tox_friendpubkey) != 1)
                     {
                         continue;
                     }
@@ -635,27 +682,56 @@ public class TrifaToxService
         catch (Exception e)
         {
             e.printStackTrace();
-            Log.i(TAG, "send_pending_1-on-1_messages:v1:EE:" + e.getMessage());
+            Log.i(TAG, "resend_v3_messages:EE:" + e.getMessage());
         }
         // loop through all pending outgoing 1-on-1 text messages --------------
     }
 
-    static void resend_old_messages()
+    static void resend_old_messages(final String friend_pubkey)
     {
         try
         {
-            final int max_resend_count_per_iteration = 10;
+            int max_resend_count_per_iteration = 10;
+
+            if (friend_pubkey != null)
+            {
+                max_resend_count_per_iteration = 20;
+            }
+
             int cur_resend_count_per_iteration = 0;
 
-            List<Message> m_v0 = orma.selectFromMessage().
-                    directionEq(1).
-                    TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
-                    msg_versionEq(0).
-                    readEq(false).
-                    resend_countLt(1).
-                    orderBySent_timestampAsc().
-                    toList();
+            // HINT: cutoff time "now" minus 25 seconds
+            final long cutoff_sent_time = System.currentTimeMillis() - (25 * 1000);
+            List<Message> m_v0 = null;
 
+            if (friend_pubkey != null)
+            {
+                // HINT: this is the generic resend for all friends, that happens in regular intervals
+                //       only resend if the original sent timestamp is at least 25 seconds in the past
+                //       to try to avoid resending when the read receipt is very late.
+                m_v0 = orma.selectFromMessage().
+                        directionEq(1).
+                        TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
+                        msg_versionEq(0).
+                        tox_friendpubkeyEq(friend_pubkey).
+                        readEq(false).
+                        resend_countLt(2).
+                        orderBySent_timestampAsc().
+                        sent_timestampLt(cutoff_sent_time).
+                        toList();
+            }
+            else
+            {
+                // HINT: this is the specific resend for 1 friend only, when that friend comes online
+                m_v0 = orma.selectFromMessage().
+                        directionEq(1).
+                        TRIFA_MESSAGE_TYPEEq(TRIFA_MSG_TYPE_TEXT.value).
+                        msg_versionEq(0).
+                        readEq(false).
+                        resend_countLt(2).
+                        orderBySent_timestampAsc().
+                        toList();
+            }
 
             if ((m_v0 != null) && (m_v0.size() > 0))
             {
@@ -664,11 +740,25 @@ public class TrifaToxService
                 {
                     Message m_resend_v0 = ii.next();
 
-                    if (is_friend_online(tox_friend_by_public_key__wrapper(m_resend_v0.tox_friendpubkey)) == 0)
+                    if (friend_pubkey == null)
                     {
+                        if (is_friend_online_real(tox_friend_by_public_key__wrapper(m_resend_v0.tox_friendpubkey)) == 0)
+                        {
+                            // Log.i(TAG, "resend_old_messages:RET:01:" +
+                            //            get_friend_name_from_pubkey(m_resend_v0.tox_friendpubkey));
+                            continue;
+                        }
+                    }
+
+                    if (get_friend_msgv3_capability(m_resend_v0.tox_friendpubkey) == 1)
+                    {
+                        // Log.i(TAG, "resend_old_messages:RET:02:" +
+                        //            get_friend_name_from_pubkey(m_resend_v0.tox_friendpubkey));
                         continue;
                     }
 
+                    // Log.i(TAG, "resend_old_messages:tox_friend_resend_msgv3_wrapper:" + m_resend_v0.text + " : m=" +
+                    //            m_resend_v0 + " : " + get_friend_name_from_pubkey(m_resend_v0.tox_friendpubkey));
                     tox_friend_resend_msgv3_wrapper(m_resend_v0);
 
                     cur_resend_count_per_iteration++;
@@ -689,7 +779,7 @@ public class TrifaToxService
 
     static void resend_v2_messages(boolean at_relay)
     {
-        // loop through all pending outgoing 1-on-1 text messages V2 (resend the resend) --------------
+        // loop through all pending outgoing 1-on-1 text messages V2 (resend) --------------
         try
         {
             final int max_resend_count_per_iteration = 10;
@@ -717,23 +807,86 @@ public class TrifaToxService
                         continue;
                     }
 
-                    final int raw_data_length = (m_resend_v2.raw_msgv2_bytes.length() / 2);
-                    byte[] raw_msg_resend_data = hex_to_bytes(m_resend_v2.raw_msgv2_bytes);
-
-                    ByteBuffer msg_text_buffer_resend_v2 = ByteBuffer.allocateDirect(raw_data_length);
-                    msg_text_buffer_resend_v2.put(raw_msg_resend_data, 0, raw_data_length);
-
-                    int res = tox_util_friend_resend_message_v2(
-                            tox_friend_by_public_key__wrapper(m_resend_v2.tox_friendpubkey), msg_text_buffer_resend_v2,
-                            raw_data_length);
-
-
-                    String relay = get_relay_for_friend(m_resend_v2.tox_friendpubkey);
-                    if (relay != null)
+                    if ((m_resend_v2.msg_id_hash == null) ||
+                        (m_resend_v2.msg_id_hash.equalsIgnoreCase(""))) // resend msgV2 WITHOUT hash
                     {
-                        int res_relay = tox_util_friend_resend_message_v2(tox_friend_by_public_key__wrapper(relay),
-                                                                          msg_text_buffer_resend_v2, raw_data_length);
+                        // Log.i(TAG, "resend_msgV2_WITHOUT_hash:f=" +
+                        //           get_friend_name_from_pubkey(m_resend_v2.tox_friendpubkey) + " m=" + m_resend_v2);
+                        MainActivity.send_message_result result = tox_friend_send_message_wrapper(
+                                m_resend_v2.tox_friendpubkey, 0, m_resend_v2.text, (m_resend_v2.sent_timestamp / 1000));
 
+                        if (result != null)
+                        {
+                            long res = result.msg_num;
+
+                            if (res > -1)
+                            {
+                                m_resend_v2.resend_count = 1; // we sent the message successfully
+                                m_resend_v2.message_id = res;
+                            }
+                            else
+                            {
+                                m_resend_v2.resend_count = 0; // sending was NOT successfull
+                                m_resend_v2.message_id = -1;
+                            }
+
+                            if (result.msg_v2)
+                            {
+                                m_resend_v2.msg_version = 1;
+                            }
+                            else
+                            {
+                                m_resend_v2.msg_version = 0;
+                            }
+
+                            if ((result.msg_hash_hex != null) && (!result.msg_hash_hex.equalsIgnoreCase("")))
+                            {
+                                // msgV2 message -----------
+                                m_resend_v2.msg_id_hash = result.msg_hash_hex;
+                                // msgV2 message -----------
+                            }
+
+                            if ((result.msg_hash_v3_hex != null) && (!result.msg_hash_v3_hex.equalsIgnoreCase("")))
+                            {
+                                // msgV3 message -----------
+                                m_resend_v2.msg_idv3_hash = result.msg_hash_v3_hex;
+                                // msgV3 message -----------
+                            }
+
+                            if ((result.raw_message_buf_hex != null) &&
+                                (!result.raw_message_buf_hex.equalsIgnoreCase("")))
+                            {
+                                // save raw message bytes of this v2 msg into the database
+                                // we need it if we want to resend it later
+                                m_resend_v2.raw_msgv2_bytes = result.raw_message_buf_hex;
+                            }
+
+                            update_message_in_db_messageid(m_resend_v2);
+                            update_message_in_db_resend_count(m_resend_v2);
+                            update_message_in_db_no_read_recvedts(m_resend_v2);
+                        }
+                    }
+                    else // resend msgV2 with hash
+                    {
+                        final int raw_data_length = (m_resend_v2.raw_msgv2_bytes.length() / 2);
+                        byte[] raw_msg_resend_data = hex_to_bytes(m_resend_v2.raw_msgv2_bytes);
+
+                        ByteBuffer msg_text_buffer_resend_v2 = ByteBuffer.allocateDirect(raw_data_length);
+                        msg_text_buffer_resend_v2.put(raw_msg_resend_data, 0, raw_data_length);
+
+                        int res = tox_util_friend_resend_message_v2(
+                                tox_friend_by_public_key__wrapper(m_resend_v2.tox_friendpubkey),
+                                msg_text_buffer_resend_v2, raw_data_length);
+
+
+                        String relay = get_relay_for_friend(m_resend_v2.tox_friendpubkey);
+                        if (relay != null)
+                        {
+                            int res_relay = tox_util_friend_resend_message_v2(tox_friend_by_public_key__wrapper(relay),
+                                                                              msg_text_buffer_resend_v2,
+                                                                              raw_data_length);
+
+                        }
                     }
 
                     cur_resend_count_per_iteration++;
@@ -742,7 +895,6 @@ public class TrifaToxService
                     {
                         break;
                     }
-
                 }
             }
         }

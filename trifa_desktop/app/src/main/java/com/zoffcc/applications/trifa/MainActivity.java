@@ -199,6 +199,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
+import static com.zoffcc.applications.trifa.TrifaToxService.resend_old_messages;
 import static com.zoffcc.applications.trifa.TrifaToxService.resend_v3_messages;
 import static com.zoffcc.applications.trifa.VideoInFrame.new_video_in_frame;
 import static com.zoffcc.applications.trifa.VideoInFrame.on_call_ended_actions;
@@ -2313,6 +2314,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         {
                             resend_v3_messages(f.tox_public_key_string);
                         }
+                        else
+                        {
+                            // Log.i(TAG, "friend_connection_status:resend_old_messages" +
+                            //            get_friend_name_from_pubkey(f.tox_public_key_string));
+                            resend_old_messages(f.tox_public_key_string);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -2456,7 +2463,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         HelperFriend.add_friend_to_system(friend_public_key__.toUpperCase(), false, null);
     }
 
-    static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length, byte[] msgV3hash_bin)
+    static void android_tox_callback_friend_message_cb_method(long friend_number, int message_type, String friend_message, long length, byte[] msgV3hash_bin, long message_timestamp)
     {
         if (PREF__X_battery_saving_mode)
         {
@@ -2464,7 +2471,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
         global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
         HelperGeneric.receive_incoming_message(0, message_type, friend_number, friend_message, null, 0, null,
-                                               msgV3hash_bin);
+                                               msgV3hash_bin, message_timestamp);
     }
 
     static void android_tox_callback_friend_message_v2_cb_method(long friend_number, String friend_message, long length, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length)
@@ -2475,7 +2482,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
         global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
         HelperGeneric.receive_incoming_message(1, 0, friend_number, friend_message, raw_message, raw_message_length,
-                                               null, null);
+                                               null, null, 0);
     }
 
     static void android_tox_callback_friend_sync_message_v2_cb_method(long friend_number, long ts_sec, long ts_ms, byte[] raw_message, long raw_message_length, byte[] raw_data, long raw_data_length)
@@ -2651,7 +2658,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     HelperGeneric.receive_incoming_message(2, 0,
                                                            tox_friend_by_public_key__wrapper(real_sender_as_hex_string),
                                                            wrapped_msg_text_as_string, raw_data, raw_data_length,
-                                                           real_sender_as_hex_string, null);
+                                                           real_sender_as_hex_string, null, 0);
                 }
             }
             catch (Exception e2)

@@ -31,6 +31,8 @@ import static com.zoffcc.applications.trifa.MainActivity.ORMA_TRACE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.modify_message;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_after;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_prev;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MESSAGE_TYPE.TOX_MESSAGE_TYPE_HIGH_LEVEL_ACK;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -597,7 +599,7 @@ public class HelperMessage
                                                                   "_", hash_bytes, t_sec);
     }
 
-    static void process_msgv3_high_level_ack(final long friend_number, String msgV3hash_hex_string)
+    static void process_msgv3_high_level_ack(final long friend_number, String msgV3hash_hex_string, long message_timestamp)
     {
         Message m = null;
         try
@@ -606,18 +608,27 @@ public class HelperMessage
                     msg_idv3_hashEq(msgV3hash_hex_string).
                     tox_friendpubkeyEq(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)).
                     directionEq(1).
+                    readEq(false).
                     orderByIdDesc().
                     toList().get(0);
         }
         catch (Exception e)
         {
+            return;
         }
 
         if (m != null)
         {
             try
             {
-                m.rcvd_timestamp = System.currentTimeMillis();
+                if (message_timestamp > 0)
+                {
+                    m.rcvd_timestamp = message_timestamp * 1000;
+                }
+                else
+                {
+                    m.rcvd_timestamp = System.currentTimeMillis();
+                }
                 m.read = true;
                 HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
                 HelperMessage.update_single_message(m, true);
@@ -626,6 +637,59 @@ public class HelperMessage
             {
                 e.printStackTrace();
             }
+        }
+    }
+
+    static boolean get_message_in_db_sent_push_is_read(final String friend_pubkey, final long sent_timestamp)
+    {
+        boolean ret = false;
+        try
+        {
+            Message m = orma.selectFromMessage().
+                    tox_friendpubkeyEq(friend_pubkey).
+                    sent_timestampBetween(sent_timestamp - PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_prev,
+                                          sent_timestamp + PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_after).
+                    directionEq(1).
+                    orderBySent_timestampAsc().
+                    limit(1).toList().get(0);
+
+            return m.read;
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+        }
+
+        return ret;
+    }
+
+    static void update_message_in_db_sent_push_set(final String friend_pubkey, final long sent_timestamp)
+    {
+        try
+        {
+            Message m = orma.selectFromMessage().
+                    tox_friendpubkeyEq(friend_pubkey).
+                    sent_timestampBetween(sent_timestamp - PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_prev,
+                                          sent_timestamp + PUSH_URL_TRIGGER_GET_MESSAGE_FOR_delta_ms_after).
+                    directionEq(1).
+                    orderBySent_timestampAsc().
+                    limit(1).toList().get(0);
+
+            // Log.i(TAG, "update_message_in_db_sent_push_set:ts=" + sent_timestamp + " m=" + m);
+
+            orma.updateMessage().
+                    tox_friendpubkeyEq(friend_pubkey).
+                    idEq(m.id).
+                    sent_push(1).
+                    execute();
+
+            m.sent_push = 1;
+
+            update_single_message(m, true);
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
         }
     }
 }
