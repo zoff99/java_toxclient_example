@@ -152,18 +152,19 @@ public class ConferenceMessageListFragmentJ extends JPanel
         revalidate();
     }
 
-    static synchronized public void send_message_onclick()
+    static synchronized public void send_message_onclick(final String msg2)
     {
         // Log.i(TAG,"send_message_onclick:---start");
 
         String msg = "";
+
         try
         {
             if (is_conference_active(current_conf_id))
             {
                 // send typed message to friend
-                msg = messageInputTextField.getText().substring(0, (int) Math.min(tox_max_message_length(),
-                                                                                  messageInputTextField.getText().length()));
+                msg = msg2.substring(0,
+                                    (int) Math.min(tox_max_message_length(), msg2.length()));
 
                 try
                 {
@@ -195,7 +196,6 @@ public class ConferenceMessageListFragmentJ extends JPanel
                         if (res > -1)
                         {
                             // message was sent OK
-                            insert_into_conference_message_db(m, true);
                             Runnable myRunnable = () -> {
                                 try
                                 {
@@ -206,6 +206,8 @@ public class ConferenceMessageListFragmentJ extends JPanel
                                 }
                             };
                             SwingUtilities.invokeLater(myRunnable);
+
+                            insert_into_conference_message_db(m, true);
                         }
                     }
                 }

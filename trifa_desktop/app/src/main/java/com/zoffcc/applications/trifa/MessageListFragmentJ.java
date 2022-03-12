@@ -540,7 +540,7 @@ public class MessageListFragmentJ extends JPanel
     }
 
     /* HINT: send a message to a friend */
-    synchronized public static void send_message_onclick()
+    synchronized public static void send_message_onclick(final String msg2)
     {
         // Log.i(TAG, "send_message_onclick:---start");
 
@@ -559,7 +559,7 @@ public class MessageListFragmentJ extends JPanel
             else
             {
                 // send typed message to friend
-                msg = trim_to_utf8_length_bytes(messageInputTextField.getText(), TOX_MSGV3_MAX_MESSAGE_LENGTH);
+                msg = trim_to_utf8_length_bytes(msg2, TOX_MSGV3_MAX_MESSAGE_LENGTH);
 
                 Message m = new Message();
                 m.tox_friendpubkey = tox_friend_get_public_key__wrapper(friendnum);
@@ -633,8 +633,6 @@ public class MessageListFragmentJ extends JPanel
                         m.raw_msgv2_bytes = result.raw_message_buf_hex;
                     }
 
-                    long row_id = insert_into_message_db(m, true);
-                    m.id = row_id;
                     Runnable myRunnable = new Runnable()
                     {
                         @Override
@@ -650,8 +648,10 @@ public class MessageListFragmentJ extends JPanel
                         }
                     };
                     SwingUtilities.invokeLater(myRunnable);
-
                     stop_self_typing_indicator_s();
+
+                    long row_id = insert_into_message_db(m, true);
+                    m.id = row_id;
                 }
             }
         }

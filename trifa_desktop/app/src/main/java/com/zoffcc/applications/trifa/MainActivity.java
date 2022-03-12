@@ -682,11 +682,35 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     // Log.i(TAG, "Enter key pressed");
                     if (message_panel_displayed == 1)
                     {
-                        MessageListFragmentJ.send_message_onclick();
+                        messageInputTextField.setText(messageInputTextField.getText().replaceFirst("[\n\r]$", ""));
+                        final String msg = messageInputTextField.getText();
+                        final Thread t = new Thread(() -> {
+                            try
+                            {
+                                MessageListFragmentJ.send_message_onclick(msg);
+                            }
+                            catch (Exception e1)
+                            {
+                                e1.printStackTrace();
+                            }
+                        });
+                        t.start();
                     }
                     else if (message_panel_displayed == 2)
                     {
-                        ConferenceMessageListFragmentJ.send_message_onclick();
+                        messageInputTextField.setText(messageInputTextField.getText().replaceFirst("[\n\r]$", ""));
+                        final String msg = messageInputTextField.getText();
+                        final Thread t = new Thread(() -> {
+                            try
+                            {
+                                ConferenceMessageListFragmentJ.send_message_onclick(msg);
+                            }
+                            catch (Exception e12)
+                            {
+                                e12.printStackTrace();
+                            }
+                        });
+                        t.start();
                     }
                 }
             }
@@ -706,11 +730,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
                 if (message_panel_displayed == 1)
                 {
-                    MessageListFragmentJ.send_message_onclick();
+                    MessageListFragmentJ.send_message_onclick(messageInputTextField.getText());
                 }
                 else if (message_panel_displayed == 2)
                 {
-                    ConferenceMessageListFragmentJ.send_message_onclick();
+                    ConferenceMessageListFragmentJ.send_message_onclick(messageInputTextField.getText());
                 }
             }
         });
