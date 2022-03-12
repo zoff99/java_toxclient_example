@@ -29,6 +29,7 @@ script:
   - sw_vers -productVersion
   - system_profiler SPSoftwareDataType
   - shasum --help || exit 0
+  - git config --global http.sslVerify false
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/deps_macos.sh
   - /Users/travis/build/zoff99/java_toxclient_example/circle_scripts/java_jni_lib_macos.sh norun
 
