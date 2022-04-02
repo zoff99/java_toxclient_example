@@ -686,13 +686,13 @@ public class MessageListFragmentJ extends JPanel
         }
     }
 
-    static void add_message(final Message m)
+    static void add_message(final Message m, final boolean no_block)
     {
         Runnable myRunnable = () -> {
             try
             {
-                add_item(m);
-                if (is_at_bottom)
+                add_item(m, no_block);
+                if ((is_at_bottom) && (!no_block))
                 {
                     // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
                     // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
@@ -775,7 +775,14 @@ public class MessageListFragmentJ extends JPanel
                         {
                             for (Message message : ml)
                             {
-                                add_message(message);
+                                if (message == ml.get(ml.size() - 1))
+                                {
+                                    add_message(message, false);
+                                }
+                                else
+                                {
+                                    add_message(message, true);
+                                }
                             }
                         }
                     }
@@ -802,10 +809,13 @@ public class MessageListFragmentJ extends JPanel
         return friendnum;
     }
 
-    public static void add_item(Message new_item)
+    public static void add_item(Message new_item, final boolean no_block)
     {
         messagelistitems_model.addElement(new_item);
-        MessagePanel.revalidate();
+        if (!no_block)
+        {
+            MessagePanel.revalidate();
+        }
     }
 
     static void modify_message(final Message m)

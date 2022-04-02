@@ -23,6 +23,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import org.imgscalr.Scalr;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -74,6 +75,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.Semaphore;
 import java.util.prefs.Preferences;
@@ -222,6 +224,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
     final static boolean DEBUG_SCREENSHOT = false; // set "false" for release builds
+    final static boolean DEBUG_EDT = true; // set "false" for release builds
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------
@@ -296,6 +299,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static int PREF__ipv6_enabled = 1;
     static int PREF__force_udp_only = 0;
     static boolean PREF__show_image_thumbnails = true;
+
+    static Random global_random = null;
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
@@ -1173,9 +1178,51 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         c.setFocusable(true);
     }
 
+    private static class MyEventQueue extends EventQueue
+    {
+        public void postEvent(AWTEvent theEvent)
+        {
+            final long rand_value = (long) global_random.nextInt() + (1L << 31);
+            boolean need_print = false;
+            if (DEBUG_EDT)
+            {
+                StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+                for (StackTraceElement a : ste)
+                {
+                    if (a.toString().contains("com.zoffcc.applications.trifa"))
+                    {
+                        if (!a.toString().contains("MyEventQueue.postEvent"))
+                        {
+                            System.out.println(a.toString());
+                            need_print = true;
+                        }
+                    }
+                }
+
+                if (need_print)
+                {
+                    Log.i("-EVENT-", "start::" + rand_value + "::" + theEvent.getID() + " " + theEvent.paramString());
+                }
+            }
+            super.postEvent(theEvent);
+            if (DEBUG_EDT)
+            {
+                if (need_print)
+                {
+                    Log.i("-EVENT-", "end::" + rand_value);
+                }
+            }
+        }
+    }
+
     public static void main(String[] args)
     {
         System.out.println("Version:" + Version);
+
+        global_random = new Random();
+
+        EventQueue eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+        eventQueue.push(new MyEventQueue());
 
         try
         {

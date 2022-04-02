@@ -121,7 +121,7 @@ public class HelperMessage
                                     //       "add_single_message_from_messge_id:add_message() pk=" + m.tox_friendpubkey);
 
                                     MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
-                                    MessagePanel.add_message(m);
+                                    MessagePanel.add_message(m, false);
                                 }
                             }
                         }
@@ -299,7 +299,7 @@ public class HelperMessage
                                                     System.currentTimeMillis()))
                                     {
                                         MainActivity.update_all_messages_global_timestamp = System.currentTimeMillis();
-                                        MessagePanelConferences.add_message(m);
+                                        MessagePanelConferences.add_message(m, false);
                                     }
                                 }
                             }

@@ -163,8 +163,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
             if (is_conference_active(current_conf_id))
             {
                 // send typed message to friend
-                msg = msg2.substring(0,
-                                    (int) Math.min(tox_max_message_length(), msg2.length()));
+                msg = msg2.substring(0, (int) Math.min(tox_max_message_length(), msg2.length()));
 
                 try
                 {
@@ -276,7 +275,14 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
                     for (ConferenceMessage message : ml)
                     {
-                        add_message(message);
+                        if (message == ml.get(ml.size() - 1))
+                        {
+                            add_message(message, true);
+                        }
+                        else
+                        {
+                            add_message(message, false);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -296,13 +302,13 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
     }
 
-    void add_message(final ConferenceMessage m)
+    void add_message(final ConferenceMessage m, final boolean no_block)
     {
         Runnable myRunnable = () -> {
             try
             {
-                add_item(m);
-                if (is_at_bottom)
+                add_item(m, no_block);
+                if ((is_at_bottom) && (!no_block))
                 {
                     // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
                     // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
@@ -321,10 +327,13 @@ public class ConferenceMessageListFragmentJ extends JPanel
         SwingUtilities.invokeLater(myRunnable);
     }
 
-    public static void add_item(ConferenceMessage new_item)
+    public static void add_item(ConferenceMessage new_item, final boolean no_block)
     {
         conf_messagelistitems_model.addElement(new_item);
-        MessagePanelConferences.revalidate();
+        if (!no_block)
+        {
+            MessagePanelConferences.revalidate();
+        }
     }
 
     static void setConfName()
