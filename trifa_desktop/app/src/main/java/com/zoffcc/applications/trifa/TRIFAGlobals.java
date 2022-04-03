@@ -87,6 +87,8 @@ public class TRIFAGlobals
     static long LAST_ONLINE_TIMSTAMP_ONLINE_NOW = Long.MAX_VALUE - 1;
     static long LAST_ONLINE_TIMSTAMP_ONLINE_OFFLINE = -1;
 
+    static long global_last_activity_outgoung_ft_ts = -1;
+
     final static String NOTIFICATION_FCM_PUSH_URL_PREFIX = "https://tox.zoff.xyz/toxfcm/fcm.php?id=";
     final static String NOTIFICATION_FCM_PUSH_URL_PREFIX_OLD = "https://toxcon2020.zoff.cc/toxfcm/fcm.php?id=";
     final static String NOTIFICATION_UP_PUSH_URL_PREFIX = "https://gotify1.unifiedpush.org/UP?token=";

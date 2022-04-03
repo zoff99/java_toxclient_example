@@ -123,7 +123,6 @@ import static com.zoffcc.applications.trifa.HelperConference.get_last_conference
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_msgv3_capability;
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_num;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -174,6 +173,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_H264;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_CODEC_VP8;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_outgoung_ft_ts;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_connection_status;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_H264;
@@ -3054,6 +3054,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:009:*PING*");
         }
         global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
+        global_last_activity_outgoung_ft_ts = System.currentTimeMillis();
 
         // Log.i(TAG, "file_chunk_request:" + friend_number + ":" + file_number + ":" + position + ":" + length);
 

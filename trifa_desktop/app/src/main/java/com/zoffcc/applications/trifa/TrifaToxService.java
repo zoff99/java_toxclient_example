@@ -74,6 +74,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.MAX_TEXTMSG_RESEND_COUN
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_outgoung_ft_ts;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_status_message;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_toxid;
@@ -424,6 +425,15 @@ public class TrifaToxService
                         if (tox_iteration_interval_ms < 2)
                         {
                             tox_iteration_interval_ms = 2;
+                        }
+
+                        if (global_last_activity_outgoung_ft_ts > -1)
+                        {
+                            if ((global_last_activity_outgoung_ft_ts + 200) > System.currentTimeMillis())
+                            {
+                                // iterate faster if outgoing filetransfers are active
+                                tox_iteration_interval_ms = 2;
+                            }
                         }
                         Thread.sleep(tox_iteration_interval_ms);
                     }
