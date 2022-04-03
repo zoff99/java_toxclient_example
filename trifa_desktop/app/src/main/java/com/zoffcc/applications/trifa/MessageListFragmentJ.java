@@ -24,59 +24,44 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
 
-import static com.zoffcc.applications.trifa.HelperFiletransfer.get_filetransfer_filenum_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.insert_into_filetransfer_db;
-import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_accepted_from_id;
-import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_state_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.update_filetransfer_db_full;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
-import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
-import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.trim_to_utf8_length_bytes;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
-import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
-import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
-import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
-import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
-import static com.zoffcc.applications.trifa.HelperOSFile.show_file_in_explorer;
-import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
-import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
-import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
-import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
-import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MSGV3_MAX_MESSAGE_LENGTH;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -85,8 +70,6 @@ import static java.awt.Font.PLAIN;
 public class MessageListFragmentJ extends JPanel
 {
     private static final String TAG = "trifa.MsgListFrgnt";
-
-    private static final boolean USE_TABLE = false;
 
     static int global_typing = 0;
     static Thread typing_flag_thread = null;
@@ -100,10 +83,11 @@ public class MessageListFragmentJ extends JPanel
     static boolean show_only_files = false;
 
     private static JlistCustom<Message> messagelistitems;
-    static DefaultListModel<Message> messagelistitems_model;
-    // private static JTable messagelistitems_t;
-    // static DefaultTableModel messagelistitems_model_t;
+    static JTable table = null;
+    static MessageTableModel messagelistitems_model;
     static JScrollPane MessageScrollPane = null;
+    static long scroll_to_bottom_time_window = -1;
+    static long scroll_to_bottom_time_delta = 320;
 
     public MessageListFragmentJ()
     {
@@ -111,392 +95,181 @@ public class MessageListFragmentJ extends JPanel
         friendnum = -1;
         current_pk = null;
 
-        // messagelistitems_model_t = new DefaultTableModel();
-        // messagelistitems_t = new JTable(messagelistitems_model_t);
-        // messagelistitems_t.setShowGrid(false);
-        // messagelistitems_t.setShowHorizontalLines(false);
-        // messagelistitems_t.setShowVerticalLines(false);
-        // messagelistitems_t.setRowMargin(0);
-        // messagelistitems_t.setIntercellSpacing(new Dimension(0, 0));
-        // messagelistitems_t.setFillsViewportHeight(true);
-
-        messagelistitems_model = new DefaultListModel<>();
-        messagelistitems = new JlistCustom<>();
-        messagelistitems.setModel(messagelistitems_model);
-        messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        messagelistitems.setSelectedIndex(0);
-        messagelistitems.setSelectionModel(new DisabledItemSelectionModel());
-        messagelistitems.setCellRenderer(new Renderer_MessageList());
-        messagelistitems.addMouseListener(new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(final MouseEvent e)
-            {
-                final Point point = e.getPoint();
-                final int index = messagelistitems.locationToIndex(point);
-                if (index != -1)
-                {
-                    // Next calculations assume that text is aligned to left, but are easy to adjust
-                    final Message element = (Message) messagelistitems.getModel().getElementAt(index);
-                    final Rectangle cellBounds = messagelistitems.getCellBounds(index, index);
-                    final Renderer_MessageList renderer = (Renderer_MessageList) messagelistitems.getCellRenderer();
-                    final Insets insets = renderer.getInsets();
-
-                    boolean button_pressed = false;
-
-                    // Log.i(TAG,
-                    //      "cellBounds.x=" + cellBounds.x + " cellBounds.y=" + cellBounds.y + "  cellBounds.width=" +
-                    //      cellBounds.width + "  cellBounds.height=" + cellBounds.height + " element._swing_ok=" +
-                    //      element._swing_ok.getBounds());
-
-                    // Ensure that mouse press happened within top/bottom insets
-                    if (cellBounds.y + insets.top <= point.y &&
-                        point.y <= cellBounds.y + cellBounds.height - insets.bottom)
-                    {
-                        // msg is FT
-                        if (element.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
-                        {
-                            // FT (not-started or in progress) and outgoing
-                            if ((element.direction == 1) && ((element.state == TOX_FILE_CONTROL_PAUSE.value) ||
-                                                             (element.state == TOX_FILE_CONTROL_RESUME.value)))
-                            {
-                                Rectangle ok_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
-                                try
-                                {
-                                    ok_button_rect_absolute = new Rectangle(
-                                            cellBounds.x + element._swing_ok.getLocation().x +
-                                            element._swing_ok.getParent().getLocation().x,
-                                            cellBounds.y + element._swing_ok.getLocation().y +
-                                            element._swing_ok.getParent().getLocation().y,
-                                            element._swing_ok.getBounds().width, element._swing_ok.getBounds().height);
-                                }
-                                catch (Exception e4)
-                                {
-                                }
-
-                                Rectangle cancel_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
-                                try
-                                {
-                                    cancel_button_rect_absolute = new Rectangle(
-                                            cellBounds.x + element._swing_cancel.getLocation().x +
-                                            element._swing_cancel.getParent().getLocation().x,
-                                            cellBounds.y + element._swing_cancel.getLocation().y +
-                                            element._swing_cancel.getParent().getLocation().y,
-                                            element._swing_cancel.getBounds().width,
-                                            element._swing_cancel.getBounds().height);
-                                }
-                                catch (Exception e4)
-                                {
-                                }
-
-                                // ok and cancel button
-                                try
-                                {
-                                    if (ok_button_rect_absolute.contains(point))
-                                    {
-                                        Log.i(TAG, "OK button pressed");
-                                        button_pressed = true;
-
-                                        // queue FT
-                                        set_message_queueing_from_id(element.id, true);
-                                        try
-                                        {
-                                            element._swing_ok.setVisible(false);
-                                        }
-                                        catch (Exception ee)
-                                        {
-                                        }
-
-                                        // update message view
-                                        update_single_message_from_messge_id(element.id, true);
-
-                                        Log.i(TAG, "button_ok:OnTouch:009");
-
-                                    }
-                                    else if (cancel_button_rect_absolute.contains(point))
-                                    {
-                                        Log.i(TAG, "CANCEL button pressed");
-                                        button_pressed = true;
-
-                                        try
-                                        {
-                                            set_message_queueing_from_id(element.id, false);
-
-                                            // cancel FT
-                                            Log.i(TAG, "button_cancel:OnTouch:001");
-                                            // values.get(position).state = TOX_FILE_CONTROL_CANCEL.value;
-                                            tox_file_control(
-                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
-                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
-                                                    TOX_FILE_CONTROL_CANCEL.value);
-                                            set_filetransfer_state_from_id(element.filetransfer_id,
-                                                                           TOX_FILE_CONTROL_CANCEL.value);
-                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
-
-                                            try
-                                            {
-                                                element._swing_cancel.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            try
-                                            {
-                                                element._swing_ok.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            // update message view
-                                            update_single_message_from_messge_id(element.id, true);
-                                        }
-                                        catch (Exception e4)
-                                        {
-                                        }
-                                    }
-                                    else
-                                    {
-
-                                        Log.i(TAG, "button:" + element._swing_ok.getBounds().contains(point) + " " +
-                                                   element._swing_ok.getLocation().x + " " +
-                                                   element._swing_ok.getLocation().y + " " +
-                                                   element._swing_ok.getParent().getLocation().x + " " +
-                                                   element._swing_ok.getParent().getLocation().y);
-
-                                        Log.i(TAG, "button:" + element._swing_cancel.getBounds().contains(point) + " " +
-                                                   element._swing_cancel.getLocation().x + " " +
-                                                   element._swing_cancel.getLocation().y + " " +
-                                                   element._swing_cancel.getParent().getLocation().x + " " +
-                                                   element._swing_cancel.getParent().getLocation().y);
-
-                                    }
-                                }
-                                catch (Exception e2)
-                                {
-                                }
-                            }
-                            // FT (not-started or in progress) and incoming
-                            else if ((element.direction == 0) && ((element.state == TOX_FILE_CONTROL_PAUSE.value) ||
-                                                                  (element.state == TOX_FILE_CONTROL_RESUME.value)))
-                            {
-                                Rectangle ok_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
-                                try
-                                {
-                                    ok_button_rect_absolute = new Rectangle(
-                                            cellBounds.x + element._swing_ok.getLocation().x +
-                                            element._swing_ok.getParent().getLocation().x,
-                                            cellBounds.y + element._swing_ok.getLocation().y +
-                                            element._swing_ok.getParent().getLocation().y,
-                                            element._swing_ok.getBounds().width, element._swing_ok.getBounds().height);
-                                }
-                                catch (Exception e4)
-                                {
-                                }
-
-                                Rectangle cancel_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
-                                try
-                                {
-                                    cancel_button_rect_absolute = new Rectangle(
-                                            cellBounds.x + element._swing_cancel.getLocation().x +
-                                            element._swing_cancel.getParent().getLocation().x,
-                                            cellBounds.y + element._swing_cancel.getLocation().y +
-                                            element._swing_cancel.getParent().getLocation().y,
-                                            element._swing_cancel.getBounds().width,
-                                            element._swing_cancel.getBounds().height);
-                                }
-                                catch (Exception e4)
-                                {
-                                }
-
-                                // ok and cancel button
-                                try
-                                {
-                                    if (ok_button_rect_absolute.contains(point))
-                                    {
-                                        Log.i(TAG, "OK button pressed");
-                                        button_pressed = true;
-
-                                        try
-                                        {
-                                            // accept FT
-                                            set_filetransfer_accepted_from_id(element.filetransfer_id);
-                                            set_filetransfer_state_from_id(element.filetransfer_id,
-                                                                           TOX_FILE_CONTROL_RESUME.value);
-                                            set_message_accepted_from_id(element.id);
-                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_RESUME.value);
-                                            tox_file_control(
-                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
-                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
-                                                    TOX_FILE_CONTROL_RESUME.value);
-
-                                            try
-                                            {
-                                                element._swing_ok.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            // update message view
-                                            update_single_message_from_messge_id(element.id, true);
-                                        }
-                                        catch (Exception e2)
-                                        {
-                                            e2.printStackTrace();
-                                            Log.i(TAG, "MM2MM:EE1:" + e2.getMessage());
-                                        }
-
-                                    }
-                                    else if (cancel_button_rect_absolute.contains(point))
-                                    {
-                                        Log.i(TAG, "CANCEL button pressed");
-                                        button_pressed = true;
-
-                                        try
-                                        {
-                                            // cancel FT
-                                            Log.i(TAG, "button_cancel:OnTouch:001");
-
-
-                                            tox_file_control(
-                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
-                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
-                                                    TOX_FILE_CONTROL_CANCEL.value);
-                                            set_filetransfer_state_from_id(element.filetransfer_id,
-                                                                           TOX_FILE_CONTROL_CANCEL.value);
-                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
-
-                                            try
-                                            {
-                                                element._swing_cancel.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            try
-                                            {
-                                                element._swing_ok.setVisible(false);
-                                            }
-                                            catch (Exception ee)
-                                            {
-                                            }
-
-                                            // update message view
-                                            update_single_message_from_messge_id(element.id, true);
-                                        }
-                                        catch (Exception e4)
-                                        {
-                                        }
-                                    }
-                                    else
-                                    {
-
-                                        Log.i(TAG, "button:" + element._swing_ok.getBounds().contains(point) + " " +
-                                                   element._swing_ok.getLocation().x + " " +
-                                                   element._swing_ok.getLocation().y + " " +
-                                                   element._swing_ok.getParent().getLocation().x + " " +
-                                                   element._swing_ok.getParent().getLocation().y);
-
-                                        Log.i(TAG, "button:" + element._swing_cancel.getBounds().contains(point) + " " +
-                                                   element._swing_cancel.getLocation().x + " " +
-                                                   element._swing_cancel.getLocation().y + " " +
-                                                   element._swing_cancel.getParent().getLocation().x + " " +
-                                                   element._swing_cancel.getParent().getLocation().y);
-
-                                    }
-                                }
-                                catch (Exception e2)
-                                {
-                                }
-                            }
-
-                            if (button_pressed)
-                            {
-                                return;
-                            }
-
-                            // FT is done and file is here
-                            if (element.filedb_id > 0)
-                            {
-                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
-                                {
-                                    if (SwingUtilities.isLeftMouseButton(e))
-                                    {
-                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
-                                        run_file(element.filename_fullpath);
-                                    }
-                                    else
-                                    {
-                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
-                                        show_file_in_explorer(element.filename_fullpath);
-                                    }
-                                }
-                            }
-                            // FT (canceled or in progress) and outgoing
-                            else if (((element.state == TOX_FILE_CONTROL_CANCEL.value) ||
-                                      (element.state == TOX_FILE_CONTROL_RESUME.value)) && (element.direction == 1))
-                            {
-                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
-                                {
-                                    if (SwingUtilities.isLeftMouseButton(e))
-                                    {
-                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
-                                        run_file(element.filename_fullpath);
-                                    }
-                                    else
-                                    {
-                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
-                                        show_file_in_explorer(element.filename_fullpath);
-                                    }
-                                }
-                            }
-                            //else if (element.direction == 1)
-                            //{
-                            //    if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
-                            //    {
-                            //        run_file(element.filename_fullpath);
-                            //        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
-                            //    }
-                            //}
-                        }
-                        // msg is TEXT
-                        else
-                        {
-                            if (SwingUtilities.isLeftMouseButton(e))
-                            {
-                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                                        new StringSelection(element.text), null);
-                                Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
-                            }
-                            else
-                            {
-                                Log.i(TAG, "popup dialog");
-                                textAreaDialog(null, element.text, "Message");
-                            }
-                        }
-                    }
-                    else
-                    {
-                    }
-                }
-                else
-                {
-                }
-            }
-        });
-
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
         ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
 
-        MessageScrollPane = new JScrollPane(messagelistitems);
+        // add(this.getTableHeader(), BorderLayout.PAGE_START);
+
+        // MessageScrollPane = new JScrollPane(this);
+        // add(MessageScrollPane);
+
+        // setBackground(Color.GREEN);
+
+        messagelistitems_model = new MessageTableModel();
+        table = new JTable(messagelistitems_model);
+        // table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        // table.setRowHeight(40);
+        table.setTableHeader(null);
+        table.setDragEnabled(false);
+        table.setShowHorizontalLines(false);
+        table.setDefaultRenderer(JPanel.class, new Renderer_MessageListTable());
+        table.setDefaultEditor(Object.class, new PanelCellEditorRenderer());
+
+        table.getColumnModel().addColumnModelListener(new TableColumnModelListener()
+        {
+            /**
+             * We only need to recalculate once; so track if we are already going to do it.
+             */
+            boolean columnHeightWillBeCalculated = false;
+
+            @Override
+            public void columnAdded(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e)
+            {
+                try
+                {
+                    if (!columnHeightWillBeCalculated && table.getTableHeader().getResizingColumn() != null)
+                    {
+                        columnHeightWillBeCalculated = true;
+                        SwingUtilities.invokeLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                // textTable.getTableHeader().getResizingColumn() is != null as long as the user still is holding the mouse down
+                                // To avoid going over all data every few milliseconds wait for user to release
+                                if (table.getTableHeader().getResizingColumn() != null)
+                                {
+                                    SwingUtilities.invokeLater(this);
+                                }
+                                else
+                                {
+                                    tableChanged(null);
+                                    columnHeightWillBeCalculated = false;
+                                }
+                            }
+                        });
+                    }
+                }
+                catch (Exception e2)
+                {
+                }
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e)
+            {
+            }
+        });
+
+        MessageScrollPane = new JScrollPane(table);
         add(MessageScrollPane);
 
+        table.addComponentListener(new ComponentAdapter()
+        {
+            public void componentResized(ComponentEvent e)
+            {
+                if (scroll_to_bottom_time_window != -1)
+                {
+                    final long now = System.currentTimeMillis();
+                    final long pre = scroll_to_bottom_time_window;
+                    final long time_delta = scroll_to_bottom_time_delta;
+                    // Log.i(TAG, "____________ BOTTOM:" + now + " " + pre + " " + (now - pre));
+
+                    if ((now > pre) && (now - time_delta < pre))
+                    {
+                        Log.i(TAG, "____________ FIRE BOTTOM");
+                        table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
+                    }
+                }
+            }
+        });
+
         revalidate();
+    }
+
+    public void scroll_to_bottom()
+    {
+        try
+        {
+            // table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
+        }
+        catch (Exception e)
+        {
+        }
+    }
+
+    public void tableChanged(TableModelEvent e)
+    {
+        final int first;
+        final int last;
+        if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW)
+        {
+            // assume everything changed
+            first = 0;
+            last = table.getModel().getRowCount();
+        }
+        else
+        {
+            first = e.getFirstRow();
+            last = e.getLastRow() + 1;
+        }
+        // GUI-Changes should be done through the EventDispatchThread which ensures all pending events were processed
+        // Also this way nobody will change the text of our RowHeightCellRenderer because a cell is to be rendered
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            updateRowHeights(first, last);
+        }
+        else
+        {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    updateRowHeights(first, last);
+                }
+            });
+        }
+    }
+
+    private void updateRowHeights(final int first, final int last)
+    {
+        /*
+         * Auto adjust the height of rows in a JTable.
+         * The only way to know the row height for sure is to render each cell
+         * to determine the rendered height. After your table is populated with
+         * data you can do:
+         *
+         */
+        for (int row = first; row < last; row++)
+        {
+            int rowHeight = 20;
+            for (int column = 0; column < table.getColumnCount(); column++)
+            {
+                Component comp = table.prepareRenderer(table.getCellRenderer(row, column), row, column);
+                rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
+            }
+            if (rowHeight != table.getRowHeight(row))
+            {
+                table.setRowHeight(row, rowHeight);
+            }
+        }
     }
 
     static void setFriendName()
@@ -692,20 +465,15 @@ public class MessageListFragmentJ extends JPanel
             try
             {
                 add_item(m, no_block);
-                if ((is_at_bottom) && (!no_block))
-                {
-                    // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
-                    // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
-                    EventQueue.invokeLater(() -> {
-                        MessageScrollPane.getVerticalScrollBar().setValue(
-                                MessageScrollPane.getVerticalScrollBar().getMaximum());
-                    });
-                }
             }
             catch (Exception e)
             {
                 Log.i(TAG, "add_message:EE1:" + e.getMessage());
                 e.printStackTrace();
+            }
+            if ((is_at_bottom) && (!no_block))
+            {
+                scroll_to_bottom_time_window = System.currentTimeMillis();
             }
         };
         SwingUtilities.invokeLater(myRunnable);
@@ -822,7 +590,7 @@ public class MessageListFragmentJ extends JPanel
     {
         try
         {
-            Iterator<Message> it = messagelistitems_model.elements().asIterator();
+            Iterator<Message> it = messagelistitems_model.elements();
 
             while (it.hasNext())
             {

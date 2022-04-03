@@ -224,7 +224,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     final static boolean DB_ENCRYPT = true; // set "true" always!
     final static boolean VFS_ENCRYPT = true; // set "true" always!
     final static boolean DEBUG_SCREENSHOT = false; // set "false" for release builds
-    final static boolean DEBUG_EDT = true; // set "false" for release builds
+    final static boolean DEBUG_EDT = false; // set "false" for release builds
     // --------- global config ---------
     // --------- global config ---------
     // --------- global config ---------

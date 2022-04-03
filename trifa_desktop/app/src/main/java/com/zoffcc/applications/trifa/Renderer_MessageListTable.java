@@ -34,13 +34,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.TableCellRenderer;
 
 import static com.zoffcc.applications.trifa.HelperFiletransfer.file_is_image;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
@@ -55,17 +55,15 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
 
-public class Renderer_MessageList extends JPanel implements ListCellRenderer
+public class Renderer_MessageListTable extends JPanel implements TableCellRenderer
 {
     private static final String TAG = "trifa.Rndr_MessageList";
-
 
     final JLabel m_date_time = new JLabel();
     final JTextArea m_text = new JTextArea();
@@ -78,7 +76,7 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
     final JButton ok_button = new JButton("Ok");
     final JButton cancel_button = new JButton("Cancel");
 
-    Renderer_MessageList()
+    Renderer_MessageListTable()
     {
         date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
         message_image_label_line.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -92,8 +90,20 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
     }
 
     @Override
-    public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean hasFocus)
+    public Component getTableCellRendererComponent(JTable table, final Object value, boolean isSelected, boolean hasFocus, int row, int col)
     {
+
+        date_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        message_image_label_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        progress_bar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        // message_image_label.setHorizontalAlignment(SwingConstants.LEFT);
+        message_image_label.setIconTextGap(0);
+        //message_image_label.setMaximumSize(new Dimension(80, 80));
+        //message_image_label.setPreferredSize(new Dimension(80, 80));
+        button_line.setLayout(new FlowLayout(FlowLayout.LEFT));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        // public Component getListCellRendererComponent(final JList list, final Object value, final int index, final boolean isSelected, final boolean hasFocus)
         Message m = (Message) value;
 
         m_text.setText(m.text);
@@ -446,6 +456,21 @@ public class Renderer_MessageList extends JPanel implements ListCellRenderer
         }
 
         add(date_line);
+
+        setSize(table.getColumnModel().getColumn(col).getWidth(), Short.MAX_VALUE);
+        // Now get the fitted height for the given width
+        int rowHeight = this.getPreferredSize().height;
+
+        // Get the current table row height
+        int actualRowHeight = table.getRowHeight(row);
+
+        // Set table row height to fitted height.
+        // Important to check if this has been done already
+        // to prevent a never-ending loop.
+        if (rowHeight != actualRowHeight)
+        {
+            table.setRowHeight(row, rowHeight);
+        }
 
         return this;
     }
