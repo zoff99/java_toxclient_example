@@ -24,9 +24,15 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,21 +53,36 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 
+import static com.zoffcc.applications.trifa.HelperFiletransfer.get_filetransfer_filenum_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.insert_into_filetransfer_db;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_accepted_from_id;
+import static com.zoffcc.applications.trifa.HelperFiletransfer.set_filetransfer_state_from_id;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.update_filetransfer_db_full;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.trim_to_utf8_length_bytes;
 import static com.zoffcc.applications.trifa.HelperMessage.insert_into_message_db;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.set_message_state_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
+import static com.zoffcc.applications.trifa.HelperOSFile.run_file;
+import static com.zoffcc.applications.trifa.HelperOSFile.show_file_in_explorer;
+import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
+import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
+import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_MSGV3_MAX_MESSAGE_LENGTH;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -82,7 +103,7 @@ public class MessageListFragmentJ extends JPanel
     static boolean is_at_bottom = true;
     static boolean show_only_files = false;
 
-    private static JlistCustom<Message> messagelistitems;
+    // private static JlistCustom<Message> messagelistitems;
     static JTable table = null;
     static MessageTableModel messagelistitems_model;
     static JScrollPane MessageScrollPane = null;
@@ -100,22 +121,378 @@ public class MessageListFragmentJ extends JPanel
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
         ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
 
-        // add(this.getTableHeader(), BorderLayout.PAGE_START);
-
-        // MessageScrollPane = new JScrollPane(this);
-        // add(MessageScrollPane);
-
-        // setBackground(Color.GREEN);
-
         messagelistitems_model = new MessageTableModel();
         table = new JTable(messagelistitems_model);
         // table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         // table.setRowHeight(40);
         table.setTableHeader(null);
+        table.setSelectionModel(new DisabledItemSelectionModel());
         table.setDragEnabled(false);
         table.setShowHorizontalLines(false);
         table.setDefaultRenderer(JPanel.class, new Renderer_MessageListTable());
         table.setDefaultEditor(Object.class, new PanelCellEditorRenderer());
+
+        table.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(final MouseEvent e)
+            {
+                final Point point = e.getPoint();
+                final int index = table.rowAtPoint(point);
+                // Log.i(TAG, "MMMMMM:" + point + " IIIII:" + index);
+                if (index != -1)
+                {
+                    // Next calculations assume that text is aligned to left, but are easy to adjust
+                    final Message element = (Message) messagelistitems_model.getValueAt(index, 0);
+                    final Rectangle cellBounds = table.getCellRect(index, 0, true);
+                    // final Renderer_MessageList renderer = (Renderer_MessageList) messagelistitems.getCellRenderer();
+                    final Insets insets = new Insets(0, 0, 0, 0); // renderer.getInsets();
+
+                    boolean button_pressed = false;
+
+                    // Log.i(TAG,
+                    //      "cellBounds.x=" + cellBounds.x + " cellBounds.y=" + cellBounds.y + "  cellBounds.width=" +
+                    //      cellBounds.width + "  cellBounds.height=" + cellBounds.height + " element._swing_ok=" +
+                    //      element._swing_ok.getBounds());
+
+                    // Ensure that mouse press happened within top/bottom insets
+                    if (cellBounds.y + insets.top <= point.y &&
+                        point.y <= cellBounds.y + cellBounds.height - insets.bottom)
+                    {
+                        // msg is FT
+                        if (element.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+                        {
+                            // FT (not-started or in progress) and outgoing
+                            if ((element.direction == 1) && ((element.state == TOX_FILE_CONTROL_PAUSE.value) ||
+                                                             (element.state == TOX_FILE_CONTROL_RESUME.value)))
+                            {
+                                Rectangle ok_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    ok_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_ok.getLocation().x +
+                                            element._swing_ok.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_ok.getLocation().y +
+                                            element._swing_ok.getParent().getLocation().y,
+                                            element._swing_ok.getBounds().width, element._swing_ok.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                Rectangle cancel_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    cancel_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_cancel.getLocation().x +
+                                            element._swing_cancel.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_cancel.getLocation().y +
+                                            element._swing_cancel.getParent().getLocation().y,
+                                            element._swing_cancel.getBounds().width,
+                                            element._swing_cancel.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                // ok and cancel button
+                                try
+                                {
+                                    if (ok_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "OK button pressed");
+                                        button_pressed = true;
+
+                                        // queue FT
+                                        set_message_queueing_from_id(element.id, true);
+                                        try
+                                        {
+                                            element._swing_ok.setVisible(false);
+                                        }
+                                        catch (Exception ee)
+                                        {
+                                        }
+
+                                        // update message view
+                                        update_single_message_from_messge_id(element.id, true);
+
+                                        Log.i(TAG, "button_ok:OnTouch:009");
+
+                                    }
+                                    else if (cancel_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "CANCEL button pressed");
+                                        button_pressed = true;
+
+                                        try
+                                        {
+                                            set_message_queueing_from_id(element.id, false);
+
+                                            // cancel FT
+                                            Log.i(TAG, "button_cancel:OnTouch:001");
+                                            // values.get(position).state = TOX_FILE_CONTROL_CANCEL.value;
+                                            tox_file_control(
+                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
+                                                    TOX_FILE_CONTROL_CANCEL.value);
+                                            set_filetransfer_state_from_id(element.filetransfer_id,
+                                                                           TOX_FILE_CONTROL_CANCEL.value);
+                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
+
+                                            try
+                                            {
+                                                element._swing_cancel.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            try
+                                            {
+                                                element._swing_ok.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            // update message view
+                                            update_single_message_from_messge_id(element.id, true);
+                                        }
+                                        catch (Exception e4)
+                                        {
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        Log.i(TAG, "button:" + element._swing_ok.getBounds().contains(point) + " " +
+                                                   element._swing_ok.getLocation().x + " " +
+                                                   element._swing_ok.getLocation().y + " " +
+                                                   element._swing_ok.getParent().getLocation().x + " " +
+                                                   element._swing_ok.getParent().getLocation().y);
+
+                                        Log.i(TAG, "button:" + element._swing_cancel.getBounds().contains(point) + " " +
+                                                   element._swing_cancel.getLocation().x + " " +
+                                                   element._swing_cancel.getLocation().y + " " +
+                                                   element._swing_cancel.getParent().getLocation().x + " " +
+                                                   element._swing_cancel.getParent().getLocation().y);
+
+                                    }
+                                }
+                                catch (Exception e2)
+                                {
+                                }
+                            }
+                            // FT (not-started or in progress) and incoming
+                            else if ((element.direction == 0) && ((element.state == TOX_FILE_CONTROL_PAUSE.value) ||
+                                                                  (element.state == TOX_FILE_CONTROL_RESUME.value)))
+                            {
+                                Rectangle ok_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    ok_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_ok.getLocation().x +
+                                            element._swing_ok.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_ok.getLocation().y +
+                                            element._swing_ok.getParent().getLocation().y,
+                                            element._swing_ok.getBounds().width, element._swing_ok.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                Rectangle cancel_button_rect_absolute = new Rectangle(-1, -1, 0, 0);
+                                try
+                                {
+                                    cancel_button_rect_absolute = new Rectangle(
+                                            cellBounds.x + element._swing_cancel.getLocation().x +
+                                            element._swing_cancel.getParent().getLocation().x,
+                                            cellBounds.y + element._swing_cancel.getLocation().y +
+                                            element._swing_cancel.getParent().getLocation().y,
+                                            element._swing_cancel.getBounds().width,
+                                            element._swing_cancel.getBounds().height);
+                                }
+                                catch (Exception e4)
+                                {
+                                }
+
+                                // ok and cancel button
+                                try
+                                {
+                                    if (ok_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "OK button pressed");
+                                        button_pressed = true;
+
+                                        try
+                                        {
+                                            // accept FT
+                                            set_filetransfer_accepted_from_id(element.filetransfer_id);
+                                            set_filetransfer_state_from_id(element.filetransfer_id,
+                                                                           TOX_FILE_CONTROL_RESUME.value);
+                                            set_message_accepted_from_id(element.id);
+                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_RESUME.value);
+                                            tox_file_control(
+                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
+                                                    TOX_FILE_CONTROL_RESUME.value);
+
+                                            try
+                                            {
+                                                element._swing_ok.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            // update message view
+                                            update_single_message_from_messge_id(element.id, true);
+                                        }
+                                        catch (Exception e2)
+                                        {
+                                            e2.printStackTrace();
+                                            Log.i(TAG, "MM2MM:EE1:" + e2.getMessage());
+                                        }
+
+                                    }
+                                    else if (cancel_button_rect_absolute.contains(point))
+                                    {
+                                        Log.i(TAG, "CANCEL button pressed");
+                                        button_pressed = true;
+
+                                        try
+                                        {
+                                            // cancel FT
+                                            Log.i(TAG, "button_cancel:OnTouch:001");
+
+
+                                            tox_file_control(
+                                                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                                    get_filetransfer_filenum_from_id(element.filetransfer_id),
+                                                    TOX_FILE_CONTROL_CANCEL.value);
+                                            set_filetransfer_state_from_id(element.filetransfer_id,
+                                                                           TOX_FILE_CONTROL_CANCEL.value);
+                                            set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
+
+                                            try
+                                            {
+                                                element._swing_cancel.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            try
+                                            {
+                                                element._swing_ok.setVisible(false);
+                                            }
+                                            catch (Exception ee)
+                                            {
+                                            }
+
+                                            // update message view
+                                            update_single_message_from_messge_id(element.id, true);
+                                        }
+                                        catch (Exception e4)
+                                        {
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        Log.i(TAG, "button:" + element._swing_ok.getBounds().contains(point) + " " +
+                                                   element._swing_ok.getLocation().x + " " +
+                                                   element._swing_ok.getLocation().y + " " +
+                                                   element._swing_ok.getParent().getLocation().x + " " +
+                                                   element._swing_ok.getParent().getLocation().y);
+
+                                        Log.i(TAG, "button:" + element._swing_cancel.getBounds().contains(point) + " " +
+                                                   element._swing_cancel.getLocation().x + " " +
+                                                   element._swing_cancel.getLocation().y + " " +
+                                                   element._swing_cancel.getParent().getLocation().x + " " +
+                                                   element._swing_cancel.getParent().getLocation().y);
+
+                                    }
+                                }
+                                catch (Exception e2)
+                                {
+                                }
+                            }
+
+                            if (button_pressed)
+                            {
+                                return;
+                            }
+
+                            // FT is done and file is here
+                            if (element.filedb_id > 0)
+                            {
+                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                                {
+                                    if (SwingUtilities.isLeftMouseButton(e))
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                        run_file(element.filename_fullpath);
+                                    }
+                                    else
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
+                                        show_file_in_explorer(element.filename_fullpath);
+                                    }
+                                }
+                            }
+                            // FT (canceled or in progress) and outgoing
+                            else if (((element.state == TOX_FILE_CONTROL_CANCEL.value) ||
+                                      (element.state == TOX_FILE_CONTROL_RESUME.value)) && (element.direction == 1))
+                            {
+                                if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                                {
+                                    if (SwingUtilities.isLeftMouseButton(e))
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                                        run_file(element.filename_fullpath);
+                                    }
+                                    else
+                                    {
+                                        Toast.makeToast(MainFrame, lo.getString("show_file_in_explorer_"), 800);
+                                        show_file_in_explorer(element.filename_fullpath);
+                                    }
+                                }
+                            }
+                            //else if (element.direction == 1)
+                            //{
+                            //    if ((element.filename_fullpath != null) && (element.filename_fullpath.length() > 0))
+                            //    {
+                            //        run_file(element.filename_fullpath);
+                            //        Toast.makeToast(MainFrame, lo.getString("opening_file_"), 800);
+                            //    }
+                            //}
+                        }
+                        // msg is TEXT
+                        else
+                        {
+                            if (SwingUtilities.isLeftMouseButton(e))
+                            {
+                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                                        new StringSelection(element.text), null);
+                                Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                            }
+                            else
+                            {
+                                Log.i(TAG, "popup dialog");
+                                textAreaDialog(null, element.text, "Message");
+                            }
+                        }
+                    }
+                    else
+                    {
+                    }
+                }
+                else
+                {
+                }
+            }
+        });
 
         table.getColumnModel().addColumnModelListener(new TableColumnModelListener()
         {
