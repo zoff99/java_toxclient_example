@@ -103,7 +103,6 @@ public class MessageListFragmentJ extends JPanel
     static boolean is_at_bottom = true;
     static boolean show_only_files = false;
 
-    // private static JlistCustom<Message> messagelistitems;
     static JTable table = null;
     static MessageTableModel messagelistitems_model;
     static JScrollPane MessageScrollPane = null;
@@ -579,17 +578,6 @@ public class MessageListFragmentJ extends JPanel
         });
 
         revalidate();
-    }
-
-    public void scroll_to_bottom()
-    {
-        try
-        {
-            // table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
-        }
-        catch (Exception e)
-        {
-        }
     }
 
     public void tableChanged(TableModelEvent e)

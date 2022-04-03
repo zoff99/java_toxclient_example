@@ -27,22 +27,27 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelEvent;
 
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperConference.insert_into_conference_message_db;
@@ -76,9 +81,13 @@ public class ConferenceMessageListFragmentJ extends JPanel
 {
     private static final String TAG = "trifa.CnfMsgListFrgnt";
 
-    private static JList<ConferenceMessage> conf_messagelistitems;
-    static DefaultListModel<ConferenceMessage> conf_messagelistitems_model;
+    // private static JList<ConferenceMessage> conf_messagelistitems;
+    // static DefaultListModel<ConferenceMessage> conf_messagelistitems_model;
+    static JTable conf_table = null;
+    static ConferenceMessageTableModel conf_messagelistitems_model;
     static JScrollPane Conf_MessageScrollPane = null;
+    static long conf_scroll_to_bottom_time_window = -1;
+    static long conf_scroll_to_bottom_time_delta = 320;
 
     static String current_conf_id = "-1";
     static boolean is_at_bottom = true;
@@ -90,28 +99,34 @@ public class ConferenceMessageListFragmentJ extends JPanel
 
         current_conf_id = "-1";
 
-        conf_messagelistitems_model = new DefaultListModel<>();
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        conf_messagelistitems = new JList<>();
-        conf_messagelistitems.setModel(conf_messagelistitems_model);
-        conf_messagelistitems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        conf_messagelistitems.setSelectedIndex(0);
-        conf_messagelistitems.setSelectionModel(new DisabledItemSelectionModel());
-        conf_messagelistitems.setCellRenderer(new Renderer_ConfMessageList());
-        conf_messagelistitems.addMouseListener(new MouseAdapter()
+        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
+        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
+
+        conf_messagelistitems_model = new ConferenceMessageTableModel();
+        conf_table = new JTable(conf_messagelistitems_model);
+        conf_table.setTableHeader(null);
+        conf_table.setSelectionModel(new ConferenceMessageListFragmentJ.DisabledItemSelectionModel());
+        conf_table.setDragEnabled(false);
+        conf_table.setShowHorizontalLines(false);
+        conf_table.setDefaultRenderer(JPanel.class, new Renderer_ConfMessageListTable());
+        conf_table.setDefaultEditor(Object.class, new PanelCellEditorRenderer());
+
+        conf_table.addMouseListener(new MouseAdapter()
         {
             @Override
             public void mousePressed(final MouseEvent e)
             {
                 final Point point = e.getPoint();
-                final int index = conf_messagelistitems.locationToIndex(point);
+                final int index = conf_table.rowAtPoint(point);
                 if (index != -1)
                 {
                     // Next calculations assume that text is aligned to left, but are easy to adjust
-                    final ConferenceMessage element = conf_messagelistitems.getModel().getElementAt(index);
-                    final Rectangle cellBounds = conf_messagelistitems.getCellBounds(index, index);
-                    final Renderer_ConfMessageList renderer = (Renderer_ConfMessageList) conf_messagelistitems.getCellRenderer();
-                    final Insets insets = renderer.getInsets();
+                    final ConferenceMessage element = (ConferenceMessage) conf_messagelistitems_model.getValueAt(index,
+                                                                                                                 0);
+                    final Rectangle cellBounds = conf_table.getCellRect(index, 0, true);
+                    final Insets insets = new Insets(0, 0, 0, 0); // renderer.getInsets();
 
                     // Ensure that mouse press happened within top/bottom insets
                     if (cellBounds.y + insets.top <= point.y &&
@@ -141,15 +156,148 @@ public class ConferenceMessageListFragmentJ extends JPanel
             }
         });
 
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        conf_table.getColumnModel().addColumnModelListener(new TableColumnModelListener()
+        {
+            /**
+             * We only need to recalculate once; so track if we are already going to do it.
+             */
+            boolean columnHeightWillBeCalculated = false;
 
-        Conf_MessageScrollPane = new JScrollPane(conf_messagelistitems);
+            @Override
+            public void columnAdded(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e)
+            {
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e)
+            {
+                try
+                {
+                    if (!columnHeightWillBeCalculated && conf_table.getTableHeader().getResizingColumn() != null)
+                    {
+                        columnHeightWillBeCalculated = true;
+                        SwingUtilities.invokeLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                // textTable.getTableHeader().getResizingColumn() is != null as long as the user still is holding the mouse down
+                                // To avoid going over all data every few milliseconds wait for user to release
+                                if (conf_table.getTableHeader().getResizingColumn() != null)
+                                {
+                                    SwingUtilities.invokeLater(this);
+                                }
+                                else
+                                {
+                                    conf_tableChanged(null);
+                                    columnHeightWillBeCalculated = false;
+                                }
+                            }
+                        });
+                    }
+                }
+                catch (Exception e2)
+                {
+                }
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e)
+            {
+            }
+        });
+
+        Conf_MessageScrollPane = new JScrollPane(conf_table);
         add(Conf_MessageScrollPane);
 
-        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "..."));
-        ((TitledBorder) getBorder()).setTitleFont(new Font("default", PLAIN, TTF_FONT_FAMILY_BORDER_TITLE));
+        conf_table.addComponentListener(new ComponentAdapter()
+        {
+            public void componentResized(ComponentEvent e)
+            {
+                if (conf_scroll_to_bottom_time_window != -1)
+                {
+                    final long now = System.currentTimeMillis();
+                    final long pre = conf_scroll_to_bottom_time_window;
+                    final long time_delta = conf_scroll_to_bottom_time_delta;
+                    // Log.i(TAG, "____________ BOTTOM:" + now + " " + pre + " " + (now - pre));
+
+                    if ((now > pre) && (now - time_delta < pre))
+                    {
+                        // Log.i(TAG, "____________ FIRE BOTTOM");
+                        conf_table.scrollRectToVisible(conf_table.getCellRect(conf_table.getRowCount() - 1, 0, true));
+                    }
+                }
+            }
+        });
 
         revalidate();
+    }
+
+    public void conf_tableChanged(TableModelEvent e)
+    {
+        final int first;
+        final int last;
+        if (e == null || e.getFirstRow() == TableModelEvent.HEADER_ROW)
+        {
+            // assume everything changed
+            first = 0;
+            last = conf_table.getModel().getRowCount();
+        }
+        else
+        {
+            first = e.getFirstRow();
+            last = e.getLastRow() + 1;
+        }
+        // GUI-Changes should be done through the EventDispatchThread which ensures all pending events were processed
+        // Also this way nobody will change the text of our RowHeightCellRenderer because a cell is to be rendered
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            conf_updateRowHeights(first, last);
+        }
+        else
+        {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    conf_updateRowHeights(first, last);
+                }
+            });
+        }
+    }
+
+    private void conf_updateRowHeights(final int first, final int last)
+    {
+        /*
+         * Auto adjust the height of rows in a JTable.
+         * The only way to know the row height for sure is to render each cell
+         * to determine the rendered height. After your table is populated with
+         * data you can do:
+         *
+         */
+        for (int row = first; row < last; row++)
+        {
+            int rowHeight = 20;
+            for (int column = 0; column < conf_table.getColumnCount(); column++)
+            {
+                Component comp = conf_table.prepareRenderer(conf_table.getCellRenderer(row, column), row, column);
+                rowHeight = Math.max(rowHeight, comp.getPreferredSize().height);
+            }
+            if (rowHeight != conf_table.getRowHeight(row))
+            {
+                conf_table.setRowHeight(row, rowHeight);
+            }
+        }
     }
 
     static synchronized public void send_message_onclick(final String msg2)
@@ -308,20 +456,15 @@ public class ConferenceMessageListFragmentJ extends JPanel
             try
             {
                 add_item(m, no_block);
-                if ((is_at_bottom) && (!no_block))
-                {
-                    // Log.i(TAG, "scroll:" + MessageScrollPane.getVerticalScrollBar().getValue());
-                    // Log.i(TAG, "scroll:max:" + MessageScrollPane.getVerticalScrollBar().getMaximum());
-                    EventQueue.invokeLater(() -> {
-                        Conf_MessageScrollPane.getVerticalScrollBar().setValue(
-                                Conf_MessageScrollPane.getVerticalScrollBar().getMaximum());
-                    });
-                }
             }
             catch (Exception e)
             {
                 Log.i(TAG, "add_message:conf:EE1:" + e.getMessage());
                 e.printStackTrace();
+            }
+            if ((is_at_bottom) && (!no_block))
+            {
+                conf_scroll_to_bottom_time_window = System.currentTimeMillis();
             }
         };
         SwingUtilities.invokeLater(myRunnable);
