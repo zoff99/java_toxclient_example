@@ -304,7 +304,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
     static long update_all_messages_global_timestamp = -1;
-    final static long UPDATE_MESSAGES_NORMAL_MILLIS = 500; // ~0.5 seconds
+    final static long UPDATE_MESSAGES_NORMAL_MILLIS = 250; // ~0.25 seconds
     final static SimpleDateFormat df_date_time_long = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     final static SimpleDateFormat df_date_only = new SimpleDateFormat("yyyy-MM-dd");
     static ResourceBundle lo = null;
@@ -680,7 +680,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 {
                     if (e.isShiftDown())
                     {
-                        Log.i(TAG, "SHIFT Enter pressed");
+                        // Log.i(TAG, "SHIFT Enter pressed");
                         messageInputTextField.append("\n");
                         return;
                     }
@@ -2474,7 +2474,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static void android_tox_callback_friend_read_receipt_cb_method(long friend_number, long message_id)
     {
-        Log.i(TAG, "friend_read_receipt:friend:" + friend_number + " message_id:" + message_id);
+        // Log.i(TAG, "friend_read_receipt:friend:" + friend_number + " message_id:" + message_id);
         if (PREF__X_battery_saving_mode)
         {
             Log.i(TAG, "global_last_activity_for_battery_savings_ts:004:*PING*");
@@ -2486,7 +2486,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             if (get_friend_msgv3_capability(friend_number) == 1)
             {
                 // HINT: friend has msgV3 capability, ignore normal read receipts
-                Log.i(TAG, "friend_read_receipt:msgV3:ignore low level ACK");
+                // Log.i(TAG, "friend_read_receipt:msgV3:ignore low level ACK");
                 return;
             }
 
@@ -2521,7 +2521,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         catch (Exception e)
         {
             Log.i(TAG, "friend_read_receipt:EE:" + e.getMessage());
-            e.printStackTrace();
+            // e.printStackTrace();
         }
     }
 
@@ -2564,7 +2564,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             return;
         }
 
-        Log.i(TAG, "friend_sync_message_v2_cb::IN:fn=" + get_friend_name_from_num(friend_number));
+        // Log.i(TAG, "friend_sync_message_v2_cb::IN:fn=" + get_friend_name_from_num(friend_number));
 
         if (PREF__X_battery_saving_mode)
         {
@@ -2579,18 +2579,18 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         raw_message_buf.put(raw_message, 0, (int) raw_message_length);
         long msg_sec = tox_messagev2_get_ts_sec(raw_message_buf);
         long msg_ms = tox_messagev2_get_ts_ms(raw_message_buf);
-        Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_sec + " ms=" + msg_ms);
+        // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_sec + " ms=" + msg_ms);
         ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         tox_messagev2_get_message_id(raw_message_buf, msg_id_buffer);
         ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
         String msg_id_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
                                                                msg_id_buffer_compat.arrayOffset(),
                                                                msg_id_buffer_compat.limit());
-        Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string);
+        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string);
         String real_sender_as_hex_string = tox_messagev2_get_sync_message_pubkey(raw_message_buf);
-        Log.i(TAG, "friend_sync_message_v2_cb:real sender pubkey=" + real_sender_as_hex_string);
+        // Log.i(TAG, "friend_sync_message_v2_cb:real sender pubkey=" + real_sender_as_hex_string);
         long msgv2_type = tox_messagev2_get_sync_message_type(raw_message_buf);
-        Log.i(TAG, "friend_sync_message_v2_cb:msg type=" + ToxVars.TOX_FILE_KIND.value_str((int) msgv2_type));
+        // Log.i(TAG, "friend_sync_message_v2_cb:msg type=" + ToxVars.TOX_FILE_KIND.value_str((int) msgv2_type));
         ByteBuffer msg_id_buffer_wrapped = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         tox_messagev2_get_message_id(raw_message_buf_wrapped, msg_id_buffer_wrapped);
 
@@ -2598,17 +2598,17 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         String msg_id_as_hex_string_wrapped = HelperGeneric.bytesToHex(msg_id_buffer_wrapped_compat.array(),
                                                                        msg_id_buffer_wrapped_compat.arrayOffset(),
                                                                        msg_id_buffer_wrapped_compat.limit());
-        Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
+        // Log.i(TAG, "friend_sync_message_v2_cb:MSGv2HASH=" + msg_id_as_hex_string_wrapped);
 
-        Log.i(TAG, "friend_sync_message_v2_cb::IN:msgv2_type=" + msgv2_type);
+        // Log.i(TAG, "friend_sync_message_v2_cb::IN:msgv2_type=" + msgv2_type);
 
         if (msgv2_type == ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_MESSAGEV2_SEND.value)
         {
 
-            Log.i(TAG, "friend_sync_message_v2_cb::0001");
+            // Log.i(TAG, "friend_sync_message_v2_cb::0001");
             long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
             long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
-            Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
+            // Log.i(TAG, "friend_sync_message_v2_cb:sec=" + msg_wrapped_sec + " ms=" + msg_wrapped_ms);
             ByteBuffer msg_text_buffer_wrapped = ByteBuffer.allocateDirect((int) raw_data_length);
             long text_length = tox_messagev2_get_message_text(raw_message_buf_wrapped, raw_data_length, 0, 0,
                                                               msg_text_buffer_wrapped);
@@ -2641,7 +2641,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     // pubkey does NOT belong to a friend. it is probably a conference id
                     // check it here
 
-                    Log.i(TAG, "friend_sync_message_v2_cb::0002");
+                    // Log.i(TAG, "friend_sync_message_v2_cb::0002");
 
                     // Log.i(TAG, "friend_sync_message_v2_cb:LL:" + orma.selectFromConferenceDB().toList());
                     String real_conference_id = real_sender_as_hex_string;
@@ -2650,7 +2650,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     // Log.i(TAG, "friend_sync_message_v2_cb:conference_num=" + conference_num);
                     if (conference_num > -1)
                     {
-                        Log.i(TAG, "friend_sync_message_v2_cb::0003");
+                        // Log.i(TAG, "friend_sync_message_v2_cb::0003");
 
                         String real_sender_peer_pubkey = wrapped_msg_text_as_string.substring(0, 64);
                         long real_text_length = (text_length - 64 - 9);
@@ -2692,7 +2692,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         {
                             if (cm.text.equals(real_sender_text))
                             {
-                                Log.i(TAG, "friend_sync_message_v2_cb:potentially double message");
+                                // Log.i(TAG, "friend_sync_message_v2_cb:potentially double message");
                                 // ok it's a "potentially" double message
                                 // just ignore it, but still send "receipt" to proxy so it won't send this message again
                                 send_friend_msg_receipt_v2_wrapper(friend_number, 3, msg_id_buffer,
@@ -2713,9 +2713,9 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         // sync message from unkown original sender
                         // still send "receipt" to our relay, or else it will send us this message forever
-                        Log.i(TAG, "friend_sync_message_v2_cb::0004");
+                        // Log.i(TAG, "friend_sync_message_v2_cb::0004");
 
-                        Log.i(TAG, "friend_sync_message_v2_cb:send receipt for unknown message");
+                        // Log.i(TAG, "friend_sync_message_v2_cb:send receipt for unknown message");
                         send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                            (System.currentTimeMillis() / 1000));
 
@@ -2724,7 +2724,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 }
                 else
                 {
-                    Log.i(TAG, "friend_sync_message_v2_cb::0005");
+                    // Log.i(TAG, "friend_sync_message_v2_cb::0005");
 
                     HelperGeneric.receive_incoming_message(2, 0,
                                                            tox_friend_by_public_key__wrapper(real_sender_as_hex_string),
@@ -2737,7 +2737,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 e2.printStackTrace();
             }
 
-            Log.i(TAG, "friend_sync_message_v2_cb::0006");
+            // Log.i(TAG, "friend_sync_message_v2_cb::0006");
 
             // send message receipt v2 to own relay
             send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer, (System.currentTimeMillis() / 1000));
@@ -2748,7 +2748,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             // Log.i(TAG, "friend_sync_message_v2_cb:TOX_FILE_KIND_MESSAGEV2_ANSWER");
             final String message_id_hash_as_hex_string = msg_id_as_hex_string_wrapped;
 
-            Log.i(TAG, "friend_sync_message_v2_cb::0007");
+            // Log.i(TAG, "friend_sync_message_v2_cb::0007");
 
             try
             {
@@ -2762,13 +2762,13 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         readEq(false).
                         toList().get(0);
 
-                Log.i(TAG, "friend_sync_message_v2_cb::0008");
+                // Log.i(TAG, "friend_sync_message_v2_cb::0008");
 
                 if (m != null)
                 {
                     try
                     {
-                        Log.i(TAG, "friend_sync_message_v2_cb::0009");
+                        // Log.i(TAG, "friend_sync_message_v2_cb::0009");
 
                         long msg_wrapped_sec = tox_messagev2_get_ts_sec(raw_message_buf_wrapped);
                         long msg_wrapped_ms = tox_messagev2_get_ts_ms(raw_message_buf_wrapped);
@@ -2784,21 +2784,21 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     {
                         e.printStackTrace();
                     }
-                    Log.i(TAG, "friend_sync_message_v2_cb::0010");
+                    // Log.i(TAG, "friend_sync_message_v2_cb::0010");
                     send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                        (System.currentTimeMillis() / 1000));
                 }
             }
             catch (Exception e)
             {
-                Log.i(TAG, "friend_sync_message_v2_cb::0011");
+                // Log.i(TAG, "friend_sync_message_v2_cb::0011");
 
                 // e.printStackTrace();
                 send_friend_msg_receipt_v2_wrapper(friend_number, 4, msg_id_buffer,
                                                    (System.currentTimeMillis() / 1000));
             }
         }
-        Log.i(TAG, "friend_sync_message_v2_cb::0999");
+        // Log.i(TAG, "friend_sync_message_v2_cb::0999");
     }
 
     static void android_tox_callback_friend_read_receipt_message_v2_cb_method(final long friend_number, long ts_sec, byte[] msg_id)
@@ -2811,15 +2811,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         ByteBuffer msg_id_buffer = ByteBuffer.allocateDirect(TOX_HASH_LENGTH);
         msg_id_buffer.put(msg_id, 0, (int) TOX_HASH_LENGTH);
 
-        Log.i(TAG,
-              "receipt_message_v2_cb:MSGv2HASH:2=" + msg_id.length + " fn=" + get_friend_name_from_num(friend_number));
+        // Log.i(TAG,"receipt_message_v2_cb:MSGv2HASH:2=" + msg_id.length + " fn=" + get_friend_name_from_num(friend_number));
 
         ByteBufferCompat msg_id_buffer_compat = new ByteBufferCompat(msg_id_buffer);
 
         final String message_id_hash_as_hex_string = HelperGeneric.bytesToHex(msg_id_buffer_compat.array(),
                                                                               msg_id_buffer_compat.arrayOffset(),
                                                                               msg_id_buffer_compat.limit());
-        Log.i(TAG, "receipt_message_v2_cb:MSGv2HASH:2=" + message_id_hash_as_hex_string);
+        // Log.i(TAG, "receipt_message_v2_cb:MSGv2HASH:2=" + message_id_hash_as_hex_string);
 
         try
         {
@@ -2830,24 +2829,24 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     readEq(false).
                     toList();
 
-            Log.i(TAG, "receipt_message_v2_cb:list=" + m_try);
+            // Log.i(TAG, "receipt_message_v2_cb:list=" + m_try);
 
             if ((m_try == null) || (m_try.size() < 1))
             {
                 // HINT: it must a an ACK send from a friends toxproxy to singal the receipt of the message on behalf of the friend
 
-                Log.i(TAG, "receipt_message_v2_cb:0001");
+                // Log.i(TAG, "receipt_message_v2_cb:0001");
 
                 if (is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
                 {
-                    Log.i(TAG, "receipt_message_v2_cb:0002");
+                    // Log.i(TAG, "receipt_message_v2_cb:0002");
                     FriendList friend_of_relay = HelperRelay.get_friend_for_relay(
                             HelperFriend.tox_friend_get_public_key__wrapper(friend_number));
 
                     if (friend_of_relay != null)
                     {
 
-                        Log.i(TAG, "receipt_message_v2_cb:0003");
+                        // Log.i(TAG, "receipt_message_v2_cb:0003");
 
                         Message m = orma.selectFromMessage().
                                 msg_id_hashEq(message_id_hash_as_hex_string).
@@ -2858,13 +2857,13 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
                         if (m != null)
                         {
-                            Log.i(TAG, "receipt_message_v2_cb:msgid_via_relay found");
+                            // Log.i(TAG, "receipt_message_v2_cb:msgid_via_relay found");
 
-                            Log.i(TAG, "receipt_message_v2_cb:0004");
+                            // Log.i(TAG, "receipt_message_v2_cb:0004");
 
                             try
                             {
-                                Log.i(TAG, "receipt_message_v2_cb:0005");
+                                // Log.i(TAG, "receipt_message_v2_cb:0005");
 
                                 set_message_msg_at_relay_from_id(m.id, true);
                                 m.msg_at_relay = true;
@@ -2878,12 +2877,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     }
                 }
 
-                Log.i(TAG, "receipt_message_v2_cb:0006");
+                // Log.i(TAG, "receipt_message_v2_cb:0006");
 
                 return;
             }
 
-            Log.i(TAG, "receipt_message_v2_cb:0007");
+            // Log.i(TAG, "receipt_message_v2_cb:0007");
 
             final Message m = orma.selectFromMessage().
                     msg_id_hashEq(message_id_hash_as_hex_string).
@@ -2894,18 +2893,18 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
             if (m != null)
             {
-                Log.i(TAG, "receipt_message_v2_cb:0008");
+                // Log.i(TAG, "receipt_message_v2_cb:0008");
 
                 // Log.i(TAG, "receipt_message_v2_cb:m id=" + m.id);
-                Log.i(TAG, "receipt_message_v2_cb:msgid found");
+                // Log.i(TAG, "receipt_message_v2_cb:msgid found");
 
                 try
                 {
-                    Log.i(TAG, "receipt_message_v2_cb:0009");
+                    // Log.i(TAG, "receipt_message_v2_cb:0009");
 
                     if (!HelperRelay.is_any_relay(HelperFriend.tox_friend_get_public_key__wrapper(friend_number)))
                     {
-                        Log.i(TAG, "receipt_message_v2_cb:0010");
+                        // Log.i(TAG, "receipt_message_v2_cb:0010");
 
                         // only update if the "read receipt" comes from a friend, but not it's relay!
                         m.raw_msgv2_bytes = "";
@@ -2914,7 +2913,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         HelperMessage.update_message_in_db_read_rcvd_timestamp_rawmsgbytes(m);
                     }
 
-                    Log.i(TAG, "receipt_message_v2_cb:0011");
+                    // Log.i(TAG, "receipt_message_v2_cb:0011");
 
                     m.resend_count = 2;
                     HelperMessage.update_message_in_db_resend_count(m);
@@ -2927,7 +2926,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             }
             else
             {
-                Log.i(TAG, "receipt_message_v2_cb:msgid *NOT* found");
+                // Log.i(TAG, "receipt_message_v2_cb:msgid *NOT* found");
             }
         }
         catch (Exception e)
@@ -2935,8 +2934,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             e.printStackTrace();
         }
 
-        Log.i(TAG, "receipt_message_v2_cb:0999");
-
+        // Log.i(TAG, "receipt_message_v2_cb:0999");
     }
 
     static void android_tox_callback_file_recv_control_cb_method(long friend_number, long file_number, int a_TOX_FILE_CONTROL)

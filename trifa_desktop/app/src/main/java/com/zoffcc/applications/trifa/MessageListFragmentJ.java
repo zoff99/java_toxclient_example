@@ -571,7 +571,7 @@ public class MessageListFragmentJ extends JPanel
 
                     if ((now > pre) && (now - time_delta < pre))
                     {
-                        Log.i(TAG, "____________ FIRE BOTTOM");
+                        // Log.i(TAG, "____________ FIRE BOTTOM");
                         table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
                     }
                 }
@@ -826,7 +826,7 @@ public class MessageListFragmentJ extends JPanel
             global_typing = 0;  // typing = 0
             try
             {
-                Log.i(TAG, "typing:fn#" + get_current_friendnum() + ":stop_self_typing_indicator");
+                // Log.i(TAG, "typing:fn#" + get_current_friendnum() + ":stop_self_typing_indicator");
                 tox_self_set_typing(get_current_friendnum(), global_typing);
             }
             catch (Exception e)
@@ -880,7 +880,7 @@ public class MessageListFragmentJ extends JPanel
             {
                 messagelistitems_model.removeAllElements();
                 // MessagePanel.revalidate();
-                long t2 = System.currentTimeMillis();
+                // long t2 = System.currentTimeMillis();
                 if (show_only_files)
                 {
                     // TODO:
@@ -936,8 +936,8 @@ public class MessageListFragmentJ extends JPanel
                         e.printStackTrace();
                     }
                 }
-                long t3 = System.currentTimeMillis();
-                Log.i(TAG, "data_values:005c:" + (t3 - t2) + "ms");
+                // long t3 = System.currentTimeMillis();
+                // Log.i(TAG, "data_values:005c:" + (t3 - t2) + "ms");
             }
             // Log.i(TAG, "data_values:005d");
         }

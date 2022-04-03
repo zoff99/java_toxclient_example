@@ -290,9 +290,9 @@ public class ConferenceMessageListFragmentJ extends JPanel
                     e.printStackTrace();
                 }
 
-                Log.i(TAG, "data_values:005c");
+                // Log.i(TAG, "data_values:005c");
             }
-            Log.i(TAG, "data_values:005d");
+            // Log.i(TAG, "data_values:005d");
         }
         catch (Exception e)
         {

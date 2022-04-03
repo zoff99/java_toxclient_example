@@ -81,6 +81,15 @@ public class MessageTableModel extends AbstractTableModel
 
     public void removeAllElements()
     {
+        /*
+        final int last = messages.size();
+        TableModelEvent e = new TableModelEvent(this, 0, last, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
+
+        for (int i = 0, n = listeners.size(); i < n; i++)
+        {
+            ((TableModelListener) listeners.get(i)).tableChanged(e);
+        }
+        */
         messages.clear();
     }
 
@@ -92,5 +101,11 @@ public class MessageTableModel extends AbstractTableModel
     public void set(int pos, Message m)
     {
         messages.set(pos, m);
+        TableModelEvent e = new TableModelEvent(this, pos, pos, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
+
+        for (int i = 0, n = listeners.size(); i < n; i++)
+        {
+            ((TableModelListener) listeners.get(i)).tableChanged(e);
+        }
     }
 }

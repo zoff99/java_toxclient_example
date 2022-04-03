@@ -94,11 +94,11 @@ public class HelperOSFile
 
     public static void run_file(String filename_with_path)
     {
-        Log.i(TAG, "run_file:OS:" + OperatingSystem.getCurrent());
+        // Log.i(TAG, "run_file:OS:" + OperatingSystem.getCurrent());
 
         if (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS)
         {
-            Log.i(TAG, "run_file:OS:WINDOWS");
+            // Log.i(TAG, "run_file:OS:WINDOWS");
             try
             {
                 Desktop.getDesktop().open(new File(filename_with_path.replace("/", "\\")));
@@ -110,7 +110,7 @@ public class HelperOSFile
         }
         else if (OperatingSystem.getCurrent() == OperatingSystem.LINUX)
         {
-            Log.i(TAG, "run_file:OS:LINUX");
+            // Log.i(TAG, "run_file:OS:LINUX");
             try
             {
                 Desktop.getDesktop().open(new File(filename_with_path));
@@ -122,7 +122,7 @@ public class HelperOSFile
         }
         else if (OperatingSystem.getCurrent() == OperatingSystem.MACOS)
         {
-            Log.i(TAG, "run_file:OS:MACOS");
+            // Log.i(TAG, "run_file:OS:MACOS");
             try
             {
                 Desktop.getDesktop().open(new File(filename_with_path));
