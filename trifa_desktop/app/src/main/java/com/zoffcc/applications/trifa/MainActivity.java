@@ -2520,7 +2520,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
         catch (Exception e)
         {
-            Log.i(TAG, "friend_read_receipt:EE:" + e.getMessage());
+            // Log.i(TAG, "friend_read_receipt:EE:" + e.getMessage());
             // e.printStackTrace();
         }
     }

@@ -977,7 +977,7 @@ public class MessageListFragmentJ extends JPanel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
     }
 
