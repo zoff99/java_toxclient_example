@@ -422,9 +422,9 @@ public class TrifaToxService
                     try
                     {
                         // Log.i(TAG, "(tox_iteration_interval_ms):" + tox_iteration_interval_ms + "ms");
-                        if (tox_iteration_interval_ms < 2)
+                        if (tox_iteration_interval_ms < 3)
                         {
-                            tox_iteration_interval_ms = 2;
+                            tox_iteration_interval_ms = 3;
                         }
 
                         if (global_last_activity_outgoung_ft_ts > -1)
@@ -432,7 +432,7 @@ public class TrifaToxService
                             if ((global_last_activity_outgoung_ft_ts + 200) > System.currentTimeMillis())
                             {
                                 // iterate faster if outgoing filetransfers are active
-                                tox_iteration_interval_ms = 2;
+                                tox_iteration_interval_ms = 3;
                             }
                         }
                         Thread.sleep(tox_iteration_interval_ms);
