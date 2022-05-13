@@ -1563,4 +1563,162 @@ public class HelperGeneric
     {
         // TODO: write me
     }
+
+    static void hack_outgoing_ft(final String filename_full_path, final String friend_pubkey)
+    {
+        Log.i(TAG, "hack_outgoing_ft:" + filename_full_path);
+
+        long file_size = -1;
+        try
+        {
+            file_size = new java.io.File(filename_full_path).length();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            // file length unknown?
+            return;
+        }
+
+        if (file_size < 1)
+        {
+            return;
+        }
+
+        final int MAX_CRYPTO_PACKET_SIZE = 1400;
+        final int CRYPTO_MAC_SIZE = 16;
+        final int CRYPTO_DATA_PACKET_MIN_SIZE = (1 + 2 + (4 + 4) + CRYPTO_MAC_SIZE);
+        final int MAX_CRYPTO_DATA_SIZE = (MAX_CRYPTO_PACKET_SIZE - CRYPTO_DATA_PACKET_MIN_SIZE);
+        // HINT: MAX_CRYPTO_DATA_SIZE = 1373
+
+        // HINT: 32 bytes FT id, 1 byte FT protocol version, 1 byte FT function (e.g. send, data, cancel, ...)
+        //       4 byte start position of data in the file
+        //       +1 byte for the packet ID (yes, that also counts)
+        final int overhead = 32 + 1 + 1 + 4 + 1;
+
+        final int MAX_FT_DATA_CHUNK = MAX_CRYPTO_DATA_SIZE - overhead;
+
+        Log.i(TAG, "hack_outgoing_ft:MAX_CRYPTO_DATA_SIZE=" + MAX_CRYPTO_DATA_SIZE);
+        Log.i(TAG, "hack_outgoing_ft:MAX_FT_DATA_CHUNK=" + MAX_FT_DATA_CHUNK);
+
+        int i = 0;
+        long friend_num = HelperFriend.tox_friend_by_public_key__wrapper(friend_pubkey);
+        // byte[] data = new byte[MAX_CRYPTO_DATA_SIZE];
+        // data[0] = (byte) 185;
+
+        if (file_size <= MAX_FT_DATA_CHUNK)
+        {
+            Log.i(TAG, "hack_outgoing_ft:small file");
+            final byte[] bytes_chunck; //= HelperGeneric.read_chunk_from_SD_file(filename_full_path, 0, file_size);
+            final ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) (file_size + overhead));
+            file_chunk.put((byte) 185); // Custom packet ID: 185
+            file_chunk.put(new byte[32]); // FT ID 32bytes hash -> dummy
+            file_chunk.put((byte) 1); // Version: 1
+            file_chunk.put((byte) 3); // Function: 3 -> dummy
+            file_chunk.putInt(0); // Position: 0
+            // file_chunk.put(bytes_chunck);
+            file_chunk.rewind();
+
+            int result = MainActivity.tox_friend_send_lossless_packet(friend_num, file_chunk.array(),
+                                                                      (int) (file_size + overhead));
+            Log.i(TAG, "hack_outgoing_ft:result=" + result);
+        }
+        else
+        {
+            int chunks = (int) (file_size / MAX_FT_DATA_CHUNK);
+            final int mod = (int) (file_size % MAX_FT_DATA_CHUNK);
+            Log.i(TAG, "hack_outgoing_ft:chunks=" + chunks);
+
+            if (mod > 0)
+            {
+                Log.i(TAG, "hack_outgoing_ft:mod=" + mod);
+            }
+
+            int pos = 0;
+            for (int j = 0; j < chunks; j++)
+            {
+                // Log.i(TAG, "hack_outgoing_ft:j=" + j);
+
+                /*
+                try
+                {
+                    Thread.sleep(5);
+                }
+                catch (Exception ignored)
+                {
+                }
+                */
+
+                pos = j * MAX_FT_DATA_CHUNK;
+                final byte[] bytes_chunck = HelperGeneric.read_chunk_from_SD_file(filename_full_path, pos,
+                                                                                  MAX_FT_DATA_CHUNK);
+
+                final ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) (MAX_FT_DATA_CHUNK + overhead));
+                file_chunk.put((byte) 185); // Custom packet ID: 185
+                file_chunk.put(new byte[32]); // FT ID 32bytes hash -> dummy
+                file_chunk.put((byte) 1); // Version: 1
+                file_chunk.put((byte) 3); // Function: 3 -> dummy
+                file_chunk.putInt(pos); // Position: pos
+                // file_chunk.put(bytes_chunck);
+                file_chunk.rewind();
+
+                byte[] data = new byte[(int) (MAX_FT_DATA_CHUNK + overhead)];
+                data[0] = (byte) 185;
+
+                int result = MainActivity.tox_friend_send_lossless_packet(friend_num, data,
+                                                                          (int) (MAX_FT_DATA_CHUNK + overhead));
+
+                while (result == -99)
+                {
+                    try
+                    {
+                        Thread.sleep(10);
+                    }
+                    catch (Exception ignored)
+                    {
+                    }
+
+                    result = MainActivity.tox_friend_send_lossless_packet(friend_num, data,
+                                                                          (int) (MAX_FT_DATA_CHUNK + overhead));
+                }
+
+                Log.i(TAG, "hack_outgoing_ft:send result1=" + result + " pos=" + pos + " size=" +
+                           (int) (MAX_FT_DATA_CHUNK + overhead));
+            }
+
+            if (mod > 0)
+            {
+                final byte[] bytes_chunck = HelperGeneric.read_chunk_from_SD_file(filename_full_path, pos, mod);
+                final ByteBuffer file_chunk = ByteBuffer.allocateDirect((int) (mod + overhead));
+                file_chunk.put((byte) 185); // Custom packet ID: 185
+                file_chunk.put(new byte[32]); // FT ID 32bytes hash -> dummy
+                file_chunk.put((byte) 1); // Version: 1
+                file_chunk.put((byte) 3); // Function: 3 -> dummy
+                file_chunk.putInt(pos); // Position: pos
+                file_chunk.put(bytes_chunck);
+                file_chunk.rewind();
+
+                byte[] data = new byte[(int) (MAX_FT_DATA_CHUNK + overhead)];
+                data[0] = (byte) 185;
+
+                int result = MainActivity.tox_friend_send_lossless_packet(friend_num, data, (int) (mod + overhead));
+
+                while (result == -99)
+                {
+                    try
+                    {
+                        Thread.sleep(10);
+                    }
+                    catch (Exception ignored)
+                    {
+                    }
+
+                    result = MainActivity.tox_friend_send_lossless_packet(friend_num, data, (int) (mod + overhead));
+                }
+
+                Log.i(TAG,
+                      "hack_outgoing_ft:send result2=" + result + " pos=" + pos + " size=" + (int) (mod + overhead));
+            }
+        }
+    }
 }
