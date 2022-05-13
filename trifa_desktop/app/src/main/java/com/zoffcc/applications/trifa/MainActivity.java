@@ -4118,6 +4118,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         Log.i(TAG, "group_private_message_cb:gn=" + group_number + " peerid=" + peer_id + " message=" + message_orig);
     }
 
+    static void android_tox_callback_group_privacy_state_cb_method(long group_number, final int a_TOX_GROUP_PRIVACY_STATE)
+    {
+        Log.i(TAG,
+              "group_privacy_state_cb:group_number=" + group_number + " privacy_state=" + a_TOX_GROUP_PRIVACY_STATE);
+    }
+
     static void android_tox_callback_group_invite_cb_method(long friend_number, final byte[] invite_data, final long invite_data_length, String group_name)
     {
         Log.i(TAG,
@@ -4134,6 +4140,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     {
         Log.i(TAG, "group_peer_exit_cb:group_number=" + group_number + " peer_id=" + peer_id + " exit_type=" +
                    a_Tox_Group_Exit_Type);
+    }
+
+    static void android_tox_callback_group_peer_name_cb_method(long group_number, long peer_id)
+    {
     }
 
     static void android_tox_callback_group_join_fail_cb_method(long group_number, int a_Tox_Group_Join_Fail)
