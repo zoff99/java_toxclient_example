@@ -1352,7 +1352,7 @@ public class HelperGeneric
             try
             {
                 Color col = new Color(blur_color, false);
-                Border ownProfileShortBorder = BorderFactory.createLineBorder(col);
+                Border ownProfileShortBorder = BorderFactory.createLineBorder(col, 3);
                 ownProfileShort.setBorder(BorderFactory.createCompoundBorder(ownProfileShortBorder,
                                                                              BorderFactory.createEmptyBorder(2, 0, 0,
                                                                                                              0)));

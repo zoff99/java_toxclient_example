@@ -218,7 +218,7 @@ public class FriendInfoActivity extends JFrame
 
 
         // ----------- Tox -----------
-        final Border line_border = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+        final Border line_border = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2);
         JPanel panel_tox = new JPanel(new GridBagLayout());
 
         GridBagConstraints constraints_tox = new GridBagConstraints();
