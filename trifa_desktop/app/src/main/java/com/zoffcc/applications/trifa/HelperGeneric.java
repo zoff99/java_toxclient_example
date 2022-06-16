@@ -134,7 +134,7 @@ public class HelperGeneric
                 try
                 {
                     orma.updateTRIFADatabaseGlobalsNew().keyEq(key).value(value).execute();
-                    Log.i(TAG, "set_g_opts:(UPDATE):key=" + key + " value=" + "xxxxxxxxxxxxxxx");
+                    Log.i(TAG, "set_g_opts:(UPDATE):key=" + key + " value=" + "xxxxxxxxxxxxx");
                 }
                 catch (Exception e2)
                 {
@@ -1720,5 +1720,15 @@ public class HelperGeneric
                       "hack_outgoing_ft:send result2=" + result + " pos=" + pos + " size=" + (int) (mod + overhead));
             }
         }
+    }
+
+    static boolean int_to_boolean(final int i)
+    {
+        if (i == 1)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

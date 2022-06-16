@@ -348,8 +348,6 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         // Thread.currentThread().setName("t_main_act");
 
-        load_prefs();
-
         try
         {
             this.addWindowListener(this);
@@ -1054,6 +1052,58 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             PREF__udp_enabled = 1;
         }
+        Log.i(TAG, "load_prefs:PREF__udp_enabled=" + PREF__udp_enabled);
+
+        if (get_g_opts("PREF__ipv6_enabled") != null)
+        {
+            if (get_g_opts("PREF__ipv6_enabled").equals("true"))
+            {
+                PREF__ipv6_enabled = 1;
+            }
+            else
+            {
+                PREF__ipv6_enabled = 0;
+            }
+        }
+        else
+        {
+            PREF__ipv6_enabled = 1;
+        }
+        Log.i(TAG, "load_prefs:PREF__ipv6_enabled=" + PREF__ipv6_enabled);
+
+        if (get_g_opts("PREF__local_discovery_enabled") != null)
+        {
+            if (get_g_opts("PREF__local_discovery_enabled").equals("true"))
+            {
+                PREF__local_discovery_enabled = 1;
+            }
+            else
+            {
+                PREF__local_discovery_enabled = 0;
+            }
+        }
+        else
+        {
+            PREF__local_discovery_enabled = 1;
+        }
+        Log.i(TAG, "load_prefs:PREF__local_discovery_enabled=" + PREF__local_discovery_enabled);
+
+        if (get_g_opts("PREF__orbot_enabled_to_int") != null)
+        {
+            if (get_g_opts("PREF__orbot_enabled_to_int").equals("true"))
+            {
+                PREF__orbot_enabled_to_int = 1;
+            }
+            else
+            {
+                PREF__orbot_enabled_to_int = 0;
+            }
+        }
+        else
+        {
+            PREF__orbot_enabled_to_int = 0;
+        }
+        Log.i(TAG, "load_prefs:PREF__orbot_enabled_to_int=" + PREF__orbot_enabled_to_int);
 
         if (get_g_opts("PREF__show_image_thumbnails") != null)
         {
@@ -1070,6 +1120,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             PREF__show_image_thumbnails = true;
         }
+
+        Log.i(TAG, "load_prefs:PREF__show_image_thumbnails=" + PREF__show_image_thumbnails);
     }
 
     static void set_message_panel(int i)
@@ -1427,6 +1479,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
 
+        load_prefs();
+
         tox_service_fg = new TrifaToxService();
 
         if (!TrifaToxService.TOX_SERVICE_STARTED)
@@ -1434,8 +1488,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             String ORBOT_PROXY_HOST = "";
             long ORBOT_PROXY_PORT = 0;
 
-            app_files_directory = "." + File.separator;
+            if (PREF__orbot_enabled_to_int == 1)
+            {
+                ORBOT_PROXY_HOST = "127.0.0.1";
+                ORBOT_PROXY_PORT = 9050;
+            }
 
+            app_files_directory = "." + File.separator;
+            Log.i(TAG, "init:PREF__udp_enabled=" + PREF__udp_enabled);
             init(app_files_directory, PREF__udp_enabled, PREF__local_discovery_enabled, PREF__orbot_enabled_to_int,
                  ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
 

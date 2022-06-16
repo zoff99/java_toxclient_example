@@ -39,9 +39,14 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import static com.zoffcc.applications.trifa.HelperGeneric.int_to_boolean;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__ipv6_enabled;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__local_discovery_enabled;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__orbot_enabled_to_int;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__show_image_thumbnails;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__udp_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
@@ -49,13 +54,17 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 
 public class SettingsActivity extends JFrame
 {
-    public static int width = 800;
+    public static int width = 1200;
     public static int height = 700;
 
     private JLabel label_name = new JLabel(lo.getString("settings_name"));
     private JTextField text_name = new JTextField(20);
 
     private Checkbox chkbox_001;
+    private Checkbox chkbox_002;
+    private Checkbox chkbox_003;
+    private Checkbox chkbox_004;
+    private Checkbox chkbox_005;
     private JTextArea text_001 = new JTextArea(lo.getString("settings_show_image_thumbnails_desc"));
 
     private JPanel setting_main_panel = null;
@@ -104,8 +113,99 @@ public class SettingsActivity extends JFrame
             }
         });
 
+        chkbox_002 = new Checkbox(lo.getString("settings_ipv6_enabled_title"),
+                                  int_to_boolean(PREF__ipv6_enabled));
+        chkbox_002.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__ipv6_enabled", "true");
+                    PREF__ipv6_enabled = 1;
+                }
+                else
+                {
+                    set_g_opts("PREF__ipv6_enabled", "false");
+                    PREF__ipv6_enabled = 0;
+                }
+            }
+        });
+
+        constraints_tox.gridx = 1;
+        constraints_tox.gridy = 1;
+        panel_tox.add(chkbox_002, constraints_tox);
+
+        chkbox_003 = new Checkbox(lo.getString("settings_udp_enabled_title"),
+                                  int_to_boolean(PREF__udp_enabled));
+        chkbox_003.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__udp_enabled", "true");
+                    PREF__udp_enabled = 1;
+                }
+                else
+                {
+                    set_g_opts("PREF__udp_enabled", "false");
+                    PREF__udp_enabled = 0;
+                }
+            }
+        });
+        constraints_tox.gridx = 1;
+        constraints_tox.gridy = 2;
+        panel_tox.add(chkbox_003, constraints_tox);
+
+
+        chkbox_004 = new Checkbox(lo.getString("settings_local_discovery_title"),
+                                  int_to_boolean(PREF__local_discovery_enabled));
+        chkbox_004.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__local_discovery_enabled", "true");
+                    PREF__local_discovery_enabled = 1;
+                }
+                else
+                {
+                    set_g_opts("PREF__local_discovery_enabled", "false");
+                    PREF__local_discovery_enabled = 0;
+                }
+            }
+        });
+        constraints_tox.gridx = 1;
+        constraints_tox.gridy = 3;
+        panel_tox.add(chkbox_004, constraints_tox);
+
+        chkbox_005 = new Checkbox(lo.getString("settings_orbot_enabled_to_int_title"),
+                                  int_to_boolean(PREF__orbot_enabled_to_int));
+        chkbox_005.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__orbot_enabled_to_int", "true");
+                    PREF__orbot_enabled_to_int = 1;
+                }
+                else
+                {
+                    set_g_opts("PREF__orbot_enabled_to_int", "false");
+                    PREF__orbot_enabled_to_int = 0;
+                }
+            }
+        });
+        constraints_tox.gridx = 1;
+        constraints_tox.gridy = 4;
+        panel_tox.add(chkbox_005, constraints_tox);
+
         panel_tox.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                                                              lo.getString("settings_category_001")));
+
 
         // ----------- General settings -----------
 
