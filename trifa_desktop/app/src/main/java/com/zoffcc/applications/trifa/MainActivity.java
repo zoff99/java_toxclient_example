@@ -4168,9 +4168,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     // -------- called by native new Group methods --------
     // -------- called by native new Group methods --------
 
-    static void android_tox_callback_group_message_cb_method(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
+    static void android_tox_callback_group_message_cb_method(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message_orig, long length, long message_id)
     {
-        Log.i(TAG, "group_message_cb:gn=" + group_number + " peerid=" + peer_id + " message=" + message_orig);
+        Log.i(TAG, "group_message_cb:gn=" + group_number + " peerid=" + peer_id + " message=" + message_orig +
+                   " message_id=" + message_id);
     }
 
     static void android_tox_callback_group_private_message_cb_method(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
