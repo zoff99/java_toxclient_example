@@ -37,9 +37,14 @@ import static com.zoffcc.applications.trifa.HelperGeneric.darkenColor;
 import static com.zoffcc.applications.trifa.HelperGeneric.hash_to_bucket;
 import static com.zoffcc.applications.trifa.HelperGeneric.isColorDarkBrightness;
 import static com.zoffcc.applications.trifa.HelperGeneric.long_date_time_format;
+import static com.zoffcc.applications.trifa.HelperGroup.get_group_peernum_from_peer_pubkey;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_peer_get_name__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_peer_id;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_public_key;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_CHATCOLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
@@ -68,6 +73,12 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
         GroupMessage m = (GroupMessage) value;
 
         String message__text = m.text;
+
+        if (m.private_message == 1)
+        {
+            message__text = "Private Message:\n" + m.text;
+        }
+
         String message__tox_peername = m.tox_group_peername;
         String message__tox_peerpubkey = m.tox_group_peer_pubkey;
 
@@ -87,6 +98,10 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
             {
                 message__tox_peername = res.tox_peername;
                 message__text = res.text;
+                if (m.private_message == 1)
+                {
+                    message__text = "Private Message:\n" + res.text;
+                }
                 message__tox_peerpubkey = res.tox_peerpubkey;
                 handle_special_name = true;
             }
@@ -121,13 +136,12 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
                             message__tox_peerpubkey);
                     // peer_color_bg_with_alpha = (peer_color_bg & 0x00FFFFFF) | (alpha_value << 24);
                     m_text.setForeground(Color.BLACK);
-
-                    if (isColorDarkBrightness(peer_color_bg))
-                    {
-                        m_text.setForeground(darkenColor(Color.WHITE, 0.1f));
-                    }
                 }
 
+                if (isColorDarkBrightness(peer_color_bg))
+                {
+                    m_text.setForeground(darkenColor(Color.WHITE, 0.1f));
+                }
                 m_text.setBackground(peer_color_bg);
             }
             catch (Exception e)
@@ -164,7 +178,12 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
 
         try
         {
-            String peer_name = "xx"; // tox_conference_peer_get_name__wrapper(m.conference_identifier, message__tox_peerpubkey);
+            String peer_name = tox_group_peer_get_name__wrapper(m.group_identifier, message__tox_peerpubkey);
+            if (m.direction == 1)
+            {
+                peer_name = tox_group_peer_get_name__wrapper(m.group_identifier, tox_group_self_get_public_key(
+                        tox_group_by_groupid__wrapper(m.group_identifier)));
+            }
 
             String peerpubkey_short = "";
             if (!is_system_message)
@@ -178,7 +197,7 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
                 peer_name = message__tox_peername;
                 if ((peer_name == null) || (message__tox_peername.equals("")) || (peer_name.equals("-1")))
                 {
-                    peer_name = peerpubkey_short;
+                    peer_name = "Unknown";
                 }
             }
             else
@@ -187,7 +206,7 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
                 {
                     if ((message__tox_peername == null) || (message__tox_peername.equals("")))
                     {
-                        peer_name = peerpubkey_short;
+                        peer_name = "Unknown";
                     }
                     else
                     {
