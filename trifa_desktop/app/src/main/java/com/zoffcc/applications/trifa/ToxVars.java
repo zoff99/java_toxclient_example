@@ -1537,6 +1537,173 @@ public class ToxVars
             this.value = value;
         }
     }
+
+    public static enum Tox_Group_Exit_Type
+    {
+        /**
+         * The peer has quit the group.
+         */
+        TOX_GROUP_EXIT_TYPE_QUIT(0),
+
+        /**
+         * Your connection with this peer has timed out.
+         */
+        TOX_GROUP_EXIT_TYPE_TIMEOUT(1),
+
+        /**
+         * Your connection with this peer has been severed.
+         */
+        TOX_GROUP_EXIT_TYPE_DISCONNECTED(2),
+
+        /**
+         * Your connection with all peers has been severed. This will occur when you are kicked from
+         * a group, rejoin a group, or manually disconnect from a group.
+         */
+        TOX_GROUP_EXIT_TYPE_SELF_DISCONNECTED(3),
+
+        /**
+         * The peer has been kicked.
+         */
+        TOX_GROUP_EXIT_TYPE_KICK(4),
+
+        /**
+         * The peer provided invalid group sync information.
+         */
+        TOX_GROUP_EXIT_TYPE_SYNC_ERROR(5);
+
+        public int value;
+
+        private Tox_Group_Exit_Type(int value)
+        {
+            this.value = value;
+        }
+
+        public static String value_str(int value)
+        {
+            if (value == TOX_GROUP_EXIT_TYPE_QUIT.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_QUIT";
+            }
+            else if (value == TOX_GROUP_EXIT_TYPE_TIMEOUT.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_TIMEOUT";
+            }
+            else if (value == TOX_GROUP_EXIT_TYPE_DISCONNECTED.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_DISCONNECTED";
+            }
+            else if (value == TOX_GROUP_EXIT_TYPE_SELF_DISCONNECTED.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_SELF_DISCONNECTED";
+            }
+            else if (value == TOX_GROUP_EXIT_TYPE_KICK.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_KICK";
+            }
+            else if (value == TOX_GROUP_EXIT_TYPE_SYNC_ERROR.value)
+            {
+                return "TOX_GROUP_EXIT_TYPE_SYNC_ERROR";
+            }
+            return "UNKNOWN";
+        }
+    }
+
+    public static enum TOX_GROUP_PRIVACY_STATE
+    {
+
+        /**
+         * The group is considered to be public. Anyone may join the group using the Chat ID.
+         * <p>
+         * If the group is in this state, even if the Chat ID is never explicitly shared
+         * with someone outside of the group, information including the Chat ID, IP addresses,
+         * and peer ID's (but not Tox ID's) is visible to anyone with access to a node
+         * storing a DHT entry for the given group.
+         */
+        TOX_GROUP_PRIVACY_STATE_PUBLIC(0),
+
+        /**
+         * The group is considered to be private. The only way to join the group is by having
+         * someone in your contact list send you an invite.
+         * <p>
+         * If the group is in this state, no group information (mentioned above) is present in the DHT;
+         * the DHT is not used for any purpose at all. If a public group is set to private,
+         * all DHT information related to the group will expire shortly.
+         */
+        TOX_GROUP_PRIVACY_STATE_PRIVATE(1);
+
+        public int value;
+
+        private TOX_GROUP_PRIVACY_STATE(int value)
+        {
+            this.value = value;
+        }
+
+        public static String value_str(int value)
+        {
+            if (value == TOX_GROUP_PRIVACY_STATE_PUBLIC.value)
+            {
+                return "TOX_GROUP_PRIVACY_STATE_PUBLIC";
+            }
+            else if (value == TOX_GROUP_PRIVACY_STATE_PRIVATE.value)
+            {
+                return "TOX_GROUP_PRIVACY_STATE_PRIVATE";
+            }
+            return "UNKNOWN";
+        }
+    }
+
+    public static enum Tox_Group_Role
+    {
+        /**
+         * May kick all other peers as well as set their role to anything (except founder).
+         * Founders may also set the group password, toggle the privacy state, and set the peer limit.
+         */
+        TOX_GROUP_ROLE_FOUNDER(0),
+
+        /**
+         * May kick and set the user and observer roles for peers below this role.
+         * May also set the group topic.
+         */
+        TOX_GROUP_ROLE_MODERATOR(1),
+
+        /**
+         * May communicate with other peers normally.
+         */
+        TOX_GROUP_ROLE_USER(2),
+
+        /**
+         * May observe the group and ignore peers; may not communicate with other peers or with the group.
+         */
+        TOX_GROUP_ROLE_OBSERVER(3);
+
+        public int value;
+
+        private Tox_Group_Role(int value)
+        {
+            this.value = value;
+        }
+
+        public static String value_str(int value)
+        {
+            if (value == TOX_GROUP_ROLE_FOUNDER.value)
+            {
+                return "TOX_GROUP_ROLE_FOUNDER";
+            }
+            else if (value == TOX_GROUP_ROLE_MODERATOR.value)
+            {
+                return "TOX_GROUP_ROLE_MODERATOR";
+            }
+            else if (value == TOX_GROUP_ROLE_USER.value)
+            {
+                return "TOX_GROUP_ROLE_USER";
+            }
+            else if (value == TOX_GROUP_ROLE_OBSERVER.value)
+            {
+                return "TOX_GROUP_ROLE_OBSERVER";
+            }
+            return "UNKNOWN";
+        }
+    }
     // ---------- TOX -------------
     // ---------- TOX -------------
     // ---------- TOX -------------

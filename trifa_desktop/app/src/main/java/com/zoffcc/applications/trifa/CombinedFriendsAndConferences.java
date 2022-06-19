@@ -22,15 +22,21 @@ package com.zoffcc.applications.trifa;
 public class CombinedFriendsAndConferences
 {
     long id = -1; // primary key for lookup // TODO: unsed now!!!!!
-    boolean is_friend = true; // false -> Conference, true -> Friend
+    int is_friend = COMBINED_IS_FRIEND; // 0 -> Friend, 1 -> Conference, 2 -> group
 
     FriendList friend_item = null;
     ConferenceDB conference_item = null;
+    GroupDB group_item = null;
+
+    final static int COMBINED_IS_FRIEND = 0;
+    final static int COMBINED_IS_CONFERENCE = 1;
+    final static int COMBINED_IS_GROUP = 2;
 
     @Override
     public String toString()
     {
         return "id=" + id + ", is_friend=" + is_friend + ", friend_item=" + friend_item + ", conference_item" +
-               conference_item;
+               conference_item + ", group_item" + group_item;
     }
 }
+

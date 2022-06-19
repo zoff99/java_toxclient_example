@@ -19,12 +19,15 @@
 
 package com.zoffcc.applications.trifa;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_CONFERENCE;
+
 public class PeerModel
 {
     String pubkey = "-1";
     String name = "";
     long peernum = -1;
     boolean offline = false;
+    int type = COMBINED_IS_CONFERENCE;
 
     @Override
     public String toString()

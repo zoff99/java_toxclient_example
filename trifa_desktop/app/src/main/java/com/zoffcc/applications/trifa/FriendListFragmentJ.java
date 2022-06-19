@@ -53,8 +53,12 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_CONFERENCE;
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_FRIEND;
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_GROUP;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.setConfName;
 import static com.zoffcc.applications.trifa.FriendList.deep_copy;
+import static com.zoffcc.applications.trifa.GroupMessageListFragmentJ.setGroupName;
 import static com.zoffcc.applications.trifa.HelperConference.delete_conference;
 import static com.zoffcc.applications.trifa.HelperConference.delete_conference_all_messages;
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
@@ -73,6 +77,7 @@ import static com.zoffcc.applications.trifa.HelperRelay.send_relay_pubkey_to_all
 import static com.zoffcc.applications.trifa.HelperRelay.set_friend_as_own_relay_in_db;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanel;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
+import static com.zoffcc.applications.trifa.MainActivity.MessagePanelGroups;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
 import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
 import static com.zoffcc.applications.trifa.MainActivity.cache_pubkey_fnum;
@@ -204,8 +209,7 @@ public class FriendListFragmentJ extends JPanel
                                         int res = tox_friend_delete(friend_num_temp);
                                         cache_pubkey_fnum.clear();
                                         cache_fnum_pubkey.clear();
-                                        update_savedata_file_wrapper(
-                                                MainActivity.password_hash); // save toxcore datafile (friend removed)
+                                        update_savedata_file_wrapper(); // save toxcore datafile (friend removed)
                                         Log.i(TAG, "onMenuItemClick:5:res=" + res);
                                     }
                                     // delete friend - tox ----
@@ -274,8 +278,7 @@ public class FriendListFragmentJ extends JPanel
                                     {
                                         tox_conference_delete(c2_conf.tox_conference_number);
                                         cache_confid_confnum.clear();
-                                        update_savedata_file_wrapper(
-                                                MainActivity.password_hash); // after deleteing a conference
+                                        update_savedata_file_wrapper(); // after deleteing a conference
                                     }
 
                                     Log.i(TAG, "onMenuItemClick:info:33");
@@ -457,7 +460,8 @@ public class FriendListFragmentJ extends JPanel
                         return;
                     }
 
-                    if (friends_and_confs_list_model.elementAt(friends_and_confs_list.getSelectedIndex()).is_friend)
+                    if (friends_and_confs_list_model.elementAt(friends_and_confs_list.getSelectedIndex()).is_friend ==
+                        COMBINED_IS_FRIEND)
                     {
 
                         String pk = friends_and_confs_list_model.elementAt(
@@ -483,6 +487,17 @@ public class FriendListFragmentJ extends JPanel
                             update_all_messages(true, -1);
                             setFriendName();
                         }
+                    }
+                    else if (friends_and_confs_list_model.elementAt(
+                            friends_and_confs_list.getSelectedIndex()).is_friend == COMBINED_IS_GROUP)
+                    {
+                        set_message_panel(3);
+                        String group_id = friends_and_confs_list_model.elementAt(
+                                friends_and_confs_list.getSelectedIndex()).group_item.group_identifier;
+                        MessagePanelGroups.current_group_id = group_id;
+
+                        MessagePanelGroups.update_all_messages(true);
+                        setGroupName();
                     }
                     else // --- conferences ---
                     {
@@ -545,7 +560,7 @@ public class FriendListFragmentJ extends JPanel
         {
             final int index = friends_and_confs_list.locationToIndex(e.getPoint());
 
-            if (!friends_and_confs_list_model.getElementAt(index).is_friend)
+            if (friends_and_confs_list_model.getElementAt(index).is_friend == COMBINED_IS_CONFERENCE)
             // ---------- conference ----------
             {
                 EventQueue.invokeLater(() -> {
@@ -584,7 +599,7 @@ public class FriendListFragmentJ extends JPanel
                     popup_confs.repaint();
                 });
             }
-            else
+            else if (friends_and_confs_list_model.getElementAt(index).is_friend == COMBINED_IS_FRIEND)
             // ---------- friend ----------
             {
                 EventQueue.invokeLater(() -> {
@@ -678,7 +693,7 @@ public class FriendListFragmentJ extends JPanel
                             {
                                 FriendList n = FriendList.deep_copy(fl.get(i));
                                 CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
-                                cfac.is_friend = true;
+                                cfac.is_friend = COMBINED_IS_FRIEND;
                                 cfac.friend_item = n;
                                 friends_and_confs_list_model.addElement(cfac);
                                 // Log.i(TAG, "add_all_friends_clear:add:" + n);
@@ -707,7 +722,7 @@ public class FriendListFragmentJ extends JPanel
                             {
                                 FriendList n = FriendList.deep_copy(fl2.get(i));
                                 CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
-                                cfac.is_friend = true;
+                                cfac.is_friend = COMBINED_IS_FRIEND;
                                 cfac.friend_item = n;
                                 friends_and_confs_list_model.addElement(cfac);
                                 // Log.i(TAG, "add_all_friends_clear:add:" + n);
@@ -716,6 +731,7 @@ public class FriendListFragmentJ extends JPanel
                     }
                     // ------------- add rest of friends  -------------
 
+                    // ------------- add conferences -------------
                     List<ConferenceDB> confs = orma.selectFromConferenceDB().
                             orderByConference_activeDesc().
                             orderByNotification_silentAsc().
@@ -730,13 +746,38 @@ public class FriendListFragmentJ extends JPanel
                             {
                                 ConferenceDB n = ConferenceDB.deep_copy(confs.get(i));
                                 CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
-                                cfac.is_friend = false;
+                                cfac.is_friend = COMBINED_IS_CONFERENCE;
                                 cfac.conference_item = n;
                                 friends_and_confs_list_model.addElement(cfac);
                                 // Log.i(TAG, "add_all_friends_clear:add:" + n);
                             }
                         }
                     }
+                    // ------------- add conferences -------------
+
+                    // ------------- add groups -------------
+                    List<GroupDB> groups = orma.selectFromGroupDB().
+                            orderByNotification_silentAsc().
+                            toList();
+
+                    if (groups != null)
+                    {
+                        if (groups.size() > 0)
+                        {
+                            int i = 0;
+                            for (i = 0; i < groups.size(); i++)
+                            {
+                                GroupDB n = GroupDB.deep_copy(groups.get(i));
+                                CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
+                                cfac.is_friend = COMBINED_IS_GROUP;
+                                cfac.group_item = n;
+                                friends_and_confs_list_model.addElement(cfac);
+                                // Log.i(TAG, "add_all_friends_clear:add:" + n);
+                            }
+                        }
+                    }
+                    // ------------- add groups -------------
+
                 }
             }
 
@@ -752,20 +793,25 @@ public class FriendListFragmentJ extends JPanel
         // Log.i(TAG, "add_all_friends_clear:READY");
     }
 
-    void modify_friend(final CombinedFriendsAndConferences c, boolean is_friend)
+    void modify_friend(final CombinedFriendsAndConferences c, int is_friend)
     {
         // Log.i(TAG, "modify_friend");
 
-        if (is_friend)
+        if (is_friend == COMBINED_IS_FRIEND)
         {
             final FriendList f = c.friend_item;
+
+            if (f == null)
+            {
+                Log.i(TAG, "modify_friend:EE02:" + f + " FRIEND is NULL, this should not happen!!");
+                return;
+            }
 
             if (f.is_relay == true)
             {
                 // do not update anything if this is a relay
                 return;
             }
-
 
             try
             {
@@ -777,12 +823,10 @@ public class FriendListFragmentJ extends JPanel
                 {
                     FriendList n = deep_copy(f2);
                     CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
-                    cfac.is_friend = true;
+                    cfac.is_friend = COMBINED_IS_FRIEND;
                     cfac.friend_item = n;
 
-                    boolean found_friend = false;
-
-                    found_friend = update_item(cfac, cfac.is_friend);
+                    boolean found_friend = update_item(cfac, cfac.is_friend);
 
                     if (!found_friend)
                     {
@@ -794,6 +838,40 @@ public class FriendListFragmentJ extends JPanel
             {
                 e.printStackTrace();
             }
+        }
+        else if (is_friend == COMBINED_IS_GROUP)
+        {
+            final GroupDB cc = c.group_item;
+
+            try
+            {
+                // who_invited__tox_public_key_stringEq(cc.who_invited__tox_public_key_string).
+                // and().
+                final GroupDB conf2 = orma.selectFromGroupDB().
+                        group_identifierEq(cc.group_identifier.toLowerCase()).
+                        toList().get(0);
+
+                if (conf2 != null)
+                {
+                    GroupDB n = GroupDB.deep_copy(conf2);
+                    CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
+                    cfac.is_friend = COMBINED_IS_GROUP;
+                    cfac.group_item = n;
+                    boolean found_friend = update_item(cfac, cfac.is_friend);
+                    // Log.i(TAG, "modify_friend:found_friend=" + found_friend + " n=" + n);
+
+                    if (!found_friend)
+                    {
+                        friends_and_confs_list_model.addElement(cfac);
+                        // Log.i(TAG, "modify_friend:add_item");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
         }
         else // is conference -----------------------------
         {
@@ -811,7 +889,7 @@ public class FriendListFragmentJ extends JPanel
                 {
                     ConferenceDB n = ConferenceDB.deep_copy(conf2);
                     CombinedFriendsAndConferences cfac = new CombinedFriendsAndConferences();
-                    cfac.is_friend = false;
+                    cfac.is_friend = COMBINED_IS_CONFERENCE;
                     cfac.conference_item = n;
                     boolean found_friend = update_item(cfac, cfac.is_friend);
                     // Log.i(TAG, "modify_friend:found_friend=" + found_friend + " n=" + n);
@@ -839,7 +917,7 @@ public class FriendListFragmentJ extends JPanel
         while (it.hasNext())
         {
             CombinedFriendsAndConferences f_combined = (CombinedFriendsAndConferences) it.next();
-            if (f_combined.is_friend)
+            if (f_combined.is_friend == COMBINED_IS_FRIEND)
             {
                 FriendList f = f_combined.friend_item;
                 if (f.tox_public_key_string.equals(pubkey))
@@ -853,7 +931,7 @@ public class FriendListFragmentJ extends JPanel
         return ret;
     }
 
-    private boolean update_item(CombinedFriendsAndConferences new_item_combined, boolean is_friend)
+    private boolean update_item(CombinedFriendsAndConferences new_item_combined, int is_friend)
     {
         boolean found_item = false;
 
@@ -863,9 +941,9 @@ public class FriendListFragmentJ extends JPanel
         {
             CombinedFriendsAndConferences f_combined = (CombinedFriendsAndConferences) it.next();
 
-            if (is_friend)
+            if (is_friend == COMBINED_IS_FRIEND)
             {
-                if (f_combined.is_friend)
+                if (f_combined.is_friend == COMBINED_IS_FRIEND)
                 {
                     FriendList f = f_combined.friend_item;
                     FriendList new_item = new_item_combined.friend_item;
@@ -878,9 +956,25 @@ public class FriendListFragmentJ extends JPanel
                     }
                 }
             }
+            else if (is_friend == COMBINED_IS_GROUP)
+            {
+                if (f_combined.is_friend == COMBINED_IS_GROUP)
+                {
+                    GroupDB f = f_combined.group_item;
+                    GroupDB new_item = new_item_combined.group_item;
+
+                    if (f.group_identifier.equals(new_item.group_identifier))
+                    {
+                        found_item = true;
+                        int pos = this.friends_and_confs_list_model.indexOf(f_combined);
+                        friends_and_confs_list_model.set(pos, new_item_combined);
+                        break;
+                    }
+                }
+            }
             else // is conference
             {
-                if (!f_combined.is_friend)
+                if (f_combined.is_friend == COMBINED_IS_CONFERENCE)
                 {
                     ConferenceDB f = f_combined.conference_item;
                     ConferenceDB new_item = new_item_combined.conference_item;

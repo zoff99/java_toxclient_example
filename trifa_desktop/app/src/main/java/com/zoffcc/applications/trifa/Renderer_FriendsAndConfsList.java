@@ -34,9 +34,12 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_FRIEND;
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_GROUP;
 import static com.zoffcc.applications.trifa.HelperConference.get_conference_title_from_confid;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real_pk;
+import static com.zoffcc.applications.trifa.HelperGroup.get_group_title_from_groupid;
 import static com.zoffcc.applications.trifa.HelperRelay.get_pushurl_for_friend;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_H;
@@ -109,7 +112,7 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             e.printStackTrace();
         }
 
-        if (((CombinedFriendsAndConferences) value).is_friend) // --- friend ---
+        if (((CombinedFriendsAndConferences) value).is_friend == COMBINED_IS_FRIEND) // --- friend ---
         {
             FriendList f = ((CombinedFriendsAndConferences) value).friend_item;
 
@@ -210,6 +213,82 @@ public class Renderer_FriendsAndConfsList extends JPanel implements ListCellRend
             {
                 int new_messages_count = orma.selectFromMessage().tox_friendpubkeyEq(f.tox_public_key_string).
                         is_newEq(true).count();
+                if (new_messages_count > 0)
+                {
+                    if (new_messages_count > 99)
+                    {
+                        notification.setText(" +"); //("∞");
+                    }
+                    else
+                    {
+                        if (new_messages_count > 9)
+                        {
+                            notification.setText("" + new_messages_count);
+                        }
+                        else
+                        {
+                            notification.setText(" " + new_messages_count);
+                        }
+                    }
+                    notification.setBackground(Color.RED);
+                    notification.setForeground(Color.WHITE);
+                }
+                else
+                {
+                    notification.setText("  ");
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+
+                notification.setText("  ");
+            }
+        }
+        else  if (((CombinedFriendsAndConferences) value).is_friend == COMBINED_IS_GROUP)
+        {
+            GroupDB c = ((CombinedFriendsAndConferences) value).group_item;
+
+            final BufferedImage img = new BufferedImage(1, 1, TYPE_INT_ARGB);
+            img.setRGB(0, 0, SEE_THRU.getRGB());
+            final ImageIcon icon = new ImageIcon(img);
+            avatar.setBackground(SEE_THRU);
+            avatar.setIcon(icon);
+            avatar.repaint();
+
+            try
+            {
+                name.setText(get_group_title_from_groupid(c.group_identifier) + " " + c.group_identifier.substring(0, 5));
+            }
+            catch (Exception e)
+            {
+                name.setText("???");
+            }
+
+            status.setText(" ");
+            status.setBackground(SEE_THRU);
+            status.setForeground(Color.BLACK);
+
+            if (c.privacy_state == ToxVars.TOX_GROUP_PRIVACY_STATE.TOX_GROUP_PRIVACY_STATE_PUBLIC.value)
+            {
+                type.setText("O");
+            }
+            else
+            {
+                type.setText("X");
+            }
+            type.setBackground(Color.GREEN);
+            type.setForeground(Color.BLACK);
+
+            notification.setText("  ");
+            notification.setBackground(SEE_THRU);
+            notification.setForeground(Color.BLACK);
+
+            try
+            {
+                int new_messages_count = orma.selectFromGroupMessage().
+                        group_identifierEq(c.group_identifier).is_newEq(true).count();
+
                 if (new_messages_count > 0)
                 {
                     if (new_messages_count > 99)

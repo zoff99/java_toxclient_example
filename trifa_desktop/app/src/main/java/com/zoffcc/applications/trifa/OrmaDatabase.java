@@ -253,13 +253,63 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 5;
+        if (current_db_version < 6)
+        {
+            try
+            {
+                // @formatter:off
+                final String update_001 = "CREATE TABLE IF NOT EXISTS GroupDB ( " +
+                                          "who_invited__tox_public_key_string  TEXT, "+
+                                          "name TEXT, "+
+                                          "topic TEXT, "+
+                                          "peer_count  INTEGER NOT NULL DEFAULT -1, "+
+                                          "own_peer_number  INTEGER NOT NULL DEFAULT -1, "+
+                                          "privacy_state INTEGER NOT NULL DEFAULT 1, "+
+                                          "tox_group_number  INTEGER NOT NULL DEFAULT -1, "+
+                                          "group_active BOOLEAN DEFAULT false, "+
+                                          "notification_silent BOOLEAN DEFAULT false, "+
+                                          "group_identifier TEXT, "+
+                                          "PRIMARY KEY(\"group_identifier\") "+
+                                          ");";
+                // @formatter:on
+                run_multi_sql(update_001);
+
+                // @formatter:off
+                final String update_002 = "CREATE TABLE IF NOT EXISTS GroupMessage ( " +
+                                          "message_id_tox  TEXT , "+
+                                          "group_identifier  TEXT NOT NULL DEFAULT \"-1\", "+
+                                          "tox_group_peer_pubkey  TEXT NOT NULL, "+
+                                          "private_message  INTEGER NOT NULL DEFAULT 0, "+
+                                          "tox_group_peername  TEXT, "+
+                                          "direction  INTEGER NOT NULL , "+
+                                          "TOX_MESSAGE_TYPE  INTEGER NOT NULL , "+
+                                          "TRIFA_MESSAGE_TYPE  INTEGER NOT NULL DEFAULT 0 , "+
+                                          "sent_timestamp  INTEGER, "+
+                                          "rcvd_timestamp  INTEGER, "+
+                                          "read   BOOLEAN NOT NULL DEFAULT 0 , "+
+                                          "is_new   BOOLEAN NOT NULL DEFAULT 1 , "+
+                                          "text  TEXT, "+
+                                          "was_synced   BOOLEAN NOT NULL DEFAULT 0 , "+
+                                          "msg_id_hash   TEXT, "+
+                                          "id INTEGER, "+
+                                          "PRIMARY KEY(\"id\") "+
+                                          ");";
+                // @formatter:on
+                run_multi_sql(update_002);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 6;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;
     }
 
-    public static void create_db()
+    public static void create_db(int current_db_version)
     {
         try
         {
@@ -272,7 +322,10 @@ public class OrmaDatabase
                 (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS))
             {
                 String create_db_sqls = readSQLFileAsString(asset_filename);
-                run_multi_sql(create_db_sqls);
+                if (current_db_version == 0)
+                {
+                    run_multi_sql(create_db_sqls);
+                }
             }
             else
             {
@@ -311,6 +364,7 @@ public class OrmaDatabase
             {
                 try
                 {
+                    Log.i(TAG, "SQL:" + query);
                     statement.executeUpdate(query);
                 }
                 catch (SQLException e)
@@ -558,6 +612,70 @@ public class OrmaDatabase
     {
         ConferenceDB ret = new ConferenceDB();
         ret.sql_start = "DELETE FROM ConferenceDB";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM GroupDB ...}.
+     */
+    public GroupDB selectFromGroupDB()
+    {
+        GroupDB ret = new GroupDB();
+        ret.sql_start = "SELECT * FROM GroupDB";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE GroupDB ...}.
+     */
+    public GroupDB updateGroupDB()
+    {
+        GroupDB ret = new GroupDB();
+        ret.sql_start = "UPDATE GroupDB";
+        return ret;
+    }
+
+    public long insertIntoGroupDB(GroupDB group_new)
+    {
+        return group_new.insert();
+    }
+
+    public GroupDB deleteFromGroupDB()
+    {
+        GroupDB ret = new GroupDB();
+        ret.sql_start = "DELETE FROM GroupDB";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code SELECT * FROM GroupMessage ...}.
+     */
+    public GroupMessage selectFromGroupMessage()
+    {
+        GroupMessage ret = new GroupMessage();
+        ret.sql_start = "SELECT * FROM GroupMessage";
+        return ret;
+    }
+
+    /**
+     * Starts building a query: {@code UPDATE GroupMessage ...}.
+     */
+    public GroupMessage updateGroupMessage()
+    {
+        GroupMessage ret = new GroupMessage();
+        ret.sql_start = "UPDATE GroupMessage";
+        return ret;
+    }
+
+    public long insertIntoGroupMessage(GroupMessage groupmessage_new)
+    {
+        return groupmessage_new.insert();
+    }
+
+    public GroupMessage deleteFromGroupMessage()
+    {
+        GroupMessage ret = new GroupMessage();
+        ret.sql_start = "DELETE FROM GroupMessage";
         return ret;
     }
 }

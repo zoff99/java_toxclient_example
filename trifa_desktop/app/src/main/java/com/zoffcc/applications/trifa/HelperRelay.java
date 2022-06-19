@@ -26,6 +26,7 @@ import java.util.List;
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_invite_friend;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_FRIEND_PUBKEY_FOR_PROXY;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
@@ -461,5 +462,11 @@ public class HelperRelay
 
         // anything else is not allowed at this time!
         return false;
+    }
+
+    static int invite_to_group_own_relay(long group_num)
+    {
+        return tox_group_invite_friend(group_num,
+                                       tox_friend_by_public_key__wrapper(HelperRelay.get_own_relay_pubkey()));
     }
 }

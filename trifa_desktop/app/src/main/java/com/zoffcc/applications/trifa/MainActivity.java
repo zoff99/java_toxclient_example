@@ -132,11 +132,21 @@ import static com.zoffcc.applications.trifa.HelperGeneric.bytes_to_hex;
 import static com.zoffcc.applications.trifa.HelperGeneric.draw_main_top_icon;
 import static com.zoffcc.applications.trifa.HelperGeneric.getImageFromClipboard;
 import static com.zoffcc.applications.trifa.HelperGeneric.get_g_opts;
+import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.add_system_message_to_group_chat;
+import static com.zoffcc.applications.trifa.HelperGroup.android_tox_callback_group_message_cb_method_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.set_group_active;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupnum__wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_db_privacy_state;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_db_topic;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_friendlist;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_groupmessagelist;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_msg_at_relay_from_id;
 import static com.zoffcc.applications.trifa.HelperNotification.displayMessage;
 import static com.zoffcc.applications.trifa.HelperNotification.init_system_tray;
 import static com.zoffcc.applications.trifa.HelperRelay.get_own_relay_connection_status_real;
 import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
+import static com.zoffcc.applications.trifa.HelperRelay.invite_to_group_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.is_any_relay;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.TYPING_FLAG_DEACTIVATE_DELAY_IN_MILLIS;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.add_outgoing_file;
@@ -158,12 +168,14 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIG
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.UINT32_MAX_JAVA;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_AFTER_BYTES;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES;
@@ -253,6 +265,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static JPanel leftPanel = null;
     static MessageListFragmentJ MessagePanel;
     static ConferenceMessageListFragmentJ MessagePanelConferences;
+    static GroupMessageListFragmentJ MessagePanelGroups;
     static MessageListFragmentJInfo MessagePanel_Info;
     static JPanel MessagePanelContainer = null;
     static JPanel PeerPanelContainer = null;
@@ -304,6 +317,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static Random global_random = null;
 
     final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static final String ALLOWED_CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!§$%&()=?,.;:-_+";
     static long update_all_messages_global_timestamp = -1;
     final static long UPDATE_MESSAGES_NORMAL_MILLIS = 250; // ~0.25 seconds
     final static SimpleDateFormat df_date_time_long = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -545,6 +559,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         MessagePanel.setCurrentPK(null);
 
         MessagePanelConferences = new ConferenceMessageListFragmentJ();
+        MessagePanelGroups = new GroupMessageListFragmentJ();
 
         PeerPanel = new PeerListFragmentJ();
 
@@ -716,6 +731,22 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                         });
                         t.start();
                     }
+                    else if (message_panel_displayed == 3)
+                    {
+                        messageInputTextField.setText(messageInputTextField.getText().replaceFirst("[\n\r]$", ""));
+                        final String msg = messageInputTextField.getText();
+                        final Thread t = new Thread(() -> {
+                            try
+                            {
+                                GroupMessageListFragmentJ.send_message_onclick(msg);
+                            }
+                            catch (Exception e12)
+                            {
+                                e12.printStackTrace();
+                            }
+                        });
+                        t.start();
+                    }
                 }
             }
         });
@@ -739,6 +770,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 else if (message_panel_displayed == 2)
                 {
                     ConferenceMessageListFragmentJ.send_message_onclick(messageInputTextField.getText());
+                }
+                else if (message_panel_displayed == 3)
+                {
+                    GroupMessageListFragmentJ.send_message_onclick(messageInputTextField.getText());
                 }
             }
         });
@@ -1164,7 +1199,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     MessagePanelContainer.repaint();
                     // Log.i(TAG, "set_message_panel:002:" + i);
                 }
-                else
+                else if (i == 2)
                 {
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
@@ -1189,6 +1224,33 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     PeersplitPane.setDividerLocation(160);
 
                     ConferenceMessageListFragmentJ.update_group_all_users();
+                    // Log.i(TAG, "set_message_panel:002:" + i);
+                }
+                else
+                {
+                    MessagePanel.setCurrentPK(null);
+                    MessagePanel.friendnum = -1;
+
+                    PeerPanelContainer.removeAll();
+                    MessagePanelContainer.removeAll();
+
+                    // MessagePanelContainer.setLayout(new GridLayout());
+                    MessagePanelContainer.add(PeersplitPane);
+                    PeersplitPane.setVisible(true);
+
+                    PeersplitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+                    PeersplitPane.setLeftComponent(PeerPanel);
+                    PeersplitPane.setRightComponent(PeerPanelContainer);
+
+                    PeerPanelContainer.add(MessagePanelGroups);
+                    PeerPanelContainer.add(MessageTextInputPanel);
+                    PeerPanelContainer.add(myToxID, BorderLayout.SOUTH);
+                    MessagePanelContainer.revalidate();
+                    MessagePanelContainer.repaint();
+
+                    PeersplitPane.setDividerLocation(160);
+
+                    GroupMessageListFragmentJ.update_group_all_users();
                     // Log.i(TAG, "set_message_panel:002:" + i);
                 }
 
@@ -1416,7 +1478,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     System.out.println("Shutting down ...");
                     try
                     {
-                        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                        HelperGeneric.update_savedata_file_wrapper();
                     }
                     catch (Exception e3)
                     {
@@ -1471,7 +1533,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         // --------------- CREATE THE DATABASE ---------------
         current_db_version = get_current_db_version();
         Log.i(TAG, "trifa:current_db_version=" + current_db_version);
-        create_db();
+        create_db(current_db_version);
         current_db_version = update_db(current_db_version);
         Log.i(TAG, "trifa:new_db_version=" + current_db_version);
         // --------------- CREATE THE DATABASE ---------------
@@ -1583,6 +1645,21 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             e.printStackTrace();
             System.exit(4);
         }
+    }
+
+    // this is NOT a crpytographically secure random string generator!!
+    // it should only be used to generate status messages or tox user strings to be sort of unique
+    static String getRandomString(final int sizeOfRandomString)
+    {
+        final Random random = new Random();
+        final StringBuilder sb = new StringBuilder(sizeOfRandomString);
+
+        for (int i = 0; i < sizeOfRandomString; ++i)
+        {
+            sb.append(ALLOWED_CHARACTERS.charAt(random.nextInt(ALLOWED_CHARACTERS.length())));
+        }
+
+        return sb.toString();
     }
 
     // -------- native methods --------
@@ -1836,7 +1913,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native long tox_group_peer_count(long group_number);
 
+    public static native long tox_group_offline_peer_count(long group_number);
+
     public static native long[] tox_group_get_peerlist(long group_number);
+
+    public static native long[] tox_group_get_offline_peerlist(long group_number);
 
     public static native long tox_group_by_chat_id(ByteBuffer chat_id_buffer);
 
@@ -1872,9 +1953,9 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
      * @param a_TOX_MESSAGE_TYPE Message type (normal, action, ...).
      * @param message            A non-NULL pointer to the first element of a byte array
      *                           containing the message text.
-     * @return true on success.
+     * @return message_id on success. return < 0 on error.
      */
-    public static native int tox_group_send_message(long group_number, int a_TOX_MESSAGE_TYPE, String message);
+    public static native long tox_group_send_message(long group_number, int a_TOX_MESSAGE_TYPE, String message);
 
     /**
      * Send a text chat message to the specified peer in the specified group.
@@ -3936,14 +4017,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         HelperConference.add_conference_wrapper(friend_number, conference_num, conference_identifier,
                                                 a_TOX_CONFERENCE_TYPE, true);
-        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+        HelperGeneric.update_savedata_file_wrapper();
     }
 
     static void android_tox_callback_conference_connected_cb_method(long conference_number)
     {
         // invite also my ToxProxy -------------
         Log.i(TAG, "conference_connected_cb:cf_num=" + conference_number);
-        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+        HelperGeneric.update_savedata_file_wrapper();
 
         // TODO: bad
         // MainActivity.cache_peername_pubkey2.clear();
@@ -4170,19 +4251,29 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static void android_tox_callback_group_message_cb_method(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message_orig, long length, long message_id)
     {
-        Log.i(TAG, "group_message_cb:gn=" + group_number + " peerid=" + peer_id + " message=" + message_orig +
-                   " message_id=" + message_id);
+        android_tox_callback_group_message_cb_method_wrapper(group_number, peer_id, a_TOX_MESSAGE_TYPE, message_orig,
+                                                             length, message_id, false);
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
     }
 
     static void android_tox_callback_group_private_message_cb_method(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message_orig, long length)
     {
-        Log.i(TAG, "group_private_message_cb:gn=" + group_number + " peerid=" + peer_id + " message=" + message_orig);
+        android_tox_callback_group_message_cb_method_wrapper(group_number, peer_id, a_TOX_MESSAGE_TYPE, message_orig,
+                                                             length, 0, true);
+        global_last_activity_for_battery_savings_ts = System.currentTimeMillis();
     }
 
     static void android_tox_callback_group_privacy_state_cb_method(long group_number, final int a_TOX_GROUP_PRIVACY_STATE)
     {
         Log.i(TAG,
               "group_privacy_state_cb:group_number=" + group_number + " privacy_state=" + a_TOX_GROUP_PRIVACY_STATE);
+        final String group_identifier = tox_group_by_groupnum__wrapper(group_number);
+        update_group_in_db_privacy_state(group_identifier, a_TOX_GROUP_PRIVACY_STATE);
+        update_group_in_friendlist(group_identifier);
+        update_group_in_groupmessagelist(group_identifier);
+        add_system_message_to_group_chat(group_identifier, "privacy state changed to: " +
+                                                           ToxVars.TOX_GROUP_PRIVACY_STATE.value_str(
+                                                                   a_TOX_GROUP_PRIVACY_STATE));
     }
 
     static void android_tox_callback_group_invite_cb_method(long friend_number, final byte[] invite_data, final long invite_data_length, String group_name)
@@ -4190,42 +4281,102 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         Log.i(TAG,
               "group_invite_cb:fn=" + friend_number + " invite_data_length=" + invite_data_length + " invite_data=" +
               bytes_to_hex(invite_data) + " groupname=" + group_name);
+
+        final ByteBuffer invite_data_buf_wrapped = ByteBuffer.allocateDirect((int) invite_data_length);
+        invite_data_buf_wrapped.put(invite_data, 0, (int) invite_data_length);
+        invite_data_buf_wrapped.rewind();
+        long new_group_num = tox_group_invite_accept(friend_number, invite_data_buf_wrapped, invite_data_length,
+                                                     "name " + getRandomString(4), null);
+
+        Log.i(TAG, "group_invite_cb:fn=" + friend_number + " got invited to group num=" + new_group_num);
+        update_savedata_file_wrapper();
+
+        if ((new_group_num >= 0) && (new_group_num < UINT32_MAX_JAVA))
+        {
+            // TODO: get real group_identifier and privacy_state, get it via API call
+            String group_identifier = bytes_to_hex(Arrays.copyOfRange(invite_data, 0, GROUP_ID_LENGTH));
+            HelperGroup.add_group_wrapper(friend_number, new_group_num, group_identifier, 0);
+            final int new_privacy_state = tox_group_get_privacy_state(new_group_num);
+            Log.i(TAG, "group_invite_cb:fn=" + friend_number + " got invited to group num=" + new_group_num +
+                       " new_privacy_state=" + new_privacy_state);
+            update_group_in_db_privacy_state(group_identifier, new_privacy_state);
+            update_group_in_friendlist(group_identifier);
+            update_group_in_groupmessagelist(group_identifier);
+            if (have_own_relay())
+            {
+                invite_to_group_own_relay(new_group_num);
+            }
+        }
     }
 
     static void android_tox_callback_group_peer_join_cb_method(long group_number, long peer_id)
     {
         Log.i(TAG, "group_peer_join_cb:group_number=" + group_number + " peer_id=" + peer_id);
+
+        final String temp_group_identifier = tox_group_by_groupnum__wrapper(group_number);
+        update_group_in_friendlist(temp_group_identifier);
+        update_group_in_groupmessagelist(temp_group_identifier);
+        add_system_message_to_group_chat(temp_group_identifier, "peer " + peer_id + " joined the group");
     }
 
     static void android_tox_callback_group_peer_exit_cb_method(long group_number, long peer_id, int a_Tox_Group_Exit_Type)
     {
         Log.i(TAG, "group_peer_exit_cb:group_number=" + group_number + " peer_id=" + peer_id + " exit_type=" +
                    a_Tox_Group_Exit_Type);
+
+        final String temp_group_identifier = tox_group_by_groupnum__wrapper(group_number);
+        update_group_in_friendlist(temp_group_identifier);
+        update_group_in_groupmessagelist(temp_group_identifier);
+        add_system_message_to_group_chat(temp_group_identifier, "peer " + peer_id + " left the group: " +
+                                                                ToxVars.Tox_Group_Exit_Type.value_str(
+                                                                        a_Tox_Group_Exit_Type));
     }
 
     static void android_tox_callback_group_peer_name_cb_method(long group_number, long peer_id)
     {
+        final String temp_group_identifier = tox_group_by_groupnum__wrapper(group_number);
+        update_group_in_groupmessagelist(temp_group_identifier);
+        add_system_message_to_group_chat(temp_group_identifier, "peer " + peer_id + " changed name");
     }
 
     static void android_tox_callback_group_join_fail_cb_method(long group_number, int a_Tox_Group_Join_Fail)
     {
         Log.i(TAG, "group_join_fail_cb:group_number=" + group_number + " fail=" + a_Tox_Group_Join_Fail);
+        final String group_identifier = tox_group_by_groupnum__wrapper(group_number);
     }
 
     static void android_tox_callback_group_self_join_cb_method(long group_number)
     {
         Log.i(TAG, "group_self_join_cb:group_number=" + group_number);
+        final String group_identifier = tox_group_by_groupnum__wrapper(group_number);
+
+        set_group_active(group_identifier);
+        add_system_message_to_group_chat(group_identifier, "You joined the group");
+        update_savedata_file_wrapper();
+        update_group_in_friendlist(group_identifier);
+        update_group_in_groupmessagelist(group_identifier);
+        if (have_own_relay())
+        {
+            invite_to_group_own_relay(group_number);
+        }
     }
 
     static void android_tox_callback_group_topic_cb_method(long group_number, long peer_id, String topic, long topic_length)
     {
-        Log.i(TAG, "group_topic_cb: groupnum=" + group_number + " peer=" + peer_id + " topic=" + topic);
+        // Log.i(TAG, "group_topic_cb: groupnum=" + group_number + " peer=" + peer_id + " topic=" + topic);
+        if (topic == null)
+        {
+            topic = "";
+        }
+        final String group_identifier = tox_group_by_groupnum__wrapper(group_number);
+        update_group_in_db_topic(group_identifier, topic);
+        update_group_in_friendlist(group_identifier);
+        update_group_in_groupmessagelist(group_identifier);
     }
 
     // -------- called by native new Group methods --------
     // -------- called by native new Group methods --------
     // -------- called by native new Group methods --------
-
     static int add_tcp_relay_single_wrapper(String ip, long port, String key_hex)
     {
         return add_tcp_relay_single(ip, key_hex, port);
@@ -4257,7 +4408,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             try
             {
-                HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                HelperGeneric.update_savedata_file_wrapper();
             }
             catch (Exception e3)
             {

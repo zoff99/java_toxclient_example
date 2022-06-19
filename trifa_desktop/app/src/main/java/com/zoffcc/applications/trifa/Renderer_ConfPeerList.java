@@ -32,14 +32,18 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_CONFERENCE;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.current_conf_id;
+import static com.zoffcc.applications.trifa.GroupMessageListFragmentJ.current_group_id;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.hash_to_bucket;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_H;
 import static com.zoffcc.applications.trifa.MainActivity.AVATAR_FRIENDLIST_W;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_number_is_ours;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_peer_id;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.SEE_THRU;
 import static java.awt.Font.PLAIN;
@@ -127,7 +131,21 @@ public class Renderer_ConfPeerList extends JPanel implements ListCellRenderer
         if (!p.offline)
         {
             // Log.d(TAG, current_conf_id + " " + tox_conference_by_confid__wrapper(current_conf_id) + " " + p.peernum);
-            res = tox_conference_peer_number_is_ours(tox_conference_by_confid__wrapper(current_conf_id), p.peernum);
+            if (p.type == COMBINED_IS_CONFERENCE)
+            {
+                res = tox_conference_peer_number_is_ours(tox_conference_by_confid__wrapper(current_conf_id), p.peernum);
+            }
+            else
+            {
+                if (tox_group_self_get_peer_id(tox_group_by_groupid__wrapper(current_group_id)) == p.peernum)
+                {
+                    res = 1;
+                }
+                else
+                {
+                    res = 0;
+                }
+            }
         }
 
         if (res == 1)

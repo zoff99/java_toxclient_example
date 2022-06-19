@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_FRIEND;
 import static com.zoffcc.applications.trifa.HelperConference.new_or_updated_conference;
 import static com.zoffcc.applications.trifa.HelperConference.set_all_conferences_inactive;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.start_outgoing_ft;
@@ -44,6 +45,9 @@ import static com.zoffcc.applications.trifa.HelperGeneric.hex_to_bytes;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_resend_msgv3_wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.tox_friend_send_message_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.new_or_updated_group;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_db_name;
+import static com.zoffcc.applications.trifa.HelperGroup.update_group_in_db_privacy_state;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_messageid;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_no_read_recvedts;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
@@ -61,6 +65,12 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chat
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_id;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_type;
 import static com.zoffcc.applications.trifa.MainActivity.tox_friend_get_connection_status;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_chat_id;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_grouplist;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_name;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_number_groups;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_privacy_state;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_is_connected;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_name_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message;
@@ -71,6 +81,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_util_friend_resend_
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ADD_BOTS_ON_STARTUP;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ECHOBOT_TOXID;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
@@ -149,7 +160,7 @@ public class TrifaToxService
                     set_all_friends_offline();
                     set_all_conferences_inactive();
                     MainActivity.init_tox_callbacks();
-                    HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                    HelperGeneric.update_savedata_file_wrapper();
                 }
                 // ------ correct startup order ------
 
@@ -188,7 +199,7 @@ public class TrifaToxService
                 }
                 Log.i(TAG, "AAA:011");
 
-                HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+                HelperGeneric.update_savedata_file_wrapper();
 
                 load_and_add_all_friends();
 
@@ -410,6 +421,14 @@ public class TrifaToxService
                 try
                 {
                     load_and_add_all_conferences();
+                }
+                catch (Exception e)
+                {
+                }
+
+                try
+                {
+                    load_and_add_all_groups();
                 }
                 catch (Exception e)
                 {
@@ -1086,7 +1105,7 @@ public class TrifaToxService
                     if (MainActivity.FriendPanel != null)
                     {
                         CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
-                        cc.is_friend = true;
+                        cc.is_friend = COMBINED_IS_FRIEND;
                         cc.friend_item = fl_check.get(0);
                         MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
                     }
@@ -1143,6 +1162,44 @@ public class TrifaToxService
                 //               result);
                 //}
 
+            }
+        }
+    }
+
+    void load_and_add_all_groups()
+    {
+        long num_groups = tox_group_get_number_groups();
+        Log.i(TAG, "load groups at startup: num=" + num_groups);
+
+        long[] group_numbers = tox_group_get_grouplist();
+        ByteBuffer groupid_buf3 = ByteBuffer.allocateDirect(GROUP_ID_LENGTH * 2);
+
+        int conf_ = 0;
+        for (conf_ = 0; conf_ < num_groups; conf_++)
+        {
+            groupid_buf3.clear();
+
+            if (tox_group_get_chat_id(group_numbers[conf_], groupid_buf3) == 0)
+            {
+                byte[] groupid_buffer = new byte[GROUP_ID_LENGTH];
+                groupid_buf3.get(groupid_buffer, 0, GROUP_ID_LENGTH);
+                String group_identifier = bytes_to_hex(groupid_buffer);
+                int is_connected = tox_group_is_connected(conf_);
+                Log.i(TAG, "load group num=" + group_numbers[conf_] + " connected=" + is_connected + " group_id=" +
+                           group_identifier + " offset=" + groupid_buf3.arrayOffset());
+
+                new_or_updated_group(group_numbers[conf_], tox_friend_get_public_key__wrapper(0), group_identifier,
+                                     tox_group_get_privacy_state(group_numbers[conf_]));
+
+                String group_name = tox_group_get_name(group_numbers[conf_]);
+                if (group_name == null)
+                {
+                    group_name = "";
+                }
+                update_group_in_db_name(group_identifier, group_name);
+
+                final int new_privacy_state = tox_group_get_privacy_state(group_numbers[conf_]);
+                update_group_in_db_privacy_state(group_identifier, new_privacy_state);
             }
         }
     }

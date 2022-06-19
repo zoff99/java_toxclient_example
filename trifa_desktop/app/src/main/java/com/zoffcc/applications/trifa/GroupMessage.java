@@ -1,6 +1,6 @@
 /**
  * [TRIfA], Java part of Tox Reference Implementation for Android
- * Copyright (C) 2017 Zoff <zoff@zoff.cc>
+ * Copyright (C) 2017 - 2022 Zoff <zoff@zoff.cc>
  * <p>
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,7 +20,6 @@
 package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,29 +32,30 @@ import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 
 @Table
-public class ConferenceMessage
+public class GroupMessage
 {
-    private static final String TAG = "DB.ConferenceMessage";
+    private static final String TAG = "DB.GroupMessage";
 
     @PrimaryKey(autoincrement = true, auto = true)
     long id; // uniqe message id!!
 
     @Column(indexed = true, helpers = Column.Helpers.ALL, defaultExpr = "")
     @Nullable
-    String message_id_tox = ""; // Tox Group Message_ID
-    // this rolls over at UINT32_MAX
-    // its unique for "tox_peerpubkey + message_id_tox"
-    // it only increases (until it rolls over) but may increase by more than 1
+    String message_id_tox = ""; // Tox Group Message_ID (4 bytes as hex string lowercase)
 
     @Column(indexed = true, defaultExpr = "-1", helpers = Column.Helpers.ALL)
-    String conference_identifier = "-1"; // f_key -> ConferenceDB.conference_identifier
+    String group_identifier = "-1"; // f_key -> GroupDB.group_identifier
 
     @Column(indexed = true, helpers = Column.Helpers.ALL)
-    String tox_peerpubkey;
+    String tox_group_peer_pubkey;
+
+    @Column(indexed = true, helpers = Column.Helpers.ALL)
+    @Nullable
+    int private_message = 0; // 0 -> message to group, 1 -> msg privately to/from peer
 
     @Column(indexed = true, defaultExpr = "", helpers = Column.Helpers.ALL)
     @Nullable
-    String tox_peername = ""; // saved for backup, when conference is offline!
+    String tox_group_peername = ""; // saved for backup, when conference is offline!
 
     @Column(indexed = true, helpers = Column.Helpers.ALL)
     int direction = 0; // 0 -> msg received, 1 -> msg sent
@@ -88,13 +88,18 @@ public class ConferenceMessage
     @Nullable
     boolean was_synced = false;
 
-    static ConferenceMessage deep_copy(ConferenceMessage in)
+    @Column(indexed = true, helpers = Column.Helpers.ALL)
+    @Nullable
+    String msg_id_hash = null; // 32byte hash
+
+    static GroupMessage deep_copy(GroupMessage in)
     {
-        ConferenceMessage out = new ConferenceMessage();
+        GroupMessage out = new GroupMessage();
         out.id = in.id; // TODO: is this a good idea???
         out.message_id_tox = in.message_id_tox;
-        out.conference_identifier = in.conference_identifier;
-        out.tox_peerpubkey = in.tox_peerpubkey;
+        out.group_identifier = in.group_identifier;
+        out.tox_group_peer_pubkey = in.tox_group_peer_pubkey;
+        out.private_message = in.private_message;
         out.direction = in.direction;
         out.TOX_MESSAGE_TYPE = in.TOX_MESSAGE_TYPE;
         out.TRIFA_MESSAGE_TYPE = in.TRIFA_MESSAGE_TYPE;
@@ -103,8 +108,9 @@ public class ConferenceMessage
         out.read = in.read;
         out.is_new = in.is_new;
         out.text = in.text;
-        out.tox_peername = in.tox_peername;
+        out.tox_group_peername = in.tox_group_peername;
         out.was_synced = in.was_synced;
+        out.msg_id_hash = in.msg_id_hash;
 
         return out;
     }
@@ -112,11 +118,11 @@ public class ConferenceMessage
     @Override
     public String toString()
     {
-        return "id=" + id + ", message_id_tox=" + message_id_tox + ", tox_peername=" + tox_peername +
-               ", tox_peerpubkey=" + "*tox_peerpubkey*" + ", direction=" + direction + ", TRIFA_MESSAGE_TYPE=" +
-               TRIFA_MESSAGE_TYPE + ", TOX_MESSAGE_TYPE=" + TOX_MESSAGE_TYPE + ", sent_timestamp=" + sent_timestamp +
-               ", rcvd_timestamp=" + rcvd_timestamp + ", read=" + read + ", text=" + "xxxxxx" + ", is_new=" + is_new +
-               ", was_synced=" + was_synced;
+        return "id=" + id + ", message_id_tox=" + message_id_tox + ", tox_group_peername=" + tox_group_peername +
+               ", tox_peerpubkey=" + "*tox_peerpubkey*" + ", private_message=" + private_message + ", direction=" +
+               direction + ", TRIFA_MESSAGE_TYPE=" + TRIFA_MESSAGE_TYPE + ", TOX_MESSAGE_TYPE=" + TOX_MESSAGE_TYPE +
+               ", sent_timestamp=" + sent_timestamp + ", rcvd_timestamp=" + rcvd_timestamp + ", read=" + read +
+               ", text=" + "xxxxxx" + ", is_new=" + is_new + ", was_synced=" + was_synced;
     }
 
     String sql_start = "";
@@ -125,9 +131,9 @@ public class ConferenceMessage
     String sql_orderby = ""; // order by
     String sql_limit = ""; // limit
 
-    public List<ConferenceMessage> toList()
+    public List<GroupMessage> toList()
     {
-        List<ConferenceMessage> list = new ArrayList<>();
+        List<GroupMessage> list = new ArrayList<>();
 
         try
         {
@@ -136,12 +142,14 @@ public class ConferenceMessage
                     this.sql_start + " " + this.sql_where + " " + this.sql_orderby + " " + this.sql_limit);
             while (rs.next())
             {
-                ConferenceMessage out = new ConferenceMessage();
+                GroupMessage out = new GroupMessage();
 
                 out.id = rs.getLong("id");
-                out.conference_identifier = rs.getString("conference_identifier");
                 out.message_id_tox = rs.getString("message_id_tox");
-                out.tox_peerpubkey = rs.getString("tox_peerpubkey");
+                out.group_identifier = rs.getString("group_identifier");
+                out.tox_group_peer_pubkey = rs.getString("tox_group_peer_pubkey");
+                out.private_message = rs.getInt("private_message");
+                out.tox_group_peername = rs.getString("tox_group_peername");
                 out.direction = rs.getInt("direction");
                 out.TOX_MESSAGE_TYPE = rs.getInt("TOX_MESSAGE_TYPE");
                 out.TRIFA_MESSAGE_TYPE = rs.getInt("TRIFA_MESSAGE_TYPE");
@@ -150,8 +158,8 @@ public class ConferenceMessage
                 out.read = rs.getBoolean("read");
                 out.is_new = rs.getBoolean("is_new");
                 out.text = rs.getString("text");
-                out.tox_peername = rs.getString("tox_peername");
                 out.was_synced = rs.getBoolean("was_synced");
+                out.msg_id_hash = rs.getString("msg_id_hash");
 
                 list.add(out);
             }
@@ -173,10 +181,12 @@ public class ConferenceMessage
             // @formatter:off
             Statement statement = sqldb.createStatement();
             final String sql_str="insert into " + this.getClass().getSimpleName() +
-            "(" +
-                                 "conference_identifier,"+
+                                 "(" +
                                  "message_id_tox,"+
-                                 "tox_peerpubkey,"+
+                                 "group_identifier,"+
+                                 "tox_group_peer_pubkey,"+
+                                 "private_message,"+
+                                 "tox_group_peername,"+
                                  "direction,"+
                                  "TOX_MESSAGE_TYPE,"	+
                                  "TRIFA_MESSAGE_TYPE,"	+
@@ -185,14 +195,16 @@ public class ConferenceMessage
                                  "read,"+
                                  "is_new,"	+
                                  "text,"	+
-                                 "tox_peername,"+
-                                 "was_synced"+
+                                 "was_synced,"+
+                                 "msg_id_hash"+
                                  ")" +
                                  "values" +
                                  "(" +
-                                 "'"+s(this.conference_identifier)+"'," +
                                  "'"+s(this.message_id_tox)+"'," +
-                                 "'"+s(this.tox_peerpubkey)+"'," +
+                                 "'"+s(this.group_identifier)+"'," +
+                                 "'"+s(this.tox_group_peer_pubkey)+"'," +
+                                 "'"+s(this.private_message)+"'," +
+                                 "'"+s(this.tox_group_peername)+"'," +
                                  "'"+s(this.direction)+"'," +
                                  "'"+s(this.TOX_MESSAGE_TYPE)+"'," +
                                  "'"+s(this.TRIFA_MESSAGE_TYPE)+"'," +
@@ -201,8 +213,8 @@ public class ConferenceMessage
                                  "'"+b(this.read)+"'," +
                                  "'"+b(this.is_new)+"'," +
                                  "'"+s(this.text)+"'," +
-                                 "'"+s(this.tox_peername)+"'," +
-                                 "'"+b(this.was_synced)+"'" +
+                                 "'"+b(this.was_synced)+"'," +
+                                 "'"+s(this.msg_id_hash)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -222,7 +234,7 @@ public class ConferenceMessage
         return ret;
     }
 
-    public ConferenceMessage get(int i)
+    public GroupMessage get(int i)
     {
         this.sql_limit = " limit " + i + ",1 ";
         return this.toList().get(0);
@@ -277,7 +289,7 @@ public class ConferenceMessage
         return ret;
     }
 
-    public ConferenceMessage limit(int i)
+    public GroupMessage limit(int i)
     {
         this.sql_limit = " limit " + i + " ";
         return this;
@@ -287,14 +299,13 @@ public class ConferenceMessage
     // ----------------------------------- //
     // ----------------------------------- //
 
-
-    public ConferenceMessage conference_identifierEq(String conference_identifier)
+    public GroupMessage group_identifierEq(String group_identifier)
     {
-        this.sql_where = this.sql_where + " and conference_identifier='" + s(conference_identifier) + "' ";
+        this.sql_where = this.sql_where + " and group_identifier='" + s(group_identifier) + "' ";
         return this;
     }
 
-    public ConferenceMessage is_new(boolean is_new)
+    public GroupMessage is_new(boolean is_new)
     {
         if (this.sql_set.equals(""))
         {
@@ -308,57 +319,25 @@ public class ConferenceMessage
         return this;
     }
 
-    public ConferenceMessage tox_peerpubkeyNotEq(String tox_peerpubkey)
+    public GroupMessage tox_group_peer_pubkeyNotEq(String tox_group_peer_pubkey)
     {
-        this.sql_where = this.sql_where + " and tox_peerpubkey<>'" + s(tox_peerpubkey) + "' ";
+        this.sql_where = this.sql_where + " and tox_group_peer_pubkey<>'" + s(tox_group_peer_pubkey) + "' ";
         return this;
     }
 
-    public ConferenceMessage orderBySent_timestampAsc()
+    public GroupMessage is_newEq(boolean is_new)
     {
-        if (this.sql_orderby.equals(""))
-        {
-            this.sql_orderby = " order by ";
-        }
-        else
-        {
-            this.sql_orderby = this.sql_orderby + " , ";
-        }
-        this.sql_orderby = this.sql_orderby + " Sent_timestamp ASC ";
+        this.sql_where = this.sql_where + " and is_new='" + b(is_new) + "' ";
         return this;
     }
 
-    public ConferenceMessage tox_peerpubkeyEq(String tox_peerpubkey)
-    {
-        this.sql_where = this.sql_where + " and tox_peerpubkey='" + s(tox_peerpubkey) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage message_id_toxEq(String message_id_tox)
-    {
-        this.sql_where = this.sql_where + " and message_id_tox='" + s(message_id_tox) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage sent_timestampGt(long sent_timestamp)
-    {
-        this.sql_where = this.sql_where + " and sent_timestamp>'" + s(sent_timestamp) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage sent_timestampLt(long sent_timestamp)
-    {
-        this.sql_where = this.sql_where + " and sent_timestamp<'" + s(sent_timestamp) + "' ";
-        return this;
-    }
-
-    public ConferenceMessage idEq(long id)
+    public GroupMessage idEq(long id)
     {
         this.sql_where = this.sql_where + " and id='" + s(id) + "' ";
         return this;
     }
 
-    public ConferenceMessage orderByIdDesc()
+    public GroupMessage orderByIdDesc()
     {
         if (this.sql_orderby.equals(""))
         {
@@ -372,10 +351,47 @@ public class ConferenceMessage
         return this;
     }
 
-    public ConferenceMessage is_newEq(boolean is_new)
+    public GroupMessage tox_group_peer_pubkeyEq(String tox_group_peer_pubkey)
     {
-        this.sql_where = this.sql_where + " and is_new='" + b(is_new) + "' ";
+        this.sql_where = this.sql_where + " and tox_group_peer_pubkey='" + s(tox_group_peer_pubkey) + "' ";
         return this;
     }
 
+    public GroupMessage message_id_toxEq(String message_id_tox)
+    {
+        this.sql_where = this.sql_where + " and message_id_tox='" + s(message_id_tox) + "' ";
+        return this;
+    }
+
+    public GroupMessage sent_timestampGt(long sent_timestamp)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp>'" + s(sent_timestamp) + "' ";
+        return this;
+    }
+
+    public GroupMessage sent_timestampLt(long sent_timestamp)
+    {
+        this.sql_where = this.sql_where + " and sent_timestamp<'" + s(sent_timestamp) + "' ";
+        return this;
+    }
+
+    public GroupMessage textEq(String text)
+    {
+        this.sql_where = this.sql_where + " and text='" + s(text) + "' ";
+        return this;
+    }
+
+    public GroupMessage orderBySent_timestampAsc()
+    {
+        if (this.sql_orderby.equals(""))
+        {
+            this.sql_orderby = " order by ";
+        }
+        else
+        {
+            this.sql_orderby = this.sql_orderby + " , ";
+        }
+        this.sql_orderby = this.sql_orderby + " sent_timestamp ASC ";
+        return this;
+    }
 }

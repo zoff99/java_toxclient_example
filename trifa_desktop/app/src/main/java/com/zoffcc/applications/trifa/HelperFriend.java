@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_FRIEND;
 import static com.zoffcc.applications.trifa.FriendListFragmentJ.add_all_friends_clear;
 import static com.zoffcc.applications.trifa.HelperMessage.get_message_in_db_sent_push_is_read;
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_sent_push_set;
@@ -126,8 +127,7 @@ public class HelperFriend
         // add friend ---------------
         long friendnum = MainActivity.tox_friend_add(friend_tox_id, "please add me"); // add friend
         Log.i(TAG, "add_friend_real:add friend  #:" + friendnum);
-        HelperGeneric.update_savedata_file_wrapper(
-                MainActivity.password_hash); // save toxcore datafile (new friend added)
+        HelperGeneric.update_savedata_file_wrapper(); // save toxcore datafile (new friend added)
 
         if (friendnum > -1)
         {
@@ -191,7 +191,7 @@ public class HelperFriend
             if (MainActivity.FriendPanel != null)
             {
                 CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
-                cc.is_friend = true;
+                cc.is_friend = COMBINED_IS_FRIEND;
                 cc.friend_item = f;
                 MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
             }
@@ -323,8 +323,7 @@ public class HelperFriend
                     e.printStackTrace();
                 }
 
-                HelperGeneric.update_savedata_file_wrapper(
-                        MainActivity.password_hash); // save toxcore datafile (new friend added)
+                HelperGeneric.update_savedata_file_wrapper(); // save toxcore datafile (new friend added)
                 final FriendList f = new FriendList();
                 f.tox_public_key_string = friend_public_key;
                 f.TOX_USER_STATUS = 0;

@@ -278,7 +278,7 @@ public class SettingsActivity extends JFrame
             global_my_name = text_name.getText();
         }
         tox_self_set_name(global_my_name);
-        update_savedata_file_wrapper(MainActivity.password_hash);
+        update_savedata_file_wrapper();
         ownProfileShort.setEditable(true);
         ownProfileShort.setText(global_my_name);
 

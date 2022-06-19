@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static com.zoffcc.applications.trifa.CombinedFriendsAndConferences.COMBINED_IS_CONFERENCE;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
@@ -94,7 +95,7 @@ public class HelperConference
         }
 
         // save tox savedate file
-        HelperGeneric.update_savedata_file_wrapper(MainActivity.password_hash);
+        HelperGeneric.update_savedata_file_wrapper();
     }
 
     static void new_or_updated_conference(long conference_number, String who_invited_public_key, String conference_identifier, int conference_type)
@@ -118,7 +119,7 @@ public class HelperConference
                         conference_identifierEq(conference_identifier).toList().get(0);
                 // update or add to "friendlist"
                 CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
-                cc.is_friend = false;
+                cc.is_friend = COMBINED_IS_CONFERENCE;
                 cc.conference_item = ConferenceDB.deep_copy(conf3);
                 MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
             }
@@ -153,7 +154,7 @@ public class HelperConference
                 {
                     // update or add to "friendlist"
                     CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
-                    cc.is_friend = false;
+                    cc.is_friend = COMBINED_IS_CONFERENCE;
                     cc.conference_item = ConferenceDB.deep_copy(conf_new);
                     MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
                 }
@@ -395,77 +396,12 @@ public class HelperConference
         }
     }
 
-    static String get_conference_title_from_confid(String conference_id)
-    {
-        if (conference_id.equals("-1"))
-        {
-            return "Unknown Conference";
-        }
-
-        try
-        {
-            // try in the database
-            String name = orma.selectFromConferenceDB().
-                    conference_identifierEq(conference_id).get(0).name;
-
-            if ((name == null) || (name.equals("-1")))
-            {
-                Log.i(TAG, "get_conference_title_from_confid:EE:1");
-            }
-            else
-            {
-                return name;
-            }
-        }
-        catch (Exception e)
-        {
-            // e.printStackTrace();
-            Log.i(TAG, "get_conference_title_from_confid:EE:2:" + e.getMessage() + " conf_id=" + conference_id);
-        }
-
-        try
-        {
-            String name = MainActivity.tox_conference_get_title(orma.selectFromConferenceDB().
-                    conference_activeEq(true).
-                    conference_identifierEq(conference_id).get(0).tox_conference_number);
-
-            if ((name == null) || (name.equals("-1")))
-            {
-                Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:1");
-                name = "Unknown Conference";
-            }
-
-            try
-            {
-                // remember it in the Database
-                orma.updateConferenceDB().
-                        conference_identifierEq(conference_id).
-                        name(name).execute();
-            }
-            catch (Exception e2)
-            {
-                // e2.printStackTrace();
-                Log.i(TAG, "get_conference_title_from_confid:EE:3:" + e2.getMessage());
-            }
-
-            return name;
-        }
-        catch (Exception e2)
-        {
-            // e2.printStackTrace();
-            Log.i(TAG, "get_conference_title_from_confid:EE:4:" + e2.getMessage());
-        }
-
-        Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:2");
-        return "Unknown Conference";
-    }
-
     static void update_single_conference_in_friendlist_view(final ConferenceDB conf)
     {
         if (conf != null)
         {
             CombinedFriendsAndConferences cc = new CombinedFriendsAndConferences();
-            cc.is_friend = false;
+            cc.is_friend = COMBINED_IS_CONFERENCE;
             cc.conference_item = conf;
             MainActivity.FriendPanel.modify_friend(cc, cc.is_friend);
         }
@@ -543,5 +479,70 @@ public class HelperConference
             e.printStackTrace();
             Log.i(TAG, "set_conference_inactive:EE:" + e.getMessage());
         }
+    }
+
+    static String get_conference_title_from_confid(String conference_id)
+    {
+        if (conference_id.equals("-1"))
+        {
+            return "Unknown Conference";
+        }
+
+        try
+        {
+            // try in the database
+            String name = orma.selectFromConferenceDB().
+                    conference_identifierEq(conference_id).get(0).name;
+
+            if ((name == null) || (name.equals("-1")))
+            {
+                Log.i(TAG, "get_conference_title_from_confid:EE:1");
+            }
+            else
+            {
+                return name;
+            }
+        }
+        catch (Exception e)
+        {
+            // e.printStackTrace();
+            Log.i(TAG, "get_conference_title_from_confid:EE:2:" + e.getMessage() + " conf_id=" + conference_id);
+        }
+
+        try
+        {
+            String name = MainActivity.tox_conference_get_title(orma.selectFromConferenceDB().
+                    conference_activeEq(true).
+                    conference_identifierEq(conference_id).get(0).tox_conference_number);
+
+            if ((name == null) || (name.equals("-1")))
+            {
+                Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:1");
+                name = "Unknown Conference";
+            }
+
+            try
+            {
+                // remember it in the Database
+                orma.updateConferenceDB().
+                        conference_identifierEq(conference_id).
+                        name(name).execute();
+            }
+            catch (Exception e2)
+            {
+                // e2.printStackTrace();
+                Log.i(TAG, "get_conference_title_from_confid:EE:3:" + e2.getMessage());
+            }
+
+            return name;
+        }
+        catch (Exception e2)
+        {
+            // e2.printStackTrace();
+            Log.i(TAG, "get_conference_title_from_confid:EE:4:" + e2.getMessage());
+        }
+
+        Log.i(TAG, "get_conference_title_from_confid:Unknown Conference:2");
+        return "Unknown Conference";
     }
 }

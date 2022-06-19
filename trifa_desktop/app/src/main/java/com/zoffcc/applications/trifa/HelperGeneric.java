@@ -164,11 +164,12 @@ public class HelperGeneric
         }
     }
 
-    static void update_savedata_file_wrapper(String password_hash_2)
+    static void update_savedata_file_wrapper()
     {
         try
         {
             MainActivity.semaphore_tox_savedata.acquire();
+            String password_hash_2 = MainActivity.password_hash;
             long start_timestamp = System.currentTimeMillis();
             MainActivity.update_savedata_file(password_hash_2);
             long end_timestamp = System.currentTimeMillis();
@@ -1520,7 +1521,7 @@ public class HelperGeneric
         long new_nospam = (long) random.nextInt() + (1L << 31);
         // Log.i(TAG, "generated NOSPAM=" + new_nospam);
         MainActivity.tox_self_set_nospam(new_nospam);
-        update_savedata_file_wrapper(MainActivity.password_hash); // set new random nospam
+        update_savedata_file_wrapper(); // set new random nospam
     }
 
     public static void send_avatar_to_all_friends()
@@ -1730,5 +1731,15 @@ public class HelperGeneric
         }
 
         return false;
+    }
+
+    public static String fourbytes_of_long_to_hex(final long in)
+    {
+        return String.format("%08x", in);
+    }
+
+    public static long getUnsignedInt(long x)
+    {
+        return x & 0x00000000ffffffffL;
     }
 }
