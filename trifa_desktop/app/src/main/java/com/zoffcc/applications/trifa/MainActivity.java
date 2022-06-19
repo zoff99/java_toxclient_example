@@ -119,6 +119,7 @@ import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_ou
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_active_threads;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_max_active_threads;
 import static com.zoffcc.applications.trifa.ConferenceMessageListFragmentJ.current_conf_id;
+import static com.zoffcc.applications.trifa.GroupMessageListFragmentJ.current_group_id;
 import static com.zoffcc.applications.trifa.HelperConference.get_last_conference_message_in_this_conference_within_n_seconds_from_sender_pubkey;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
@@ -1174,6 +1175,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 if (i == 0)
                 {
                     current_conf_id = "-1";
+                    current_group_id = "-1";
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
 
@@ -1189,6 +1191,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 else if (i == 1)
                 {
                     current_conf_id = "-1";
+                    current_group_id = "-1";
 
                     PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();
@@ -1203,6 +1206,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 {
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
+                    current_group_id = "-1";
 
                     PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();
@@ -1230,6 +1234,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 {
                     MessagePanel.setCurrentPK(null);
                     MessagePanel.friendnum = -1;
+                    current_conf_id = "-1";
 
                     PeerPanelContainer.removeAll();
                     MessagePanelContainer.removeAll();

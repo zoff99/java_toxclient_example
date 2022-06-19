@@ -274,7 +274,7 @@ public class GroupDB
         return this;
     }
 
-    public GroupDB tox_group_number(long group_num)
+    public GroupDB tox_group_number(long tox_group_number)
     {
         if (this.sql_set.equals(""))
         {
@@ -284,7 +284,7 @@ public class GroupDB
         {
             this.sql_set = this.sql_set + " , ";
         }
-        this.sql_set = this.sql_set + " group_num='" + s(group_num) + "' ";
+        this.sql_set = this.sql_set + " tox_group_number='" + s(tox_group_number) + "' ";
         return this;
     }
 
