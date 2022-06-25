@@ -70,6 +70,10 @@ import static com.zoffcc.applications.trifa.HelperFriend.delete_friend_all_messa
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_pubkey;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.delete_group;
+import static com.zoffcc.applications.trifa.HelperGroup.delete_group_all_messages;
+import static com.zoffcc.applications.trifa.HelperGroup.get_group_title_from_groupid;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_conferences_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.send_all_friend_pubkeys_to_relay;
@@ -85,6 +89,7 @@ import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.set_message_panel;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_delete;
 import static com.zoffcc.applications.trifa.MainActivity.tox_friend_delete;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_leave;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
@@ -105,6 +110,7 @@ public class FriendListFragmentJ extends JPanel
     JScrollPane FriendScrollPane;
     static JPopupMenu popup_friends;
     static JPopupMenu popup_confs;
+    static JPopupMenu popup_groups;
 
     static Boolean in_update_data = false;
     static final Boolean in_update_data_lock = false;
@@ -121,6 +127,7 @@ public class FriendListFragmentJ extends JPanel
 
         popup_friends = new JPopupMenu();
         popup_confs = new JPopupMenu();
+        popup_groups = new JPopupMenu();
 
         Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popup_friends.getForeground());
         TitledBorder labelBorder = BorderFactory.createTitledBorder(titleUnderline, "...", TitledBorder.CENTER,
@@ -128,6 +135,7 @@ public class FriendListFragmentJ extends JPanel
                                                                     popup_friends.getForeground());
         popup_friends.setBorder(labelBorder);
         popup_confs.setBorder(labelBorder);
+        popup_groups.setBorder(labelBorder);
 
         JMenuItem menuItem_friend_info = new JMenuItem(lo.getString("info_friend"));
         menuItem_friend_info.addActionListener(new ActionListener()
@@ -315,6 +323,72 @@ public class FriendListFragmentJ extends JPanel
             }
         });
         popup_confs.add(menuItem_del_conf);
+
+        JMenuItem menuItem_del_group = new JMenuItem(lo.getString("delete_group"));
+        menuItem_del_group.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent ev)
+            {
+                final JMenuItem mitem = (JMenuItem) ev.getSource();
+                final Component a = ((JPopupMenu) mitem.getParent()).getInvoker();
+                final JList<CombinedFriendsAndConferences> b = (JList<CombinedFriendsAndConferences>) a;
+
+                final String c2_conf_id_string = b.getSelectedValue().group_item.group_identifier;
+                final GroupDB c2_conf = b.getSelectedValue().group_item;
+
+                int selected_answer = JOptionPane.showConfirmDialog(mitem, lo.getString("delete_group_msg"),
+                                                                    lo.getString("delete_group_title"), YES_NO_OPTION);
+                if (selected_answer == YES_OPTION)
+                {
+                    try
+                    {
+                        Runnable myRunnable = new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    if (c2_conf.group_identifier != null)
+                                    {
+                                        final long group_num = tox_group_by_groupid__wrapper(c2_conf.group_identifier);
+                                        tox_group_leave(group_num, "bye");
+                                        update_savedata_file_wrapper(); // after deleteing a conference
+                                    }
+
+                                    Log.i(TAG, "onMenuItemClick:info:33");
+                                    delete_group_all_messages(c2_conf.group_identifier);
+                                    delete_group(c2_conf.group_identifier);
+                                    Log.i(TAG, "onMenuItemClick:info:34");
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                    Log.i(TAG, "onMenuItemClick:9:EE:" + e.getMessage());
+                                }
+
+                                try
+                                {
+                                    // reload friendlist
+                                    add_all_friends_clear(200);
+                                }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+
+                        SwingUtilities.invokeLater(myRunnable);
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+        });
+        popup_groups.add(menuItem_del_group);
 
         JMenuItem menuItem_alias_name = new JMenuItem(lo.getString("set_alias_name_friend"));
         menuItem_alias_name.addActionListener(new ActionListener()
@@ -581,7 +655,7 @@ public class FriendListFragmentJ extends JPanel
                             name_shortened = name.substring(0, CONFERENCE_NAME_DISPLAY_MENU_MAXLEN);
                         }
                         Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0,
-                                                                                popup_friends.getForeground());
+                                                                                popup_confs.getForeground());
                         labelBorder = BorderFactory.createTitledBorder(titleUnderline, name_shortened,
                                                                        TitledBorder.CENTER, TitledBorder.ABOVE_TOP,
                                                                        popup_confs.getFont(),
@@ -597,6 +671,45 @@ public class FriendListFragmentJ extends JPanel
                     popup_confs.revalidate();
                     popup_confs.getParent().revalidate();
                     popup_confs.repaint();
+                });
+            }
+            else if (friends_and_confs_list_model.getElementAt(index).is_friend == COMBINED_IS_GROUP)
+            // ---------- conference ----------
+            {
+                EventQueue.invokeLater(() -> {
+                    TitledBorder labelBorder = null;
+                    try
+                    {
+                        final String name = get_group_title_from_groupid(
+                                friends_and_confs_list_model.getElementAt(index).group_item.group_identifier) + " " +
+                                            friends_and_confs_list_model.getElementAt(
+                                                    index).group_item.group_identifier.substring(0, 5);
+                        String name_shortened = name;
+                        if ((name == null) || (name.length() == 0))
+                        {
+                            name_shortened = "...";
+                        }
+                        else if (name.length() > CONFERENCE_NAME_DISPLAY_MENU_MAXLEN)
+                        {
+                            name_shortened = name.substring(0, CONFERENCE_NAME_DISPLAY_MENU_MAXLEN);
+                        }
+                        Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0,
+                                                                                popup_groups.getForeground());
+                        labelBorder = BorderFactory.createTitledBorder(titleUnderline, name_shortened,
+                                                                       TitledBorder.CENTER, TitledBorder.ABOVE_TOP,
+                                                                       popup_groups.getFont(),
+                                                                       popup_groups.getForeground());
+                    }
+                    catch (Exception e2)
+                    {
+                        e2.printStackTrace();
+                    }
+                    friends_and_confs_list.setSelectedIndex(index);
+                    popup_groups.setBorder(labelBorder);
+                    popup_groups.show(friends_and_confs_list, e.getX(), e.getY());
+                    popup_groups.revalidate();
+                    popup_groups.getParent().revalidate();
+                    popup_groups.repaint();
                 });
             }
             else if (friends_and_confs_list_model.getElementAt(index).is_friend == COMBINED_IS_FRIEND)
