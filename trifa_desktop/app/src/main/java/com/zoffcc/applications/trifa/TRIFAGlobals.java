@@ -21,6 +21,8 @@ package com.zoffcc.applications.trifa;
 
 import java.awt.Color;
 
+import static com.zoffcc.applications.trifa.ToxVars.MAX_FILE_DATA_SIZE;
+
 
 public class TRIFAGlobals
 {
@@ -123,9 +125,10 @@ public class TRIFAGlobals
     // static Map<String, java.io.FileOutputStream> cache_ft_fos_normal = new HashMap<String, java.io.FileOutputStream>();
     // ---- lookup cache ----
 
-    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES = 1000000L; // 1000 kBytes // update FT and progress bars every XX bytes
-    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES = 30000L; // 30 kBytes
-    static final long UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES = 250000L; // 250 kBytes, less than this in bytes is a small file
+    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES =
+            120L * MAX_FILE_DATA_SIZE; // x kBytes // update FT and progress bars every XX bytes
+    static final long UPDATE_MESSAGE_PROGRESS_AFTER_BYTES_SMALL_FILES = 8L * MAX_FILE_DATA_SIZE; // x kBytes
+    static final long UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES = 250000L; // x kBytes, less than this in bytes is a small file
 
     // static boolean global_incoming_ft_active = false;
 

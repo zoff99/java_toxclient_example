@@ -399,6 +399,29 @@ public class HelperMessage
         }
     }
 
+    public static long get_message_id_from_filetransfer_id(final long filetransfer_id)
+    {
+        try
+        {
+            List<Message> m = orma.selectFromMessage().
+                    filetransfer_idEq(filetransfer_id).
+                    orderByIdDesc().toList();
+
+            if (m.size() == 0)
+            {
+                return -1;
+            }
+
+            return m.get(0).id;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "get_message_id_from_filetransfer_id:EE:" + e.getMessage());
+            return -1;
+        }
+    }
+
     static void update_message_in_db_filename_fullpath_friendnum_and_filenum(long friend_number, long file_number, String filename_fullpath)
     {
         try

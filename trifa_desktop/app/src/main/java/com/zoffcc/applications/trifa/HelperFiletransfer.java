@@ -24,9 +24,11 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Random;
 
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGeneric.bytebuffer_to_hexstring;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_start_sending_from_id;
@@ -37,15 +39,18 @@ import static com.zoffcc.applications.trifa.MainActivity.PREF__auto_accept_video
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_send;
+import static com.zoffcc.applications.trifa.MainActivity.tox_friend_get_capabilities;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_FILE_DIR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_PREFIX;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VFS_TMP_FILE_DIR;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_CAPABILITY_DECODE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_FTV2;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 
 public class HelperFiletransfer
@@ -156,6 +161,7 @@ public class HelperFiletransfer
                 fos_open(f.fos_open).
                 filesize(f.filesize).
                 current_position(f.current_position).
+                tox_file_id_hex(f.tox_file_id_hex).
                 execute();
     }
 
@@ -456,6 +462,81 @@ public class HelperFiletransfer
         }
     }
 
+    static void cancel_filetransfer_f(final Filetransfer f)
+    {
+        try
+        {
+            if (f == null)
+            {
+                return;
+            }
+
+            long ft_id = f.id;
+            long msg_id = HelperMessage.get_message_id_from_filetransfer_id(ft_id);
+
+            if (f.direction == TRIFA_FT_DIRECTION_INCOMING.value)
+            {
+                if ((f.kind == TOX_FILE_KIND_DATA.value) || (f.kind == TOX_FILE_KIND_FTV2.value))
+                {
+                    delete_filetransfer_tmpfile(ft_id);
+                    HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_CANCEL.value);
+                    set_filetransfer_for_message_from_filetransfer_id(ft_id, -1);
+                    delete_filetransfers_from_id(ft_id);
+                    try
+                    {
+                        if (f.id != -1)
+                        {
+                            HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+                else // avatar FT
+                {
+                    set_filetransfer_state_from_id(ft_id, TOX_FILE_CONTROL_CANCEL.value);
+                    HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_CANCEL.value);
+                    delete_filetransfer_tmpfile(ft_id);
+                    delete_filetransfers_from_id(ft_id);
+                }
+            }
+            else // outgoing FT
+            {
+                if ((f.kind == TOX_FILE_KIND_DATA.value) || (f.kind == TOX_FILE_KIND_FTV2.value))
+                {
+                    HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_CANCEL.value);
+                    set_filetransfer_for_message_from_filetransfer_id(ft_id, -1);
+                    delete_filetransfers_from_id(ft_id);
+                    try
+                    {
+                        if (f.id != -1)
+                        {
+                            HelperMessage.update_single_message_from_messge_id(msg_id, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+                else // avatar FT
+                {
+                    set_filetransfer_state_from_id(ft_id, TOX_FILE_CONTROL_CANCEL.value);
+                    if (msg_id > -1)
+                    {
+                        HelperMessage.set_message_state_from_id(msg_id, TOX_FILE_CONTROL_CANCEL.value);
+                    }
+                    delete_filetransfer_tmpfile(ft_id);
+                    delete_filetransfers_from_id(ft_id);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     static void update_filetransfer_db_current_position(final Filetransfer f)
     {
         orma.updateFiletransfer().
@@ -481,7 +562,7 @@ public class HelperFiletransfer
 
             if (f.direction == TRIFA_FT_DIRECTION_INCOMING.value)
             {
-                if (f.kind == TOX_FILE_KIND_DATA.value)
+                if ((f.kind == TOX_FILE_KIND_DATA.value) || (f.kind == TOX_FILE_KIND_FTV2.value))
                 {
                     long ft_id = get_filetransfer_id_from_friendnum_and_filenum(friend_number, file_number);
                     long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(ft_id, friend_number);
@@ -524,7 +605,7 @@ public class HelperFiletransfer
             }
             else // outgoing FT
             {
-                if (f.kind == TOX_FILE_KIND_DATA.value)
+                if ((f.kind == TOX_FILE_KIND_DATA.value) || (f.kind == TOX_FILE_KIND_FTV2.value))
                 {
                     long ft_id = get_filetransfer_id_from_friendnum_and_filenum(friend_number, file_number);
                     long msg_id = HelperMessage.get_message_id_from_filetransfer_id_and_friendnum(ft_id, friend_number);
@@ -572,6 +653,31 @@ public class HelperFiletransfer
             e.printStackTrace();
         }
     }
+
+    static void set_all_filetransfers_inactive()
+    {
+        try
+        {
+            List<Filetransfer> fts_active = orma.selectFromFiletransfer().file_numberNotEq(-1).toList();
+            for (Filetransfer f : fts_active)
+            {
+                // Log.i(TAG, "set_all_filetransfers_inactive:cancel:id=" + f.tox_file_id_hex + " filename=" + f.file_name);
+                cancel_filetransfer_f(f);
+            }
+
+            orma.updateFiletransfer().
+                    file_number(-1).
+                    state(TOX_FILE_CONTROL_CANCEL.value).
+                    execute();
+            Log.i(TAG, "set_all_filetransfers_inactive");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.i(TAG, "set_all_filetransfers_inactive:EE:" + e.getMessage());
+        }
+    }
+
 
     public static long get_filetransfer_id_from_friendnum_and_filenum(long friend_number, long file_number)
     {
@@ -676,30 +782,39 @@ public class HelperFiletransfer
                     idEq(element.filetransfer_id).
                     orderByIdDesc().toList().get(0);
 
-            Log.i(TAG,
-                  "MM2MM:8:ft.filesize=" + ft.filesize + " ftid=" + ft.id + " ft.mid=" +
-                  ft.message_id + " mid=" + element.id);
+            Log.i(TAG, "MM2MM:8:ft.filesize=" + ft.filesize + " ftid=" + ft.id + " ft.mid=" + ft.message_id + " mid=" +
+                       element.id);
 
             // ------ DEBUG ------
             Log.i(TAG, "MM2MM:8a:ft full=" + ft);
             // ------ DEBUG ------
 
             ByteBuffer file_id_buffer = ByteBuffer.allocateDirect(TOX_FILE_ID_LENGTH);
-            byte[] sha256_buf = TrifaSetPatternActivity.sha256(
-                    TrifaSetPatternActivity.StringToBytes2(
-                            "" + ft.path_name + ":" + ft.file_name + ":" +
-                            ft.filesize));
+            MainActivity.tox_messagev3_get_new_message_id(file_id_buffer);
 
-            Log.i(TAG, "TOX_FILE_ID_LENGTH=" + TOX_FILE_ID_LENGTH + " sha_byte=" +
-                       sha256_buf.length);
-
-            file_id_buffer.put(sha256_buf);
+            final String file_id_buffer_hex = bytebuffer_to_hexstring(file_id_buffer, true);
+            Log.i(TAG, "TOX_FILE_ID_LENGTH=" + TOX_FILE_ID_LENGTH + " file_id_buffer_hex=" + file_id_buffer_hex);
+            ft.tox_file_id_hex = file_id_buffer_hex;
 
             // actually start sending the file to friend
-            long file_number = tox_file_send(
-                    tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
-                    ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value, ft.filesize,
-                    file_id_buffer, ft.file_name, ft.file_name.length());
+            long file_number = -1;
+            if (TOX_CAPABILITY_DECODE(
+                    tox_friend_get_capabilities(tox_friend_by_public_key__wrapper(element.tox_friendpubkey))).ftv2)
+            {
+                Log.i(TAG, "TOX_FILE_KIND_FTV2");
+                file_number = tox_file_send(tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                            TOX_FILE_KIND_FTV2.value, ft.filesize, file_id_buffer, ft.file_name,
+                                            ft.file_name.length());
+                ft.kind = TOX_FILE_KIND_FTV2.value;
+            }
+            else
+            {
+                Log.i(TAG, "TOX_FILE_KIND_DATA");
+                file_number = tox_file_send(tox_friend_by_public_key__wrapper(element.tox_friendpubkey),
+                                            ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value, ft.filesize, file_id_buffer,
+                                            ft.file_name, ft.file_name.length());
+                ft.kind = ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value;
+            }
             // TODO: handle errors from tox_file_send() here -------
 
             // @formatter:off
@@ -714,12 +829,26 @@ public class HelperFiletransfer
             );
             // @formatter:on
 
-            Log.i(TAG, "MM2MM:9:new filenum=" + file_number);
+            if (file_number < 0)
+            {
+                Log.i(TAG, "tox_file_send:EE:" + file_number);
 
-            // update the tox file number in DB -----------
-            ft.file_number = file_number;
-            update_filetransfer_db_full(ft);
-            // update the tox file number in DB -----------
+                // cancel FT
+                set_filetransfer_state_from_id(element.filetransfer_id, TOX_FILE_CONTROL_CANCEL.value);
+                set_message_state_from_id(element.id, TOX_FILE_CONTROL_CANCEL.value);
+                // update message view
+                update_single_message_from_messge_id(element.id, true);
+            }
+            else
+            {
+
+                Log.i(TAG, "MM2MM:9:new filenum=" + file_number);
+
+                // update the tox file number in DB -----------
+                ft.file_number = file_number;
+                update_filetransfer_db_full(ft);
+                // update the tox file number in DB -----------
+            }
 
             Log.i(TAG, "button_ok:OnTouch:009:f_num=" + file_number);
         }

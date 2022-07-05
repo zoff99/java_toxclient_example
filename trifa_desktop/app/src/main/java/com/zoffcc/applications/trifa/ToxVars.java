@@ -39,6 +39,21 @@ public class ToxVars
     public static final int TOX_HASH_LENGTH = 32;
     public static final int TOX_FILE_ID_LENGTH = 32;
     public static final int TOX_MAX_FILENAME_LENGTH = 255;
+    public static final int CRYPTO_MAC_SIZE = 16;
+    public static final int CRYPTO_DATA_PACKET_MIN_SIZE = (1 + 2 + 4 + 4) + CRYPTO_MAC_SIZE;
+    public static final int MAX_CRYPTO_PACKET_SIZE = 1400;
+    public static final int MAX_CRYPTO_DATA_SIZE = (MAX_CRYPTO_PACKET_SIZE - CRYPTO_DATA_PACKET_MIN_SIZE);
+    public static final int MAX_FILE_DATA_SIZE = (MAX_CRYPTO_DATA_SIZE - 2); // == 1371 bytes!
+    //
+    //
+    // -- Group chat numeric constants
+    public static final int TOX_GROUP_MAX_TOPIC_LENGTH = 512;
+    public static final int TOX_GROUP_MAX_PART_LENGTH = 128;
+    public static final int TOX_GROUP_MAX_GROUP_NAME_LENGTH = 48;
+    public static final int TOX_GROUP_MAX_PASSWORD_SIZE = 32;
+    public static final int TOX_GROUP_CHAT_ID_SIZE = 32;
+    public static final int TOX_GROUP_PEER_PUBLIC_KEY_SIZE = 32;
+    // -- Group chat numeric constants
     //
     public static final int TOX_MSGV3_MSGID_LENGTH = 32;
     public static final int TOX_MSGV3_TIMESTAMP_LENGTH = 4;
@@ -56,6 +71,7 @@ public class ToxVars
         boolean msgv2 = false;
         boolean toxav_h264 = false;
         boolean msgv3 = false;
+        boolean ftv2 = false;
         boolean next_implementation = false;
     }
 
@@ -64,6 +80,7 @@ public class ToxVars
     public static long TOX_CAPABILITY_MSGV2 = 1 << 1;
     public static long TOX_CAPABILITY_TOXAV_H264 = 1 << 2;
     public static long TOX_CAPABILITY_MSGV3 = 1 << 3;
+    public static long TOX_CAPABILITY_FTV2 = 1 << 4;
     public static long TOX_CAPABILITY_NEXT_IMPLEMENTATION = (1L << 63L);
 
     public static TOX_CAPABILITY_DECODE_RESULT TOX_CAPABILITY_DECODE(long capabilites_encoded)
@@ -88,6 +105,11 @@ public class ToxVars
         if ((capabilites_encoded & TOX_CAPABILITY_MSGV3) != 0)
         {
             res.msgv3 = true;
+        }
+
+        if ((capabilites_encoded & TOX_CAPABILITY_FTV2) != 0)
+        {
+            res.ftv2 = true;
         }
 
         if ((capabilites_encoded & TOX_CAPABILITY_NEXT_IMPLEMENTATION) != 0)
@@ -115,6 +137,11 @@ public class ToxVars
         if (in.msgv2)
         {
             res = res + " MSGV2 ";
+        }
+
+        if (in.ftv2)
+        {
+            res = res + " FTV2 ";
         }
 
         if (in.toxav_h264)
@@ -970,7 +997,7 @@ public class ToxVars
          * has no avatar.
          */
         TOX_FILE_KIND_AVATAR(1), TOX_FILE_KIND_MESSAGEV2_SEND(2), TOX_FILE_KIND_MESSAGEV2_ANSWER(
-            3), TOX_FILE_KIND_MESSAGEV2_ALTER(4), TOX_FILE_KIND_MESSAGEV2_SYNC(5);
+            3), TOX_FILE_KIND_MESSAGEV2_ALTER(4), TOX_FILE_KIND_MESSAGEV2_SYNC(5), TOX_FILE_KIND_FTV2(16);;
 
         public int value;
 
@@ -1004,6 +1031,10 @@ public class ToxVars
             else if (value == TOX_FILE_KIND_MESSAGEV2_SYNC.value)
             {
                 return "TOX_FILE_KIND_MESSAGEV2_SYNC";
+            }
+            else if (value == TOX_FILE_KIND_FTV2.value)
+            {
+                return "TOX_FILE_KIND_FTV2";
             }
             return "UNKNOWN";
         }

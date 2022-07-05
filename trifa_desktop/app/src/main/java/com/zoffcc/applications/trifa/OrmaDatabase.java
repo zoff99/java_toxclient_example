@@ -355,7 +355,21 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 8;
+        if (current_db_version < 9)
+        {
+            try
+            {
+                final String update_001 = "alter table Filetransfer add tox_file_id_hex TEXT DEFAULT NULL;" + "\n" +
+                                          "CREATE INDEX index_tox_file_id_hex_on_Filetransfer ON Filetransfer (tox_file_id_hex);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 9;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;

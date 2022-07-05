@@ -80,6 +80,9 @@ public class Filetransfer
     @Column(indexed = true, defaultExpr = "-1")
     long message_id; // f_key -> Message.id
 
+    @Column(indexed = true, helpers = Column.Helpers.ALL)
+    String tox_file_id_hex = "";
+
     static Filetransfer deep_copy(Filetransfer in)
     {
         Filetransfer out = new Filetransfer();
@@ -96,6 +99,7 @@ public class Filetransfer
         out.filesize = in.filesize;
         out.current_position = in.current_position;
         out.message_id = in.message_id;
+        out.tox_file_id_hex = in.tox_file_id_hex;
         return out;
     }
 
@@ -104,7 +108,8 @@ public class Filetransfer
     {
         return "id=" + id + ", kind=" + kind + ", state=" + state + ", direction=" + direction + ", path_name=" +
                path_name + ", file_name=" + file_name + ", filesize=" + filesize + ", current_position=" +
-               current_position + ", message_id=" + message_id + ", tox_public_key_string=" + tox_public_key_string;
+               current_position + ", message_id=" + message_id + ", tox_public_key_string=" + tox_public_key_string +
+               ", tox_file_id_hex=" + tox_file_id_hex;
     }
 
     String sql_start = "";
@@ -145,6 +150,7 @@ public class Filetransfer
                 out.filesize = rs.getLong("filesize");
                 out.current_position = rs.getLong("current_position");
                 out.message_id = rs.getLong("message_id");
+                out.tox_file_id_hex = rs.getString("tox_file_id_hex");
 
                 fl.add(out);
             }
@@ -180,7 +186,8 @@ public class Filetransfer
                                  "fos_open,"+
                                  "filesize,"+
                                  "current_position,"+
-                                 "message_id"+
+                                 "message_id,"+
+                                 "tox_file_id_hex"+
                                  ")" +
                                  "values" +
                                  "(" +
@@ -196,7 +203,8 @@ public class Filetransfer
                                  "'"+b(this.fos_open)+"'," +
                                  "'"+s(this.filesize)+"'," +
                                  "'"+s(this.current_position)+"'," +
-                                 "'"+s(this.message_id)+"'" +
+                                 "'"+s(this.message_id)+"'," +
+                                 "'"+s(this.tox_file_id_hex)+"'" +
                                  ")";
 
             if (ORMA_TRACE)
@@ -505,6 +513,26 @@ public class Filetransfer
     public Filetransfer stateNotEq(int state)
     {
         this.sql_where = this.sql_where + " and state<>'" + s(state) + "' ";
+        return this;
+    }
+
+    public Filetransfer tox_file_id_hex(String tox_file_id_hex)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " tox_file_id_hex='" + s(tox_file_id_hex) + "' ";
+        return this;
+    }
+
+    public Filetransfer file_numberNotEq(long file_number)
+    {
+        this.sql_where = this.sql_where + " and file_number<>'" + s(file_number) + "' ";
         return this;
     }
 }
