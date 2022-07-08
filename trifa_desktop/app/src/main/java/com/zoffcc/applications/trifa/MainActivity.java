@@ -3771,6 +3771,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             m.text = filename_corrected + "\n" + file_size + " bytes";
             long new_msg_id = -1;
 
+            if ((get_current_friendnum() == friend_number) && (mainwindow_has_focus))
+            {
+                m.is_new = false;
+            }
+            else
+            {
+                m.is_new = true;
+            }
 
             if (get_current_friendnum() == friend_number)
             {
