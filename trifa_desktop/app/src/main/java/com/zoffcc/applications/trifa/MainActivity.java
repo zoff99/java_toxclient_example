@@ -1070,7 +1070,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 }
                 else if (relay_connection_status_real == 1)
                 {
-                    draw_main_top_icon(0xffce00, true);
+                    draw_main_top_icon(0xff8000, true);
                 }
                 else
                 {
@@ -2730,7 +2730,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     }
                     else if (a_TOX_CONNECTION == 1)
                     {
-                        draw_main_top_icon(0xffce00, false);
+                        draw_main_top_icon(0xff8000, false);
                     }
                     else
                     {
