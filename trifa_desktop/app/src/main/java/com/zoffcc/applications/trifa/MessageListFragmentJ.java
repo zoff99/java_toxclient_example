@@ -1087,6 +1087,7 @@ public class MessageListFragmentJ extends JPanel
         m.filename_fullpath = new java.io.File(filepath + "/" + filename).getAbsolutePath();
         m.sent_timestamp = System.currentTimeMillis();
         m.text = filename + "\n" + file_size + " bytes";
+        m.is_new = false; // no notification for outgoing filetransfers
 
         long new_msg_id = insert_into_message_db(m, true);
         m.id = new_msg_id;
