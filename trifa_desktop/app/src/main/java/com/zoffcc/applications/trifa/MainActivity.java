@@ -1007,6 +1007,19 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         m1.add(m11);
         // -------
         // -------
+        JMenuItem m13 = new JMenuItem(new AbstractAction(lo.getString("menu_about"))
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                Log.i(TAG, "About selected");
+                AboutActivity AboutFrame = new AboutActivity();
+                AboutFrame.setVisible(true);
+            }
+        });
+        m13.setFont(new java.awt.Font("SansSerif", PLAIN, TTF_FONT_FAMILY_MENU_SIZE));
+        m1.add(m13);
+        // -------
+        // -------
         JMenuItem m12 = new JMenuItem(new AbstractAction(lo.getString("menu_exit"))
         {
             public void actionPerformed(ActionEvent e)

@@ -30,6 +30,7 @@ fi
 
 # -XX:+PreserveFramePointer \
 # -Djdk.gtk.version=2 \
+# -XX:ObjectAlignmentInBytes=16 \
 
 java $scale \
 -Dcom.apple.mrj.application.apple.menu.about.name=TRIfA \
