@@ -58,6 +58,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDT
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_FTV2;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static java.awt.Font.PLAIN;
 
@@ -453,6 +454,20 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
         else
         {
             remove(progress_bar);
+        }
+
+        if (m.TRIFA_MESSAGE_TYPE == TRIFA_MSG_FILE.value)
+        {
+            if (m.filetransfer_kind == TOX_FILE_KIND_FTV2.value)
+            {
+                try
+                {
+                    m_text.setText("*ftV2*\n" + m_text.getText());
+                }
+                catch (Exception ignored)
+                {
+                }
+            }
         }
 
         add(date_line);

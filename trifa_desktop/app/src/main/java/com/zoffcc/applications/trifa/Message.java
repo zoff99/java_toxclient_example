@@ -34,6 +34,7 @@ import static com.zoffcc.applications.trifa.OrmaDatabase.b;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 
 @Table
 public class Message
@@ -134,6 +135,10 @@ public class Message
     @Nullable
     int sent_push = 0;
 
+    @Column(helpers = Column.Helpers.ALL, defaultExpr = "0")
+    @Nullable
+    int filetransfer_kind = TOX_FILE_KIND_DATA.value;
+
     // ------- SWING UI elements ------- //
     JButton _swing_ok = null;
     JButton _swing_cancel = null;
@@ -170,6 +175,7 @@ public class Message
         out.msg_at_relay = in.msg_at_relay;
         out.msg_idv3_hash = in.msg_idv3_hash;
         out.sent_push = in.sent_push;
+        out.filetransfer_kind = in.filetransfer_kind;
 
         return out;
     }
@@ -184,7 +190,8 @@ public class Message
                ", send_retries=" + send_retries + ", text=" + "xxxxxx" + ", filename_fullpath=" + filename_fullpath +
                ", is_new=" + is_new + ", msg_id_hash=" + msg_id_hash + ", msg_version=" + msg_version +
                ", resend_count=" + resend_count + ", raw_msgv2_bytes=" + "xxxxxx" + ", ft_outgoing_queued=" +
-               ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay + ", sent_push=" + sent_push;
+               ft_outgoing_queued + ", msg_at_relay=" + msg_at_relay + ", sent_push=" + sent_push +
+               ", filetransfer_kind=" + filetransfer_kind;
     }
 
     String sql_start = "";
@@ -240,6 +247,7 @@ public class Message
                 out.msg_at_relay = rs.getBoolean("msg_at_relay");
                 out.msg_idv3_hash = rs.getString("msg_idv3_hash");
                 out.sent_push = rs.getInt("sent_push");
+                out.filetransfer_kind = rs.getInt("filetransfer_kind");
 
                 list.add(out);
             }
@@ -290,10 +298,12 @@ public class Message
                                  "ft_outgoing_queued," +
                                  "msg_at_relay," +
                                  "msg_idv3_hash," +
+                                 "filetransfer_kind," +
                                  "sent_push" +
                                  ")" +
                                  "values" +
                                  "(" +
+                                 "?," +
                                  "?," +
                                  "?," +
                                  "?," +
@@ -352,7 +362,8 @@ public class Message
             insert_pstmt.setBoolean(24, this.ft_outgoing_queued);
             insert_pstmt.setBoolean(25, this.msg_at_relay);
             insert_pstmt.setString(26, this.msg_idv3_hash);
-            insert_pstmt.setInt(27, this.sent_push);
+            insert_pstmt.setInt(27, this.filetransfer_kind);
+            insert_pstmt.setInt(28, this.sent_push);
             // @formatter:on
 
             if (ORMA_TRACE)
@@ -896,6 +907,20 @@ public class Message
             this.sql_set = this.sql_set + " , ";
         }
         this.sql_set = this.sql_set + " sent_push='" + s(sent_push) + "' ";
+        return this;
+    }
+
+    public Message filetransfer_kind(int filetransfer_kind)
+    {
+        if (this.sql_set.equals(""))
+        {
+            this.sql_set = " set ";
+        }
+        else
+        {
+            this.sql_set = this.sql_set + " , ";
+        }
+        this.sql_set = this.sql_set + " filetransfer_kind='" + s(filetransfer_kind) + "' ";
         return this;
     }
 }

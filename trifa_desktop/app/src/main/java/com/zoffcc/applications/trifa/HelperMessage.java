@@ -192,6 +192,21 @@ public class HelperMessage
         }
     }
 
+    static void update_message_in_db_filetransfer_kind(final Message m)
+    {
+        try
+        {
+            orma.updateMessage().
+                    idEq(m.id).
+                    filetransfer_kind(m.filetransfer_kind).
+                    execute();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     synchronized static void update_message_in_db_no_read_recvedts(final Message m)
     {
         final Thread t = new Thread()

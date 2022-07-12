@@ -20,6 +20,7 @@
 package com.zoffcc.applications.trifa;
 
 import java.nio.ByteBuffer;
+import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
@@ -61,6 +62,7 @@ import static com.zoffcc.applications.trifa.MainActivity.cache_pubkey_fnum;
 import static com.zoffcc.applications.trifa.MainActivity.get_my_toxid;
 import static com.zoffcc.applications.trifa.MainActivity.myToxID;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
+import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chatlist;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_chatlist_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_get_id;
@@ -169,6 +171,20 @@ public class TrifaToxService
                 cache_pubkey_fnum.clear();
                 cache_fnum_pubkey.clear();
                 cache_confid_confnum.clear();
+
+                // ----- convert old NULL's into 0 -----
+                try
+                {
+                    Statement statement = sqldb.createStatement();
+                    final String sql_str = "update Message set filetransfer_kind='0' where filetransfer_kind is NULL";
+                    statement.execute(sql_str);
+                    Log.i(TAG, "onCreate:filetransfer_kind");
+                }
+                catch (Exception e)
+                {
+                    Log.i(TAG, "onCreate:filetransfer_kind:EE01");
+                }
+                // ----- convert old NULL's into 0 -----
 
                 // TODO --------
                 String my_tox_id_local = get_my_toxid();

@@ -32,6 +32,7 @@ import static com.zoffcc.applications.trifa.HelperGeneric.bytebuffer_to_hexstrin
 import static com.zoffcc.applications.trifa.HelperGeneric.set_message_accepted_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_queueing_from_id;
 import static com.zoffcc.applications.trifa.HelperMessage.set_message_start_sending_from_id;
+import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_filetransfer_kind;
 import static com.zoffcc.applications.trifa.HelperMessage.update_single_message_from_messge_id;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__auto_accept_all_upto;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__auto_accept_image;
@@ -806,6 +807,7 @@ public class HelperFiletransfer
                                             TOX_FILE_KIND_FTV2.value, ft.filesize, file_id_buffer, ft.file_name,
                                             ft.file_name.length());
                 ft.kind = TOX_FILE_KIND_FTV2.value;
+                element.filetransfer_kind = TOX_FILE_KIND_FTV2.value;
             }
             else
             {
@@ -814,8 +816,11 @@ public class HelperFiletransfer
                                             ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value, ft.filesize, file_id_buffer,
                                             ft.file_name, ft.file_name.length());
                 ft.kind = ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA.value;
+                element.filetransfer_kind = TOX_FILE_KIND_DATA.value;
             }
             // TODO: handle errors from tox_file_send() here -------
+
+            update_message_in_db_filetransfer_kind(element);
 
             // @formatter:off
             Log.D(TAG,

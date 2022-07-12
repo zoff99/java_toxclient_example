@@ -369,7 +369,21 @@ public class OrmaDatabase
             }
         }
 
-        final int new_db_version = 9;
+        if (current_db_version < 10)
+        {
+            try
+            {
+                final String update_001 = "alter table Message add filetransfer_kind INTEGER NOT NULL DEFAULT 0;" + "\n" +
+                                          "CREATE INDEX index_filetransfer_kind_on_Message ON Message (filetransfer_kind);";
+                run_multi_sql(update_001);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final int new_db_version = 10;
         set_new_db_version(new_db_version);
         // return the updated DB VERSION
         return new_db_version;

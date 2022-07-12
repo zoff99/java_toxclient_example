@@ -214,6 +214,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CO
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_AVATAR;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_FTV2;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
@@ -3769,6 +3770,16 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             m.rcvd_timestamp = System.currentTimeMillis();
             m.sent_timestamp = m.rcvd_timestamp;
             m.text = filename_corrected + "\n" + file_size + " bytes";
+
+            if (a_TOX_FILE_KIND == TOX_FILE_KIND_FTV2.value)
+            {
+                m.filetransfer_kind = TOX_FILE_KIND_FTV2.value;
+            }
+            else if (a_TOX_FILE_KIND == TOX_FILE_KIND_DATA.value)
+            {
+                m.filetransfer_kind = TOX_FILE_KIND_DATA.value;
+            }
+
             long new_msg_id = -1;
 
             if ((get_current_friendnum() == friend_number) && (mainwindow_has_focus))

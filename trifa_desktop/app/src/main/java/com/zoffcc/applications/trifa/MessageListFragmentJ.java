@@ -1088,6 +1088,7 @@ public class MessageListFragmentJ extends JPanel
         m.sent_timestamp = System.currentTimeMillis();
         m.text = filename + "\n" + file_size + " bytes";
         m.is_new = false; // no notification for outgoing filetransfers
+        m.filetransfer_kind = TOX_FILE_KIND_DATA.value;
 
         long new_msg_id = insert_into_message_db(m, true);
         m.id = new_msg_id;
