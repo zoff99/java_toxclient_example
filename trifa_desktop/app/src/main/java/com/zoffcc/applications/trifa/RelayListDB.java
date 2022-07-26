@@ -116,6 +116,14 @@ public class RelayListDB
 
                 list.add(out);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -161,6 +169,13 @@ public class RelayListDB
             ret = get_last_rowid(statement);
             // @formatter:on
 
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -187,6 +202,14 @@ public class RelayListDB
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -215,6 +238,14 @@ public class RelayListDB
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

@@ -163,6 +163,14 @@ public class GroupMessage
 
                 list.add(out);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -225,6 +233,14 @@ public class GroupMessage
             statement.execute(sql_str);
             ret = get_last_rowid(statement);
             // @formatter:on
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -251,6 +267,14 @@ public class GroupMessage
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -279,6 +303,14 @@ public class GroupMessage
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

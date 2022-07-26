@@ -251,6 +251,14 @@ public class Message
 
                 list.add(out);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -399,6 +407,14 @@ public class Message
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -427,6 +443,14 @@ public class Message
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

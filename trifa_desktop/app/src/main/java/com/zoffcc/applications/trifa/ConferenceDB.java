@@ -20,7 +20,6 @@
 package com.zoffcc.applications.trifa;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +123,14 @@ public class ConferenceDB
 
                 list.add(out);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -170,6 +177,13 @@ public class ConferenceDB
             ret = get_last_rowid(statement);
             // @formatter:on
 
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -196,6 +210,13 @@ public class ConferenceDB
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -224,6 +245,14 @@ public class ConferenceDB
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

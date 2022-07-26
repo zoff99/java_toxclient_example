@@ -71,6 +71,14 @@ public class HelperMessage
                     msg_id = rs.getLong("id");
                     // Log.i(TAG, "msg_id=" + msg_id);
                 }
+
+                try
+                {
+                    statement.close();
+                }
+                catch (Exception ignored)
+                {
+                }
             }
             catch (Exception e)
             {
@@ -167,6 +175,14 @@ public class HelperMessage
                 m.sent_timestamp = rs.getLong("sent_timestamp");
                 // Log.i(TAG, "m=" + m);
                 // TODO: read all fields
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

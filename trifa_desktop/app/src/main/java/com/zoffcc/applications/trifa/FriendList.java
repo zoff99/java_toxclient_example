@@ -210,6 +210,14 @@ public class FriendList
 
                 fl.add(f);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -287,6 +295,13 @@ public class FriendList
             ret = get_last_rowid(statement);
             // @formatter:on
 
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -313,6 +328,14 @@ public class FriendList
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -341,6 +364,14 @@ public class FriendList
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

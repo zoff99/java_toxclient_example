@@ -155,6 +155,14 @@ public class ConferenceMessage
 
                 list.add(out);
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -213,6 +221,14 @@ public class ConferenceMessage
             statement.execute(sql_str);
             ret = get_last_rowid(statement);
             // @formatter:on
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e)
         {
@@ -239,6 +255,14 @@ public class ConferenceMessage
                 Log.i(TAG, "sql=" + sql);
             }
             statement.executeUpdate(sql);
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
         }
         catch (Exception e2)
         {
@@ -267,6 +291,14 @@ public class ConferenceMessage
             if (rs.next())
             {
                 ret = rs.getInt("count");
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

@@ -178,6 +178,13 @@ public class TrifaToxService
                     Statement statement = sqldb.createStatement();
                     final String sql_str = "update Message set filetransfer_kind='0' where filetransfer_kind is NULL";
                     statement.execute(sql_str);
+                    try
+                    {
+                        statement.close();
+                    }
+                    catch (Exception ignored)
+                    {
+                    }
                     Log.i(TAG, "onCreate:filetransfer_kind");
                 }
                 catch (Exception e)

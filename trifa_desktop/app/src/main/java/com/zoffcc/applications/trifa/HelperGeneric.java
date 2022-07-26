@@ -947,6 +947,14 @@ public class HelperGeneric
                             // if one of them is online, return combined "online" as status
                             ret = TOX_CONNECTION_TCP.value;
                         }
+
+                        try
+                        {
+                            statement.close();
+                        }
+                        catch (Exception ignored)
+                        {
+                        }
                     }
                     catch (Exception e)
                     {

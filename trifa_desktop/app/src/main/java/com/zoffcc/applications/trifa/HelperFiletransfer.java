@@ -131,6 +131,14 @@ public class HelperFiletransfer
                 {
                     ft_id = rs.getLong("id");
                 }
+
+                try
+                {
+                    statement.close();
+                }
+                catch (Exception ignored)
+                {
+                }
             }
             catch (Exception e)
             {

@@ -230,6 +230,14 @@ public class HelperGroup
                 add_single_group_message_from_messge_id(msg_id, true);
             }
 
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
+
             return msg_id;
         }
         catch (Exception e)

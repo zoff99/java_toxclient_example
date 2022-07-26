@@ -135,6 +135,14 @@ public class OrmaDatabase
                 ret = rs.getInt("db_version");
             }
 
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
+
             return ret;
         }
         catch (Exception e)
@@ -451,6 +459,14 @@ public class OrmaDatabase
                 {
                     System.err.println(e.getMessage());
                 }
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
             }
         }
         catch (Exception e)

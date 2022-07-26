@@ -54,6 +54,15 @@ public class HelperRelay
             {
                 ret = rs.getString("tox_public_key_string");
             }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception ignored)
+            {
+            }
+
             return ret;
         }
         catch (Exception e)
@@ -172,11 +181,25 @@ public class HelperRelay
                 int count = rs.getInt("count");
                 if (count > 0)
                 {
+                    try
+                    {
+                        statement.close();
+                    }
+                    catch (Exception ignored)
+                    {
+                    }
                     return true;
                 }
             }
             else
             {
+                try
+                {
+                    statement.close();
+                }
+                catch (Exception ignored)
+                {
+                }
                 return false;
             }
         }
