@@ -3431,8 +3431,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                     ByteBuffer file_id_hash_bytes = hexstring_to_bytebuffer(ft.tox_file_id_hex);
                     file_chunk.put(file_id_hash_bytes);
                     file_chunk.put(bytes_chunck);
+                    bytes_chunck = null;
                     int res = tox_file_send_chunk(friend_number, file_number, position, file_chunk,
                                                   file_chunk_length + TOX_FILE_ID_LENGTH);
+                    file_chunk = null;
+                    file_id_hash_bytes = null;
 
                     if (ft.filesize < UPDATE_MESSAGE_PROGRESS_SMALL_FILE_IS_LESS_THAN_BYTES)
                     {
