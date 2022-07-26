@@ -465,6 +465,26 @@ public class TrifaToxService
                 Thread.currentThread().setName("t_iterate");
                 Log.i(TAG, "Priority of thread is NEW: " + Thread.currentThread().getPriority());
 
+                // ---------------- force GC after first startup has happend ----------------
+                // ---------------- force GC after first startup has happend ----------------
+                // ---------------- force GC after first startup has happend ----------------
+                //
+                Log.i(TAG,"*** force GC:001 ***");
+                System.gc();
+                // run GC after 120 seconds
+                new java.util.Timer().schedule(new java.util.TimerTask()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Log.i(TAG,"*** force GC:002 ***");
+                        System.gc();
+                    }
+                }, 120 * 1000);
+                // ---------------- force GC after first startup has happend ----------------
+                // ---------------- force GC after first startup has happend ----------------
+                // ---------------- force GC after first startup has happend ----------------
+
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
