@@ -318,6 +318,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static int PREF__ipv6_enabled = 1;
     static int PREF__force_udp_only = 0;
     static boolean PREF__show_image_thumbnails = true;
+    static boolean PREF__force_gc = false;
 
     static Random global_random = null;
 

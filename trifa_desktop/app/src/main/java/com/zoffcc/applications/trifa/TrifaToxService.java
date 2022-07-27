@@ -55,6 +55,8 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_n
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__force_gc;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__force_udp_only;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__udp_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
 import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
@@ -469,7 +471,7 @@ public class TrifaToxService
                 // ---------------- force GC after first startup has happend ----------------
                 // ---------------- force GC after first startup has happend ----------------
                 //
-                Log.i(TAG,"*** force GC:001 ***");
+                Log.i(TAG, "*** force GC:001 ***");
                 System.gc();
                 // run GC after 120 seconds
                 new java.util.Timer().schedule(new java.util.TimerTask()
@@ -477,10 +479,51 @@ public class TrifaToxService
                     @Override
                     public void run()
                     {
-                        Log.i(TAG,"*** force GC:002 ***");
+                        Log.i(TAG, "*** force GC:002 ***");
                         System.gc();
                     }
                 }, 120 * 1000);
+
+                if (PREF__force_gc)
+                {
+                    final Thread t_heap_check_and_gc_thread = new Thread(() -> {
+                        long heapSize = 2;
+                        long heapFreeSize = 1;
+                        long heapUsedSize = 1;
+                        while (1 == (2 - 1))
+                        {
+                            try
+                            {
+                                Thread.sleep(5 * 1000);
+                                heapSize = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+                                heapFreeSize = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+                                if (heapSize > heapFreeSize)
+                                {
+                                    heapUsedSize = heapSize - heapFreeSize;
+                                    // Log.i(TAG, "*** HEAP:" + (heapSize) + " / " + (heapUsedSize) + " ***");
+                                    if ((heapSize > 300) && (heapSize < 1000000))
+                                    {
+                                        // Log.i(TAG, "*** force GC:003 ***");
+                                        System.gc();
+
+                                        heapSize = Runtime.getRuntime().totalMemory() / 1024 / 1024;
+                                        heapFreeSize = Runtime.getRuntime().freeMemory() / 1024 / 1024;
+                                        if (heapSize > heapFreeSize)
+                                        {
+                                            heapUsedSize = heapSize - heapFreeSize;
+                                            // Log.i(TAG, "*** HEAP:" + (heapSize) + " / " + (heapUsedSize) + " ***");
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ignored)
+                            {
+                            }
+                        }
+                    });
+                    t_heap_check_and_gc_thread.start();
+                }
+
                 // ---------------- force GC after first startup has happend ----------------
                 // ---------------- force GC after first startup has happend ----------------
                 // ---------------- force GC after first startup has happend ----------------
