@@ -31,11 +31,21 @@ public class HelperNotification
     private static final String TAG = "trifa.HelperNotification";
 
     static TrayIcon trayIcon = null;
+    static long last_message_timestamp = -1L;
 
     public static void displayMessage(String message)
     {
         try
         {
+            if ((last_message_timestamp + (2 * 1000)) > System.currentTimeMillis())
+            {
+                // HINT: flood protection
+                // only allow this function to display message notification every 2 seconds
+                return;
+            }
+
+            last_message_timestamp = System.currentTimeMillis();
+
             String title = "TRIfA";
 
             String os = System.getProperty("os.name");
