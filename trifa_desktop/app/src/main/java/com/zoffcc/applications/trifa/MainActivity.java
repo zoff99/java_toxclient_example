@@ -115,6 +115,7 @@ import javax.swing.text.StyleContext;
 import static com.zoffcc.applications.trifa.AudioBar.audio_vu;
 import static com.zoffcc.applications.trifa.AudioFrame.set_audio_out_bar_level;
 import static com.zoffcc.applications.trifa.AudioSelectInBox.AUDIO_VU_MIN_VALUE;
+import static com.zoffcc.applications.trifa.AudioSelectOutBox.CHANNELS;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_active_threads;
 import static com.zoffcc.applications.trifa.AudioSelectOutBox.semaphore_audio_out_convert_max_active_threads;
@@ -171,8 +172,10 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDT
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.HIGHER_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
@@ -319,6 +322,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static int PREF__force_udp_only = 0;
     static boolean PREF__show_image_thumbnails = true;
     static boolean PREF__force_gc = false;
+    static boolean PREF__high_quality_audio = false;
 
     static Random global_random = null;
 
@@ -1173,6 +1177,35 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         else
         {
             PREF__show_image_thumbnails = true;
+        }
+
+        if (get_g_opts("PREF__high_quality_audio") != null)
+        {
+            if (get_g_opts("PREF__high_quality_audio").equals("true"))
+            {
+                PREF__high_quality_audio = true;
+            }
+            else
+            {
+                PREF__high_quality_audio = false;
+            }
+        }
+        else
+        {
+            PREF__high_quality_audio = false;
+        }
+
+        if (PREF__high_quality_audio)
+        {
+            AudioSelectOutBox.CHANNELS_DEFAULT = 2;
+            AudioSelectOutBox.CHANNELS = AudioSelectOutBox.CHANNELS_DEFAULT;
+            GLOBAL_AUDIO_BITRATE = HIGHER_GLOBAL_AUDIO_BITRATE;
+        }
+        else
+        {
+            AudioSelectOutBox.CHANNELS_DEFAULT = 1;
+            AudioSelectOutBox.CHANNELS = AudioSelectOutBox.CHANNELS_DEFAULT;
+            GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE;
         }
 
         Log.i(TAG, "load_prefs:PREF__show_image_thumbnails=" + PREF__show_image_thumbnails);
@@ -2196,8 +2229,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             return;
         }
 
-        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS) ||
-            (_recBuffer == null) || (sample_count == 0))
+        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != CHANNELS) || (_recBuffer == null) ||
+            (sample_count == 0))
         {
             Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:1");
             _recBuffer = ByteBuffer.allocateDirect((int) (10000 * 2 * channels));
@@ -2205,7 +2238,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:11:2");
         }
 
-        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != AudioSelectOutBox.CHANNELS))
+        if ((sampling_rate != AudioSelectOutBox.SAMPLE_RATE) || (channels != CHANNELS))
         {
             Log.i(TAG, "android_toxav_callback_audio_receive_frame_cb_method:22:1:" + sampling_rate + " " +
                        AudioSelectOutBox.SAMPLE_RATE);

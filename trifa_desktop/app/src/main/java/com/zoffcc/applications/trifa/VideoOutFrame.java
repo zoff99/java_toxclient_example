@@ -75,7 +75,6 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.current_pk;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.friendnum;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.VIDEO_FRAME_RATE_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.count_video_frame_received;
@@ -1615,7 +1614,7 @@ public class VideoOutFrame extends JFrame implements ItemListener, WindowListene
                             {
                                 int res1 = toxav_bit_rate_set(
                                         tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
-                                        NORMAL_GLOBAL_AUDIO_BITRATE, vbitrate_wanted);
+                                        GLOBAL_AUDIO_BITRATE, vbitrate_wanted);
 
                                 int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                             ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,

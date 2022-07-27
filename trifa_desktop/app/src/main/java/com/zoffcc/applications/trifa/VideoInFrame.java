@@ -41,7 +41,7 @@ import static com.zoffcc.applications.trifa.MainActivity.set_audio_play_volume_p
 import static com.zoffcc.applications.trifa.MainActivity.tox_set_onion_active;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_bit_rate_set;
 import static com.zoffcc.applications.trifa.MainActivity.toxav_option_set;
-import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.VideoOutFrame.VideoCallStopButton;
 import static com.zoffcc.applications.trifa.VideoOutFrame.VideoOutBitRate_text;
 import static com.zoffcc.applications.trifa.VideoOutFrame.screengrab_active;
@@ -163,7 +163,7 @@ public class VideoInFrame extends JFrame
                                             {
                                                 imageIn.setRGB(i, j, 0);
                                             }
-                                            catch(Exception e2)
+                                            catch (Exception e2)
                                             {
                                             }
                                         }
@@ -197,7 +197,7 @@ public class VideoInFrame extends JFrame
                                             {
                                                 imageIn.setRGB(i, j, 0);
                                             }
-                                            catch(Exception e2)
+                                            catch (Exception e2)
                                             {
                                             }
                                         }
@@ -231,7 +231,7 @@ public class VideoInFrame extends JFrame
                                             {
                                                 imageIn.setRGB(i, j, 0);
                                             }
-                                            catch(Exception e2)
+                                            catch (Exception e2)
                                             {
                                             }
                                         }
@@ -389,7 +389,7 @@ public class VideoInFrame extends JFrame
                     {
                         Thread.sleep(3000);
                         int res1 = toxav_bit_rate_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
-                                                      NORMAL_GLOBAL_AUDIO_BITRATE, 6000);
+                                                      GLOBAL_AUDIO_BITRATE, 6000);
 
                         int res2 = toxav_option_set(tox_friend_by_public_key__wrapper(Callstate.friend_pubkey),
                                                     ToxVars.TOXAV_OPTIONS_OPTION.TOXAV_ENCODER_VIDEO_MAX_BITRATE.value,

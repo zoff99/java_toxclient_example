@@ -58,7 +58,7 @@ public class AudioSelectOutBox extends JComboBox implements ItemListener, LineLi
 
 
     final static int SAMPLE_RATE_DEFAULT = 48000;
-    final static int CHANNELS_DEFAULT = 1;
+    static int CHANNELS_DEFAULT = 1;
     static int SAMPLE_RATE = SAMPLE_RATE_DEFAULT;
     static int CHANNELS = CHANNELS_DEFAULT;
     static int SAMPLE_SIZE_BIT = 16;

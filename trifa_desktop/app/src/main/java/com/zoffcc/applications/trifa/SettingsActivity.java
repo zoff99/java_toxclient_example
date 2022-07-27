@@ -42,6 +42,7 @@ import javax.swing.event.DocumentListener;
 import static com.zoffcc.applications.trifa.HelperGeneric.int_to_boolean;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__high_quality_audio;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__ipv6_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__local_discovery_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__orbot_enabled_to_int;
@@ -50,6 +51,9 @@ import static com.zoffcc.applications.trifa.MainActivity.PREF__udp_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.ownProfileShort;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.HIGHER_GLOBAL_AUDIO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_my_name;
 
 public class SettingsActivity extends JFrame
@@ -61,6 +65,7 @@ public class SettingsActivity extends JFrame
     private JTextField text_name = new JTextField(20);
 
     private Checkbox chkbox_001;
+    private Checkbox chkbox_006;
     private Checkbox chkbox_002;
     private Checkbox chkbox_003;
     private Checkbox chkbox_004;
@@ -234,16 +239,50 @@ public class SettingsActivity extends JFrame
             }
         });
 
+        chkbox_006 = new Checkbox(lo.getString("settings_high_quality_audio"), PREF__high_quality_audio);
+        chkbox_006.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__high_quality_audio", "true");
+                    PREF__high_quality_audio = true;
+                }
+                else
+                {
+                    set_g_opts("PREF__high_quality_audio", "false");
+                    PREF__high_quality_audio = false;
+                }
+
+                if (PREF__high_quality_audio)
+                {
+                    AudioSelectOutBox.CHANNELS_DEFAULT = 2;
+                    AudioSelectOutBox.CHANNELS = AudioSelectOutBox.CHANNELS_DEFAULT;
+                    GLOBAL_AUDIO_BITRATE = HIGHER_GLOBAL_AUDIO_BITRATE;
+                }
+                else
+                {
+                    AudioSelectOutBox.CHANNELS_DEFAULT = 1;
+                    AudioSelectOutBox.CHANNELS = AudioSelectOutBox.CHANNELS_DEFAULT;
+                    GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE;
+                }
+            }
+        });
+
         text_001.setEditable(false);
         text_001.setLineWrap(true);
         text_001.setWrapStyleWord(true);
 
-        constraints_tox.gridx = 0;
-        constraints_tox.gridy = 0;
+        constraints_general.gridx = 0;
+        constraints_general.gridy = 0;
         panel_general.add(text_001, constraints_general);
 
-        constraints_tox.gridy = 1;
+        constraints_general.gridy = 1;
         panel_general.add(chkbox_001, constraints_general);
+
+        constraints_general.gridy = 2;
+        panel_general.add(chkbox_006, constraints_general);
 
 
         panel_general.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
