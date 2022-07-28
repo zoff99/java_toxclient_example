@@ -56,7 +56,6 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_r
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__force_gc;
-import static com.zoffcc.applications.trifa.MainActivity.PREF__force_udp_only;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__udp_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
 import static com.zoffcc.applications.trifa.MainActivity.cache_fnum_pubkey;
@@ -88,6 +87,8 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ECHOBOT_TOXID;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MAX_TEXTMSG_RESEND_COUNT_OLDMSG_VERSION;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_ITERATE_MS_MIN_FILETRANSFER;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TOX_ITERATE_MS_MIN_NORMAL;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
@@ -533,15 +534,14 @@ public class TrifaToxService
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
-
                 while (!stop_me)
                 {
                     try
                     {
                         // Log.i(TAG, "(tox_iteration_interval_ms):" + tox_iteration_interval_ms + "ms");
-                        if (tox_iteration_interval_ms < 15)
+                        if (tox_iteration_interval_ms < TOX_ITERATE_MS_MIN_NORMAL)
                         {
-                            tox_iteration_interval_ms = 15;
+                            tox_iteration_interval_ms = TOX_ITERATE_MS_MIN_NORMAL;
                         }
 
                         if (global_last_activity_outgoung_ft_ts > -1)
@@ -549,7 +549,7 @@ public class TrifaToxService
                             if ((global_last_activity_outgoung_ft_ts + 200) > System.currentTimeMillis())
                             {
                                 // iterate faster if outgoing filetransfers are active
-                                tox_iteration_interval_ms = 10;
+                                tox_iteration_interval_ms = TOX_ITERATE_MS_MIN_FILETRANSFER;
                             }
                         }
                         Thread.sleep(tox_iteration_interval_ms);
@@ -563,8 +563,6 @@ public class TrifaToxService
                         e.printStackTrace();
                     }
 
-                    // --- send pending 1-on-1 text messages here --------------
-                    // --- send pending 1-on-1 text messages here --------------
                     // --- send pending 1-on-1 text messages here --------------
                     if (global_self_connection_status != TOX_CONNECTION_NONE.value)
                     {
@@ -599,12 +597,7 @@ public class TrifaToxService
                         }
                     }
                     // --- send pending 1-on-1 text messages here --------------
-                    // --- send pending 1-on-1 text messages here --------------
-                    // --- send pending 1-on-1 text messages here --------------
 
-
-                    // --- start queued outgoing FTs here --------------
-                    // --- start queued outgoing FTs here --------------
                     // --- start queued outgoing FTs here --------------
                     if (global_self_connection_status != TOX_CONNECTION_NONE.value)
                     {
@@ -644,27 +637,15 @@ public class TrifaToxService
                         }
                     }
                     // --- start queued outgoing FTs here --------------
-                    // --- start queued outgoing FTs here --------------
-                    // --- start queued outgoing FTs here --------------
 
-                    // Log.i(TAG, "tox_iterate:--START--");
-                    //long s_time = System.currentTimeMillis();
                     MainActivity.tox_iterate();
-                    //if (s_time + 4000 < System.currentTimeMillis())
-                    //{
                     tox_iteration_interval_ms = MainActivity.tox_iteration_interval();
-                    // Log.i(TAG, "tox_iterate:tox_iteration_interval_ms=" + tox_iteration_interval_ms);
-                    //Log.i(TAG, "tox_iterate:--END--:took" +
-                    //           (long) (((float) (s_time - System.currentTimeMillis()) / 1000f)) +
-                    //           "s, new interval=" + tox_iteration_interval_ms + "ms");
-                    //}
                 }
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
                 // ------- MAIN TOX LOOP ---------------------------------------------------------------
-
 
                 try
                 {

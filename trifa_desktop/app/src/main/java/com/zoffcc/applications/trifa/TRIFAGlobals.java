@@ -73,6 +73,9 @@ public class TRIFAGlobals
     static long last_video_frame_received = -1;
     static int count_video_frame_received = 0;
 
+    static final int TOX_ITERATE_MS_MIN_NORMAL = 12;
+    static final int TOX_ITERATE_MS_MIN_FILETRANSFER = 8;
+
     static long ONE_HOUR_IN_MS = 3600 * 1000;
 
     final static int GLOBAL_MIN_VIDEO_BITRATE = 64;
