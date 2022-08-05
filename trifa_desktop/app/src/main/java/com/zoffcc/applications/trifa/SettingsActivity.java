@@ -42,6 +42,7 @@ import javax.swing.event.DocumentListener;
 import static com.zoffcc.applications.trifa.HelperGeneric.int_to_boolean;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__faster_filetransfers;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__high_quality_audio;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__ipv6_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__local_discovery_enabled;
@@ -65,11 +66,12 @@ public class SettingsActivity extends JFrame
     private JTextField text_name = new JTextField(20);
 
     private Checkbox chkbox_001;
-    private Checkbox chkbox_006;
     private Checkbox chkbox_002;
     private Checkbox chkbox_003;
     private Checkbox chkbox_004;
     private Checkbox chkbox_005;
+    private Checkbox chkbox_006;
+    private Checkbox chkbox_007;
     private JTextArea text_001 = new JTextArea(lo.getString("settings_show_image_thumbnails_desc"));
 
     private JPanel setting_main_panel = null;
@@ -118,8 +120,7 @@ public class SettingsActivity extends JFrame
             }
         });
 
-        chkbox_002 = new Checkbox(lo.getString("settings_ipv6_enabled_title"),
-                                  int_to_boolean(PREF__ipv6_enabled));
+        chkbox_002 = new Checkbox(lo.getString("settings_ipv6_enabled_title"), int_to_boolean(PREF__ipv6_enabled));
         chkbox_002.addItemListener(new ItemListener()
         {
             public void itemStateChanged(ItemEvent e)
@@ -141,8 +142,7 @@ public class SettingsActivity extends JFrame
         constraints_tox.gridy = 1;
         panel_tox.add(chkbox_002, constraints_tox);
 
-        chkbox_003 = new Checkbox(lo.getString("settings_udp_enabled_title"),
-                                  int_to_boolean(PREF__udp_enabled));
+        chkbox_003 = new Checkbox(lo.getString("settings_udp_enabled_title"), int_to_boolean(PREF__udp_enabled));
         chkbox_003.addItemListener(new ItemListener()
         {
             public void itemStateChanged(ItemEvent e)
@@ -270,6 +270,23 @@ public class SettingsActivity extends JFrame
             }
         });
 
+        chkbox_007 = new Checkbox(lo.getString("settings_faster_filetransfers"), PREF__faster_filetransfers);
+        chkbox_007.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__faster_filetransfers", "true");
+                    PREF__faster_filetransfers = true;
+                }
+                else
+                {
+                    set_g_opts("PREF__faster_filetransfers", "false");
+                    PREF__faster_filetransfers = false;
+                }
+            }
+        });
         text_001.setEditable(false);
         text_001.setLineWrap(true);
         text_001.setWrapStyleWord(true);
@@ -284,6 +301,8 @@ public class SettingsActivity extends JFrame
         constraints_general.gridy = 2;
         panel_general.add(chkbox_006, constraints_general);
 
+        constraints_general.gridy = 3;
+        panel_general.add(chkbox_007, constraints_general);
 
         panel_general.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                                                                  lo.getString("settings_category_002")));

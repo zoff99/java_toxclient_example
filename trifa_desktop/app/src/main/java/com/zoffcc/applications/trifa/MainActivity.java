@@ -323,6 +323,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static boolean PREF__show_image_thumbnails = true;
     static boolean PREF__force_gc = false;
     static boolean PREF__high_quality_audio = false;
+    static boolean PREF__faster_filetransfers = false;
 
     static Random global_random = null;
 
@@ -1206,6 +1207,22 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             AudioSelectOutBox.CHANNELS_DEFAULT = 1;
             AudioSelectOutBox.CHANNELS = AudioSelectOutBox.CHANNELS_DEFAULT;
             GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE;
+        }
+
+        if (get_g_opts("PREF__faster_filetransfers") != null)
+        {
+            if (get_g_opts("PREF__faster_filetransfers").equals("true"))
+            {
+                PREF__faster_filetransfers = true;
+            }
+            else
+            {
+                PREF__faster_filetransfers = false;
+            }
+        }
+        else
+        {
+            PREF__faster_filetransfers = false;
         }
 
         Log.i(TAG, "load_prefs:PREF__show_image_thumbnails=" + PREF__show_image_thumbnails);

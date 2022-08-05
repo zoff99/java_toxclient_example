@@ -55,6 +55,7 @@ import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_n
 import static com.zoffcc.applications.trifa.HelperMessage.update_message_in_db_resend_count;
 import static com.zoffcc.applications.trifa.HelperRelay.get_relay_for_friend;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__faster_filetransfers;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__force_gc;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__udp_enabled;
 import static com.zoffcc.applications.trifa.MainActivity.cache_confid_confnum;
@@ -81,6 +82,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_mes
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_get_status_message_size;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_status_message;
+import static com.zoffcc.applications.trifa.MainActivity.tox_set_onion_active;
 import static com.zoffcc.applications.trifa.MainActivity.tox_util_friend_resend_message_v2;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.ADD_BOTS_ON_STARTUP;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONFERENCE_ID_LENGTH;
@@ -544,15 +546,47 @@ public class TrifaToxService
                             tox_iteration_interval_ms = TOX_ITERATE_MS_MIN_NORMAL;
                         }
 
+                        if (PREF__faster_filetransfers)
+                        {
+                            tox_set_onion_active(1);
+                        }
+
                         if (global_last_activity_outgoung_ft_ts > -1)
                         {
                             if ((global_last_activity_outgoung_ft_ts + 200) > System.currentTimeMillis())
                             {
                                 // iterate faster if outgoing filetransfers are active
-                                tox_iteration_interval_ms = TOX_ITERATE_MS_MIN_FILETRANSFER;
+                                if (PREF__faster_filetransfers)
+                                {
+                                    tox_iteration_interval_ms = 0;
+                                }
+                                else
+                                {
+                                    tox_iteration_interval_ms = TOX_ITERATE_MS_MIN_FILETRANSFER;
+                                }
+
+                                if (PREF__faster_filetransfers)
+                                {
+                                    tox_set_onion_active(0);
+                                }
                             }
                         }
-                        Thread.sleep(tox_iteration_interval_ms);
+
+                        if (PREF__faster_filetransfers)
+                        {
+                            if (tox_iteration_interval_ms == 0)
+                            {
+                                Thread.sleep(0, 40);
+                            }
+                            else
+                            {
+                                Thread.sleep(tox_iteration_interval_ms);
+                            }
+                        }
+                        else
+                        {
+                            Thread.sleep(tox_iteration_interval_ms);
+                        }
                     }
                     catch (InterruptedException e)
                     {
