@@ -193,6 +193,8 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.bootstrapping;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_outgoung_ft_ts;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_connection_status;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_last_went_offline_timestamp;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.global_self_last_went_online_timestamp;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_CURRENT_BITRATE;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_H264;
 import static com.zoffcc.applications.trifa.ToxVars.TOXAV_CALL_COMM_INFO.TOXAV_CALL_COMM_DECODER_IN_USE_VP8;
@@ -2536,6 +2538,27 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             {
                 Log.i(TAG, "self_connection_status:bootstrapping set to false");
                 bootstrapping = false;
+                global_self_last_went_online_timestamp = System.currentTimeMillis();
+                global_self_last_went_offline_timestamp = -1;
+            }
+            else
+            {
+                global_self_last_went_offline_timestamp = System.currentTimeMillis();
+            }
+        }
+        else
+        {
+            if (a_TOX_CONNECTION != 0)
+            {
+                global_self_last_went_online_timestamp = System.currentTimeMillis();
+                global_self_last_went_offline_timestamp = -1;
+
+                Log.i(TAG, "self_connection_status:went_online");
+                // TODO: stop any active calls
+            }
+            else
+            {
+                global_self_last_went_offline_timestamp = System.currentTimeMillis();
             }
         }
 
