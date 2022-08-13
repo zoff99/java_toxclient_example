@@ -121,6 +121,14 @@ public class HelperFriend
                 execute();
     }
 
+    synchronized static void update_friend_in_db_status_message(FriendList f)
+    {
+        orma.updateFriendList().
+                tox_public_key_stringEq(f.tox_public_key_string).
+                status_message(f.status_message).
+                execute();
+    }
+
     static void add_friend_real(String friend_tox_id)
     {
         // Log.i(TAG, "add_friend_real:add friend ID:" + friend_tox_id);
