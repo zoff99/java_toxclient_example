@@ -2637,6 +2637,15 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static void android_tox_callback_friend_status_message_cb_method(long friend_number, String status_message, long length)
     {
+        // Log.i(TAG, "friend_status_message:friend:" + friend_number + " status message:" + status_message);
+        FriendList f = main_get_friend(friend_number);
+
+        if (f != null)
+        {
+            f.status_message = status_message;
+            HelperFriend.update_friend_in_db_status_message(f);
+            HelperFriend.update_single_friend_in_friendlist_view(f);
+        }
     }
 
     static void android_tox_callback_friend_lossless_packet_cb_method(long friend_number, byte[] data, long length)
