@@ -46,5 +46,5 @@ cd "$basedir"
 
 mv -v ./releases/trifa_desktop_1.0.xx.zip ./releases/trifa_desktop_"$next_m_version".zip
 
-echo git commit -m "$commit_message" "$f1"
-echo git tag -a "$next_m_version" -m "$next_m_version"
+git commit -m "$commit_message" "$f1"
+git tag -a "$next_m_version" -m "$next_m_version"
