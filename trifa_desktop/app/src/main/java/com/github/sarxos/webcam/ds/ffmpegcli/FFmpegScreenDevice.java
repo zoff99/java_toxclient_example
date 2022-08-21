@@ -5,8 +5,8 @@ import com.github.sarxos.webcam.WebcamException;
 import com.zoffcc.applications.trifa.Log;
 
 import org.bridj.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -26,7 +26,7 @@ import static com.github.sarxos.webcam.ds.ffmpegcli.FFmpegScreenDriver.TAG;
 public class FFmpegScreenDevice implements WebcamDevice, WebcamDevice.BufferAccess
 {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FFmpegScreenDevice.class);
+    // private static final Logger LOG = null;
 
     private volatile Process process = null;
 

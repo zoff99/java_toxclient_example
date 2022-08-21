@@ -5,8 +5,8 @@ import com.github.sarxos.webcam.WebcamDiscoverySupport;
 import com.github.sarxos.webcam.WebcamDriver;
 
 import org.bridj.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
 {
 
     static final String TAG = "ffmpeg";
-    private static final Logger LOG = LoggerFactory.getLogger(FFmpegScreenDriver.class);
+    // private static final Logger LOG = null;
     private String path = "";
     public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_4k = 0;
     public static final int FFMPEG_SCREEN_GRAB_SCREEN_RES_1080p = 1;
@@ -80,15 +80,6 @@ public class FFmpegScreenDriver implements WebcamDriver, WebcamDiscoverySupport
         Process process = null;
 
         OutputStream os;
-        if (LOG.isDebugEnabled())
-        {
-            StringBuilder sb = new StringBuilder();
-            for (String c : cmd)
-            {
-                sb.append(c).append(' ');
-            }
-            LOG.debug("Executing command: {}", sb.toString());
-        }
 
         try
         {
