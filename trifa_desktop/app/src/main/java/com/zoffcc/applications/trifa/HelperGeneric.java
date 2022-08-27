@@ -1111,8 +1111,8 @@ public class HelperGeneric
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            Log.i(TAG, "hash_to_bucket:EE:" + e.getMessage());
+            // e.printStackTrace();
+            // Log.i(TAG, "hash_to_bucket:EE:" + e.getMessage());
             return 0;
         }
     }

@@ -43,9 +43,12 @@ import static com.zoffcc.applications.trifa.HelperGroup.tox_group_peer_get_name_
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_PAGING_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_peer_id;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_public_key;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_NEWER_HASH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_OLDER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_CHATCOLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
 import static java.awt.Font.PLAIN;
@@ -86,7 +89,15 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
 
         if (is_system_message)
         {
-            message__tox_peername = "-system-";
+            if ((m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)) ||
+                (m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_NEWER_HASH)))
+            {
+                message__tox_peername = "";
+            }
+            else
+            {
+                message__tox_peername = "-system-";
+            }
         }
 
         boolean handle_special_name = false;
@@ -127,7 +138,15 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
                 Color peer_color_bg;
                 if (is_system_message)
                 {
-                    peer_color_bg = TRIFA_SYSTEM_MESSAGE_PEER_CHATCOLOR;
+                    if ((m.msg_id_hash != null) && ((m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)) ||
+                                                    (m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_NEWER_HASH))))
+                    {
+                        peer_color_bg = ChatColors.SystemColors[1];
+                    }
+                    else
+                    {
+                        peer_color_bg = TRIFA_SYSTEM_MESSAGE_PEER_CHATCOLOR;
+                    }
                 }
                 else
                 {
@@ -174,7 +193,6 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
         {
             date_time_text = (long_date_time_format(m.rcvd_timestamp));
         }
-
 
         try
         {
@@ -239,12 +257,28 @@ public class Renderer_GroupMessageListTable extends JPanel implements TableCellR
             e.printStackTrace();
         }
 
+        m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
+
+        try
+        {
+            if (is_system_message)
+            {
+                if ((m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)) ||
+                    (m.msg_id_hash.equals(MESSAGE_PAGING_SHOW_NEWER_HASH)))
+                {
+                    date_time_text = "";
+                    m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_PAGING_BUTTON_SIZE));
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+
         m_date_time.setText(date_time_text);
 
         m_date_time.setFont(new java.awt.Font("monospaced", PLAIN, TTF_FONT_FAMILY_BUTTON_SIZE));
         m_date_time.setIconTextGap(0);
-
-        m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
 
         // m_date_time.setBorder(new LineBorder(Color.GREEN));
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);

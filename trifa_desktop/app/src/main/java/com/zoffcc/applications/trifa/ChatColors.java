@@ -25,6 +25,16 @@ public class ChatColors
 {
     private static final String TAG = "trifa.ChatCols";
 
+    static Color[] SystemColors = {
+            new Color(0xff0000, false),
+            new Color(0xaaaaaa, false),
+    };
+
+    static int get_size_systemcolors()
+    {
+        return SystemColors.length;
+    }
+
     static Color[] PeerAvatarColors = {
             //
             // https://www.w3schools.com/colors/colors_picker.asp

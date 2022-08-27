@@ -55,6 +55,7 @@ import static com.zoffcc.applications.trifa.HelperConference.insert_into_confere
 import static com.zoffcc.applications.trifa.HelperConference.is_conference_active;
 import static com.zoffcc.applications.trifa.HelperConference.tox_conference_by_confid__wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.resolve_name_for_pubkey;
+import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_get_public_key__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelConferences;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
@@ -70,6 +71,10 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_get
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_peer_get_public_key;
 import static com.zoffcc.applications.trifa.MainActivity.tox_conference_send_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_LAST_PAGE_MARGIN;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_NEWER_HASH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_OLDER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.global_last_activity_for_battery_savings_ts;
@@ -89,6 +94,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
     static JScrollPane Conf_MessageScrollPane = null;
     static long conf_scroll_to_bottom_time_window = -1;
     static long conf_scroll_to_bottom_time_delta = 320;
+    static int current_page_offset = -1;
 
     static String current_conf_id = "-1";
     static boolean is_at_bottom = true;
@@ -134,17 +140,45 @@ public class ConferenceMessageListFragmentJ extends JPanel
                         point.y <= cellBounds.y + cellBounds.height - insets.bottom)
                     {
 
-
-                        if (SwingUtilities.isLeftMouseButton(e))
+                        // message for paging
+                        if ((element.tox_peerpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY)) &&
+                            (element.message_id_tox.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)))
                         {
-                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                                    new StringSelection(element.text), null);
-                            Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                            if (SwingUtilities.isLeftMouseButton(e))
+                            {
+                                if ((current_page_offset - MESSAGE_PAGING_NUM_MSGS_PER_PAGE) < 1)
+                                {
+                                    current_page_offset = 0;
+                                }
+                                else
+                                {
+                                    current_page_offset = current_page_offset - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                }
+                                update_all_messages(true, true);
+                            }
+                        }
+                        // message for paging
+                        else if ((element.tox_peerpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY)) &&
+                                 (element.message_id_tox.equals(MESSAGE_PAGING_SHOW_NEWER_HASH)))
+                        {
+                            if (SwingUtilities.isLeftMouseButton(e))
+                            {
+                                current_page_offset = current_page_offset + MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                update_all_messages(true, true);
+                            }
                         }
                         else
                         {
-                            Log.i(TAG, "popup dialog");
-                            textAreaDialog(null, element.text, "Message");
+                            if (SwingUtilities.isLeftMouseButton(e))
+                            {
+                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text), null);
+                                Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                            }
+                            else
+                            {
+                                Log.i(TAG, "popup dialog");
+                                textAreaDialog(null, element.text, "Message");
+                            }
                         }
                     }
                     else
@@ -376,6 +410,11 @@ public class ConferenceMessageListFragmentJ extends JPanel
         return current_conf_id;
     }
 
+    public void reset_paging()
+    {
+        current_page_offset = -1; // reset paging when we change friend that is shown
+    }
+
     class DisabledItemSelectionModel extends DefaultListSelectionModel
     {
         @Override
@@ -385,7 +424,7 @@ public class ConferenceMessageListFragmentJ extends JPanel
         }
     }
 
-    void update_all_messages(boolean always)
+    void update_all_messages(boolean always, boolean paging)
     {
         // Log.i(TAG, "update_all_messages:conf");
 
@@ -411,26 +450,115 @@ public class ConferenceMessageListFragmentJ extends JPanel
             if (always)
             {
                 conf_messagelistitems_model.removeAllElements();
-                // -------------------------------------------------
-                // HINT: this one does not respect ordering?!
-                // -------------------------------------------------
                 try
                 {
-                    List<ConferenceMessage> ml = orma.selectFromConferenceMessage().
-                            conference_identifierEq(current_conf_id).
-                            tox_peerpubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
-                            orderBySent_timestampAsc().
-                            toList();
-
-                    for (ConferenceMessage message : ml)
+                    boolean later_messages = false;
+                    boolean older_messages = false;
+                    List<ConferenceMessage> ml = null;
+                    if (paging)
                     {
-                        if (message == ml.get(ml.size() - 1))
+                        later_messages = true;
+                        older_messages = true;
+
+                        int count_messages = orma.selectFromConferenceMessage().
+                                conference_identifierEq(current_conf_id).
+                                tox_peerpubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                orderBySent_timestampAsc().
+                                count();
+
+                        int offset = 0;
+                        int rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+
+                        if (current_page_offset == -1) // HINT: page at the bottom (latest messages shown)
                         {
-                            add_message(message, true);
+                            later_messages = false;
+                            offset = count_messages - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                            if (offset < 0)
+                            {
+                                offset = 0;
+                            }
+                            current_page_offset = offset;
+                            // HINT: we need MESSAGE_PAGING_LAST_PAGE_MARGIN in case new messages arrived
+                            //       since "count_messages" was calculated above
+                            rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE + MESSAGE_PAGING_LAST_PAGE_MARGIN;
                         }
                         else
                         {
-                            add_message(message, false);
+                            if ((count_messages - current_page_offset) < MESSAGE_PAGING_NUM_MSGS_PER_PAGE)
+                            {
+                                current_page_offset = count_messages - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE + MESSAGE_PAGING_LAST_PAGE_MARGIN;
+                            }
+                            offset = current_page_offset;
+                        }
+
+                        if ((count_messages - offset) <= MESSAGE_PAGING_NUM_MSGS_PER_PAGE)
+                        {
+                            later_messages = false;
+                        }
+
+                        if (offset < 1)
+                        {
+                            older_messages = false;
+                        }
+
+                        ml = orma.selectFromConferenceMessage().
+                                conference_identifierEq(current_conf_id).
+                                tox_peerpubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                orderBySent_timestampAsc().
+                                limit(rowcount, offset).
+                                toList();
+                    }
+                    else
+                    {
+                        ml = orma.selectFromConferenceMessage().
+                                conference_identifierEq(current_conf_id).
+                                tox_peerpubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                orderBySent_timestampAsc().
+                                toList();
+                    }
+
+                    if (ml != null)
+                    {
+                        if (older_messages)
+                        {
+                            ConferenceMessage m_older = new ConferenceMessage();
+                            m_older.tox_peerpubkey = TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
+                            m_older.is_new = false;
+                            m_older.direction = 0;
+                            m_older.message_id_tox = MESSAGE_PAGING_SHOW_OLDER_HASH;
+                            m_older.text = "^^^ show older Messages ^^^";
+                            add_message(m_older, false);
+                        }
+
+                        for (ConferenceMessage message : ml)
+                        {
+                            if (message == ml.get(ml.size() - 1))
+                            {
+                                add_message(message, true);
+                            }
+                            else
+                            {
+                                if (later_messages)
+                                {
+                                    add_message(message, false);
+                                }
+                                else
+                                {
+                                    add_message(message, true);
+                                }
+                            }
+                        }
+
+                        if (later_messages)
+                        {
+                            ConferenceMessage m_later = new ConferenceMessage();
+                            m_later.tox_peerpubkey = TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
+                            m_later.is_new = false;
+                            m_later.direction = 0;
+                            m_later.message_id_tox = MESSAGE_PAGING_SHOW_NEWER_HASH;
+                            m_later.text = "vvv show newer Messages vvv";
+                            add_message(m_later, true);
                         }
                     }
                 }

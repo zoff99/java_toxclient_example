@@ -77,9 +77,15 @@ import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_file_control;
 import static com.zoffcc.applications.trifa.MainActivity.tox_self_set_typing;
+import static com.zoffcc.applications.trifa.MessageListFragmentJ.update_all_messages;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_LAST_PAGE_MARGIN;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_NEWER_HASH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_OLDER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_TYPE_TEXT;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_CANCEL;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
@@ -108,6 +114,7 @@ public class MessageListFragmentJ extends JPanel
     static JScrollPane MessageScrollPane = null;
     static long scroll_to_bottom_time_window = -1;
     static long scroll_to_bottom_time_delta = 320;
+    static int current_page_offset = -1;
 
     public MessageListFragmentJ()
     {
@@ -470,16 +477,46 @@ public class MessageListFragmentJ extends JPanel
                         // msg is TEXT
                         else
                         {
-                            if (SwingUtilities.isLeftMouseButton(e))
+                            // message for paging
+                            if ((element.tox_friendpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY)) &&
+                                (element.msg_idv3_hash.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)))
                             {
-                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                                        new StringSelection(element.text), null);
-                                Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                                if (SwingUtilities.isLeftMouseButton(e))
+                                {
+                                    if ((current_page_offset - MESSAGE_PAGING_NUM_MSGS_PER_PAGE) < 1)
+                                    {
+                                        current_page_offset = 0;
+                                    }
+                                    else
+                                    {
+                                        current_page_offset = current_page_offset - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                    }
+                                    update_all_messages(true, true);
+                                }
+                            }
+                            // message for paging
+                            else if ((element.tox_friendpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY)) &&
+                                     (element.msg_idv3_hash.equals(MESSAGE_PAGING_SHOW_NEWER_HASH)))
+                            {
+                                if (SwingUtilities.isLeftMouseButton(e))
+                                {
+                                    current_page_offset = current_page_offset + MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                    update_all_messages(true, true);
+                                }
                             }
                             else
                             {
-                                Log.i(TAG, "popup dialog");
-                                textAreaDialog(null, element.text, "Message");
+                                if (SwingUtilities.isLeftMouseButton(e))
+                                {
+                                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                                            new StringSelection(element.text), null);
+                                    Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
+                                }
+                                else
+                                {
+                                    Log.i(TAG, "popup dialog");
+                                    textAreaDialog(null, element.text, "Message");
+                                }
                             }
                         }
                     }
@@ -844,7 +881,7 @@ public class MessageListFragmentJ extends JPanel
         SwingUtilities.invokeLater(myRunnable);
     }
 
-    static void update_all_messages(boolean always, int limit)
+    static void update_all_messages(boolean always, boolean paging)
     {
         // Log.i(TAG, "update_all_messages");
 
@@ -877,22 +914,60 @@ public class MessageListFragmentJ extends JPanel
                 {
                     try
                     {
+                        boolean later_messages = false;
+                        boolean older_messages = false;
                         List<Message> ml = null;
-                        if (limit > 1)
+                        if (paging)
                         {
-                            // HINT: just in case new messages have come in between those 2 SQLs
-                            final int margin = 100;
+                            later_messages = true;
+                            older_messages = true;
                             int count_messages = orma.selectFromMessage().
                                     tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
                                     orderBySent_timestampAsc().
                                     orderBySent_timestamp_msAsc().
                                     count();
 
+                            int offset = 0;
+                            int rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+
+                            if (current_page_offset == -1) // HINT: page at the bottom (latest messages shown)
+                            {
+                                later_messages = false;
+                                offset = count_messages - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                if (offset < 0)
+                                {
+                                    offset = 0;
+                                }
+                                current_page_offset = offset;
+                                // HINT: we need MESSAGE_PAGING_LAST_PAGE_MARGIN in case new messages arrived
+                                //       since "count_messages" was calculated above
+                                rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE + MESSAGE_PAGING_LAST_PAGE_MARGIN;
+                            }
+                            else
+                            {
+                                if ((count_messages - current_page_offset) < MESSAGE_PAGING_NUM_MSGS_PER_PAGE)
+                                {
+                                    current_page_offset = count_messages - MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
+                                    rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE + MESSAGE_PAGING_LAST_PAGE_MARGIN;
+                                }
+                                offset = current_page_offset;
+                            }
+
+                            if ((count_messages - offset) <= MESSAGE_PAGING_NUM_MSGS_PER_PAGE)
+                            {
+                                later_messages = false;
+                            }
+
+                            if (offset < 1)
+                            {
+                                older_messages = false;
+                            }
+
                             ml = orma.selectFromMessage().
                                     tox_friendpubkeyEq(tox_friend_get_public_key__wrapper(friendnum)).
                                     orderBySent_timestampAsc().
                                     orderBySent_timestamp_msAsc().
-                                    limit(limit + margin, (count_messages - limit)).
+                                    limit(rowcount, offset).
                                     toList();
                         }
                         else
@@ -906,6 +981,17 @@ public class MessageListFragmentJ extends JPanel
 
                         if (ml != null)
                         {
+                            if (older_messages)
+                            {
+                                Message m_older = new Message();
+                                m_older.tox_friendpubkey = TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
+                                m_older.is_new = false;
+                                m_older.direction = 0;
+                                m_older.msg_idv3_hash = MESSAGE_PAGING_SHOW_OLDER_HASH;
+                                m_older.text = "^^^ show older Messages ^^^";
+                                add_message(m_older, false);
+                            }
+
                             for (Message message : ml)
                             {
                                 if (message == ml.get(ml.size() - 1))
@@ -914,8 +1000,26 @@ public class MessageListFragmentJ extends JPanel
                                 }
                                 else
                                 {
-                                    add_message(message, true);
+                                    if (later_messages)
+                                    {
+                                        add_message(message, false);
+                                    }
+                                    else
+                                    {
+                                        add_message(message, true);
+                                    }
                                 }
+                            }
+
+                            if (later_messages)
+                            {
+                                Message m_later = new Message();
+                                m_later.tox_friendpubkey = TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
+                                m_later.is_new = false;
+                                m_later.direction = 0;
+                                m_later.msg_idv3_hash = MESSAGE_PAGING_SHOW_NEWER_HASH;
+                                m_later.text = "vvv show newer Messages vvv";
+                                add_message(m_later, true);
                             }
                         }
                     }
@@ -984,6 +1088,7 @@ public class MessageListFragmentJ extends JPanel
     public void setCurrentPK(String current_pk_)
     {
         current_pk = current_pk_;
+        current_page_offset = -1; // reset paging when we change friend that is shown
     }
 
     public static String textAreaDialog(Object obj, String text, String title)
@@ -1127,7 +1232,6 @@ public class MessageListFragmentJ extends JPanel
         //        }
         // --- ??? should we do this here?
     }
-
 
     static class JlistCustom<M> extends JList
     {

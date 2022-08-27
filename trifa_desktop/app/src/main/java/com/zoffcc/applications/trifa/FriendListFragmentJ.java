@@ -558,7 +558,7 @@ public class FriendListFragmentJ extends JPanel
                             //System.out.println(
                             //        "ListSelectionListener:setCurrentPK:" + pk + " fnum=" + MessagePanel.friendnum);
 
-                            update_all_messages(true, -1);
+                            update_all_messages(true, true);
                             setFriendName();
                         }
                     }
@@ -570,7 +570,8 @@ public class FriendListFragmentJ extends JPanel
                                 friends_and_confs_list.getSelectedIndex()).group_item.group_identifier;
                         MessagePanelGroups.current_group_id = group_id;
 
-                        MessagePanelGroups.update_all_messages(true);
+                        MessagePanelGroups.reset_paging();
+                        MessagePanelGroups.update_all_messages(true, true);
                         setGroupName();
                     }
                     else // --- conferences ---
@@ -580,7 +581,8 @@ public class FriendListFragmentJ extends JPanel
                                 friends_and_confs_list.getSelectedIndex()).conference_item.conference_identifier;
                         MessagePanelConferences.current_conf_id = conf_id;
 
-                        MessagePanelConferences.update_all_messages(true);
+                        MessagePanelConferences.reset_paging();
+                        MessagePanelConferences.update_all_messages(true, true);
                         setConfName();
                     }
                 }

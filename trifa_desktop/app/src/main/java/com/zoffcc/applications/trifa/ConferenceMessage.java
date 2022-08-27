@@ -315,6 +315,12 @@ public class ConferenceMessage
         return this;
     }
 
+    public ConferenceMessage limit(int rowcount, int offset)
+    {
+        this.sql_limit = " limit " + offset + " , " + rowcount;
+        return this;
+    }
+
     // ----------------------------------- //
     // ----------------------------------- //
     // ----------------------------------- //

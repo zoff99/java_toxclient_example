@@ -352,6 +352,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     final static int TTF_FONT_FAMILY_FLIST_STATS_SIZE = 15;
     final static int TTF_FONT_FAMILY_BORDER_TITLE = 12;
     final static int TTF_FONT_FAMILY_MENU_SIZE = 12;
+    final static int TTF_FONT_FAMILY_PAGING_BUTTON_SIZE = 16;
     final static int AVATAR_FRIENDLIST_W = 15;
     final static int AVATAR_FRIENDLIST_H = 15;
     final static int AVATAR_FRIENDINFO_W = 90;

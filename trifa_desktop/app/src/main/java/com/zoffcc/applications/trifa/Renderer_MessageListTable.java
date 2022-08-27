@@ -51,11 +51,15 @@ import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BUTTON_
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_MSG_DATE_SIZE;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_NAME_REGULAR_SIZE;
+import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_PAGING_BUTTON_SIZE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_NEWER_HASH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_OLDER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_PAUSE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_CONTROL.TOX_FILE_CONTROL_RESUME;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_FTV2;
@@ -112,13 +116,20 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
         m_text.setWrapStyleWord(true);
         // m_text.setOpaque(true);
 
-        if (m.direction == 0)
+        if (m.tox_friendpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY))
         {
-            m_text.setBackground(CHAT_MSG_BG_OTHER_COLOR);
+            m_text.setBackground(ChatColors.SystemColors[1]);
         }
         else
         {
-            m_text.setBackground(CHAT_MSG_BG_SELF_COLOR);
+            if (m.direction == 0)
+            {
+                m_text.setBackground(CHAT_MSG_BG_OTHER_COLOR);
+            }
+            else
+            {
+                m_text.setBackground(CHAT_MSG_BG_SELF_COLOR);
+            }
         }
 
         //if (isSelected)
@@ -193,6 +204,23 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
         m_date_time.setIconTextGap(0);
 
         m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_NAME_REGULAR_SIZE));
+
+        try
+        {
+            if (m.tox_friendpubkey.equals(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY))
+            {
+                if ((m.msg_idv3_hash.equals(MESSAGE_PAGING_SHOW_OLDER_HASH)) ||
+                    (m.msg_idv3_hash.equals(MESSAGE_PAGING_SHOW_NEWER_HASH)))
+                {
+                    m_date_time.setText("");
+                    m_text.setFont(new java.awt.Font(TTF_FONT_FAMILY_NAME, PLAIN, TTF_FONT_FAMILY_PAGING_BUTTON_SIZE));
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+
 
         m_date_time.setHorizontalAlignment(SwingConstants.LEFT);
 

@@ -72,6 +72,11 @@ public class TRIFAGlobals
     static final int VIDEO_CODEC_VP8 = 0;
     static final int VIDEO_CODEC_H264 = 1;
 
+    static final int MESSAGE_PAGING_NUM_MSGS_PER_PAGE = 200;
+    static final int MESSAGE_PAGING_LAST_PAGE_MARGIN = 40;
+    static final String MESSAGE_PAGING_SHOW_OLDER_HASH = "00000000000000001";
+    static final String MESSAGE_PAGING_SHOW_NEWER_HASH = "00000000000000002";
+
     static int VIDEO_FRAME_RATE_OUTGOING = 0;
     static long last_video_frame_sent = -1;
     static int count_video_frame_sent = 0;
