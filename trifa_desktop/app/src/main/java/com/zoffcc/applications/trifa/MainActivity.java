@@ -1412,6 +1412,9 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         global_random = new Random();
 
+        // HINT: do not allow image operations to be cached on disk
+        ImageIO.setUseCache(false);
+
         EventQueue eventQueue = Toolkit.getDefaultToolkit().getSystemEventQueue();
         eventQueue.push(new MyEventQueue());
 
