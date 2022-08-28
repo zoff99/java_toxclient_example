@@ -70,6 +70,7 @@ import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_count;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_get_connection_status;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_get_name;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_get_public_key;
+import static com.zoffcc.applications.trifa.MainActivity.tox_group_self_get_public_key;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_send_message;
 import static com.zoffcc.applications.trifa.MainActivity.tox_max_message_length;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_LAST_PAGE_MARGIN;
@@ -171,7 +172,8 @@ public class GroupMessageListFragmentJ extends JPanel
                         {
                             if (SwingUtilities.isLeftMouseButton(e))
                             {
-                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(element.text), null);
+                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                                        new StringSelection(element.text), null);
                                 Toast.makeToast(MainFrame, lo.getString("copied_msg_to_clipboard"), 800);
                             }
                             else
@@ -351,7 +353,8 @@ public class GroupMessageListFragmentJ extends JPanel
             {
                 GroupMessage m = new GroupMessage();
                 m.is_new = false; // own messages are always "not new"
-                m.tox_group_peer_pubkey = global_my_toxid.substring(0, (TOX_PUBLIC_KEY_SIZE * 2));
+                m.tox_group_peer_pubkey = tox_group_self_get_public_key(
+                        tox_group_by_groupid__wrapper(current_group_id)).toUpperCase();
                 m.direction = 1; // msg sent
                 m.TOX_MESSAGE_TYPE = 0;
                 m.read = true; // !!!! there is not "read status" with conferences in Tox !!!!
@@ -750,8 +753,7 @@ public class GroupMessageListFragmentJ extends JPanel
                     {
                         String peer_pubkey_temp = tox_group_peer_get_public_key(conference_num, peers[(int) i]);
                         String peer_name = tox_group_peer_get_name(conference_num, peers[(int) i]);
-                        // Log.i(TAG,
-                        //      "groupnum=" + conference_num + " peernum=" + peers[(int) i] + " peer_name=" + peer_name);
+                        // Log.i(TAG, "groupnum=" + conference_num + " peernum=" + peers[(int) i] + " peer_name=" + peer_name + " peer_pubkey_temp=" + peer_pubkey_temp);
                         String peer_name_temp =
                                 "" + peer_name + " :" + peers[(int) i] + ": " + peer_pubkey_temp.substring(0, 6);
 
