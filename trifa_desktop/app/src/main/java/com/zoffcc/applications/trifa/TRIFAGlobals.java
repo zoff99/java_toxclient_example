@@ -128,7 +128,8 @@ public class TRIFAGlobals
     static String VFS_PREFIX = ""; // only set for normal (unencrypted) storage
 
     final static String IMAGE_THUMBNAIL_PLACEHOLDER = "image_thumb.png";
-    final static long IMAGE_FILESIZE_MAX_BYTES_FOR_THUMB = 3000000;
+    final static long IMAGE_FILESIZE_MAX_BYTES_FOR_THUMB = 5000000;
+    final static long IMAGE_FILE_MAX_RENDER_MS = 60;
 
     final static long AVATAR_INCOMING_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size
     final static long AVATAR_SELF_MAX_BYTE_SIZE = 1 * 1024 * 1024; // limit incoming avatars at 1MByte size

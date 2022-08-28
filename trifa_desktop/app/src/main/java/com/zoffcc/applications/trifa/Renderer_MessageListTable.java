@@ -28,8 +28,13 @@ import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -56,6 +61,8 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_OTHER_COLOR
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CHAT_MSG_BG_SELF_COLOR;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_HEIGHT;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.FT_IMAGE_THUMBNAIL_WIDTH;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_FILESIZE_MAX_BYTES_FOR_THUMB;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_FILE_MAX_RENDER_MS;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_NEWER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_PAGING_SHOW_OLDER_HASH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_MSG_TYPE.TRIFA_MSG_FILE;
@@ -263,13 +270,20 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
 
                     try
                     {
-                        if (PREF__show_image_thumbnails)
+                        long image_file_size = 1;
+                        try
                         {
-                            BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                    newMaxSize.height);
-                            message_image.setImage(resizedImg);
+                            image_file_size = (new File(m.filename_fullpath)).length();
+                        }
+                        catch (Exception ignored)
+                        {
+                        }
+
+                        if ((PREF__show_image_thumbnails) && (image_file_size < IMAGE_FILESIZE_MAX_BYTES_FOR_THUMB))
+                        {
+                            final String img_filename_fullpath = m.filename_fullpath;
+                            final ImageIcon img_message_image = message_image;
+                            render_image(img_filename_fullpath, img_message_image);
                         }
                         else
                         {
@@ -310,13 +324,20 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
                     // show image on component
                     try
                     {
-                        if (PREF__show_image_thumbnails)
+                        long image_file_size = 1;
+                        try
                         {
-                            BufferedImage bi = ImageIO.read(new File(m.filename_fullpath));
-                            Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
-                            BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
-                                                                    newMaxSize.height);
-                            message_image.setImage(resizedImg);
+                            image_file_size = (new File(m.filename_fullpath)).length();
+                        }
+                        catch (Exception ignored)
+                        {
+                        }
+
+                        if ((PREF__show_image_thumbnails) && (image_file_size < IMAGE_FILESIZE_MAX_BYTES_FOR_THUMB))
+                        {
+                            final String img_filename_fullpath = m.filename_fullpath;
+                            final ImageIcon img_message_image = message_image;
+                            render_image(img_filename_fullpath, img_message_image);
                         }
                         else
                         {
@@ -516,5 +537,122 @@ public class Renderer_MessageListTable extends JPanel implements TableCellRender
         }
 
         return this;
+    }
+
+    private void render_image(final String img_filename_fullpath, final ImageIcon img_message_image)
+    {
+        img_message_image.setImage(PLACEHOLDER_IMG_RESIZED);
+        Thread t = new Thread(() -> {
+            try
+            {
+                final Iterator<ImageReader> imageReadersByFormatName = ImageIO.getImageReadersByFormatName("jpg");
+                final ImageReader ir = imageReadersByFormatName.next();
+                ir.setInput(ImageIO.createImageInputStream(new FileInputStream(img_filename_fullpath)), true);
+
+
+                final long t1 = System.currentTimeMillis();
+                Dimension d = new Dimension(0, 0);
+                try
+                {
+                    d = new Dimension(ir.getWidth(0), ir.getHeight(0));
+                }
+                catch (Exception e1)
+                {
+                    // e1.printStackTrace();
+                }
+                final long t2 = System.currentTimeMillis();
+
+                final ImageReadParam defaultReadParam = ir.getDefaultReadParam();
+                int subsampl = 25;
+                if ((d.width > FT_IMAGE_THUMBNAIL_WIDTH) || (d.height > FT_IMAGE_THUMBNAIL_WIDTH))
+                {
+                    if (d.width > d.height)
+                    {
+                        subsampl = d.width / FT_IMAGE_THUMBNAIL_WIDTH;
+                    }
+                    else
+                    {
+                        subsampl = d.height / FT_IMAGE_THUMBNAIL_WIDTH;
+                    }
+
+                    defaultReadParam.setSourceSubsampling(subsampl, subsampl, 0, 0);
+                }
+                else
+                {
+                    //Configure the reader to read every x th row / x th column of the image
+                    defaultReadParam.setSourceSubsampling(25, 25, 0, 0);
+                }
+                defaultReadParam.setSourceProgressivePasses(0, 1);
+
+                final long t3 = System.currentTimeMillis();
+                final BufferedImage bi = ir.read(0, defaultReadParam);
+
+                final Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                final BufferedImage resizedImg = Scalr.resize(bi, Scalr.Method.SPEED, newMaxSize.width,
+                                                              newMaxSize.height);
+                img_message_image.setImage(resizedImg);
+                bi.flush();
+                resizedImg.flush();
+                final long t4 = System.currentTimeMillis();
+
+                // Log.i(TAG, "DDDDD=" + d + " t=" + (t2 - t1));
+                // Log.i(TAG, "DDDDD1=" + d + " subsampl=" + subsampl);
+                // Log.i(TAG, "DDDDD2=" + d + " t=" + (t4 - t3));
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    final FileInputStream fileInputStream2 = new FileInputStream(img_filename_fullpath);
+                    MemoryCacheImageInputStream memoryCache2 = new MemoryCacheImageInputStream(fileInputStream2);
+                    final BufferedImage bi2 = ImageIO.read(memoryCache2);
+
+                    final Dimension newMaxSize = new Dimension(FT_IMAGE_THUMBNAIL_WIDTH, FT_IMAGE_THUMBNAIL_HEIGHT);
+                    final BufferedImage resizedImg = Scalr.resize(bi2, Scalr.Method.SPEED, newMaxSize.width,
+                                                                  newMaxSize.height);
+                    img_message_image.setImage(resizedImg);
+                    bi2.flush();
+                    resizedImg.flush();
+                }
+                catch (Exception e2)
+                {
+                    // img_message_image.setImage(PLACEHOLDER_IMG_RESIZED);
+                }
+            }
+        });
+        t.start();
+
+        try
+        {
+            t.join(IMAGE_FILE_MAX_RENDER_MS);
+        }
+        catch (Exception e)
+        {
+        }
+
+        try
+        {
+            t.interrupt();
+        }
+        catch (Exception e2)
+        {
+        }
+
+        try
+        {
+            t.interrupt();
+        }
+        catch (Exception e2)
+        {
+            // img_message_image.setImage(PLACEHOLDER_IMG_RESIZED);
+        }
+
+        try
+        {
+            t.stop();
+        }
+        catch (Exception e2)
+        {
+        }
     }
 }
