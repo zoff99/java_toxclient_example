@@ -32,6 +32,7 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_T
 import static com.zoffcc.applications.trifa.TRIFAGlobals.CONTROL_PROXY_MESSAGE_TYPE.CONTROL_PROXY_MESSAGE_TYPE_PROXY_PUBKEY_FOR_FRIEND;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_URL_PREFIX;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_FCM_PUSH_URL_PREFIX_OLD;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_NTFY_PUSH_URL_PREFIX;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NOTIFICATION_UP_PUSH_URL_PREFIX;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
@@ -478,6 +479,15 @@ public class HelperRelay
         if (push_url.length() > NOTIFICATION_UP_PUSH_URL_PREFIX.length())
         {
             if (push_url.startsWith(NOTIFICATION_UP_PUSH_URL_PREFIX))
+            {
+                return true;
+            }
+        }
+
+        // whitelist ntfy.sh server
+        if (push_url.length() > NOTIFICATION_NTFY_PUSH_URL_PREFIX.length())
+        {
+            if (push_url.startsWith(NOTIFICATION_NTFY_PUSH_URL_PREFIX))
             {
                 return true;
             }
