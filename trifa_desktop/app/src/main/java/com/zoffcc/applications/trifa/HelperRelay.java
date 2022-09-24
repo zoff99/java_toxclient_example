@@ -25,6 +25,7 @@ import java.util.List;
 
 import static com.zoffcc.applications.trifa.HelperFriend.is_friend_online_real;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
+import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_invite_friend;
 import static com.zoffcc.applications.trifa.OrmaDatabase.s;
@@ -347,6 +348,37 @@ public class HelperRelay
         }
     }
 
+    static void invite_to_all_groups_own_relay(String relay_public_key_string)
+    {
+        try
+        {
+            Log.i(TAG, "invite_to_all_groups_own_relay:enter");
+            List<GroupDB> c = orma.selectFromGroupDB().
+                    toList();
+
+            if (c != null)
+            {
+                if (c.size() > 0)
+                {
+                    Log.i(TAG, "invite_to_all_groups_own_relay:grp count=" + c.size());
+                    for (int i = 0; i < c.size(); i++)
+                    {
+                        GroupDB conf = c.get(i);
+                        final long group_num = tox_group_by_groupid__wrapper(conf.group_identifier);
+                        int res = tox_group_invite_friend(group_num,
+                                                          tox_friend_by_public_key__wrapper(relay_public_key_string));
+
+                        Log.i(TAG, "invite_to_all_groups_own_relay:res=" + res);
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     static void send_relay_pubkey_to_friend(String relay_public_key_string, String friend_pubkey)
     {
         int i = 0;
@@ -499,7 +531,9 @@ public class HelperRelay
 
     static int invite_to_group_own_relay(long group_num)
     {
-        return tox_group_invite_friend(group_num,
-                                       tox_friend_by_public_key__wrapper(HelperRelay.get_own_relay_pubkey()));
+        int res = tox_group_invite_friend(group_num,
+                                          tox_friend_by_public_key__wrapper(HelperRelay.get_own_relay_pubkey()));
+        Log.i(TAG, "invite_to_group_own_relay:group_number=" + group_num + " res=" + res);
+        return res;
     }
 }

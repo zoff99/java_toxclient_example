@@ -76,6 +76,7 @@ import static com.zoffcc.applications.trifa.HelperGroup.get_group_title_from_gro
 import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wrapper;
 import static com.zoffcc.applications.trifa.HelperRelay.have_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_conferences_own_relay;
+import static com.zoffcc.applications.trifa.HelperRelay.invite_to_all_groups_own_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.send_all_friend_pubkeys_to_relay;
 import static com.zoffcc.applications.trifa.HelperRelay.send_relay_pubkey_to_all_friends;
 import static com.zoffcc.applications.trifa.HelperRelay.set_friend_as_own_relay_in_db;
@@ -501,6 +502,7 @@ public class FriendListFragmentJ extends JPanel
                                 send_all_friend_pubkeys_to_relay(f2_tox_public_key_string);
                                 send_relay_pubkey_to_all_friends(f2_tox_public_key_string);
                                 invite_to_all_conferences_own_relay(f2_tox_public_key_string);
+                                invite_to_all_groups_own_relay(f2_tox_public_key_string);
                             }
                             catch (Exception e3)
                             {

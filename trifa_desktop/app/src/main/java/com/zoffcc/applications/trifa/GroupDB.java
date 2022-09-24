@@ -374,4 +374,10 @@ public class GroupDB
         this.sql_orderby = this.sql_orderby + " Notification_silent ASC ";
         return this;
     }
+
+    public GroupDB tox_group_numberNotEq(int tox_group_number)
+    {
+        this.sql_where = this.sql_where + " and tox_group_number<>'" + s(tox_group_number) + "' ";
+        return this;
+    }
 }
