@@ -42,6 +42,7 @@ import javax.swing.event.DocumentListener;
 import static com.zoffcc.applications.trifa.HelperGeneric.int_to_boolean;
 import static com.zoffcc.applications.trifa.HelperGeneric.set_g_opts;
 import static com.zoffcc.applications.trifa.HelperGeneric.update_savedata_file_wrapper;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__conference_show_system_messages;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__faster_filetransfers;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__high_quality_audio;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__ipv6_enabled;
@@ -72,6 +73,7 @@ public class SettingsActivity extends JFrame
     private Checkbox chkbox_005;
     private Checkbox chkbox_006;
     private Checkbox chkbox_007;
+    private Checkbox chkbox_008;
     private JTextArea text_001 = new JTextArea(lo.getString("settings_show_image_thumbnails_desc"));
 
     private JPanel setting_main_panel = null;
@@ -287,6 +289,26 @@ public class SettingsActivity extends JFrame
                 }
             }
         });
+
+        chkbox_008 = new Checkbox(lo.getString("settings_conference_show_system_messages"),
+                                  PREF__conference_show_system_messages);
+        chkbox_008.addItemListener(new ItemListener()
+        {
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    set_g_opts("PREF__conference_show_system_messages", "true");
+                    PREF__conference_show_system_messages = true;
+                }
+                else
+                {
+                    set_g_opts("PREF__conference_show_system_messages", "false");
+                    PREF__conference_show_system_messages = false;
+                }
+            }
+        });
+
         text_001.setEditable(false);
         text_001.setLineWrap(true);
         text_001.setWrapStyleWord(true);
@@ -303,6 +325,9 @@ public class SettingsActivity extends JFrame
 
         constraints_general.gridy = 3;
         panel_general.add(chkbox_007, constraints_general);
+
+        constraints_general.gridy = 4;
+        panel_general.add(chkbox_008, constraints_general);
 
         panel_general.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(),
                                                                  lo.getString("settings_category_002")));

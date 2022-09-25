@@ -58,6 +58,7 @@ import static com.zoffcc.applications.trifa.HelperGroup.tox_group_by_groupid__wr
 import static com.zoffcc.applications.trifa.MainActivity.MainFrame;
 import static com.zoffcc.applications.trifa.MainActivity.MessagePanelGroups;
 import static com.zoffcc.applications.trifa.MainActivity.PREF__X_battery_saving_mode;
+import static com.zoffcc.applications.trifa.MainActivity.PREF__conference_show_system_messages;
 import static com.zoffcc.applications.trifa.MainActivity.TTF_FONT_FAMILY_BORDER_TITLE;
 import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.lookup_peer_listnum_pubkey;
@@ -465,10 +466,22 @@ public class GroupMessageListFragmentJ extends JPanel
                         later_messages = true;
                         older_messages = true;
 
-                        int count_messages = orma.selectFromGroupMessage().
-                                group_identifierEq(current_group_id.toLowerCase()).
-                                orderBySent_timestampAsc().
-                                count();
+                        int count_messages;
+                        if (PREF__conference_show_system_messages)
+                        {
+                            count_messages = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    orderBySent_timestampAsc().
+                                    count();
+                        }
+                        else
+                        {
+                            count_messages = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    tox_group_peer_pubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                    orderBySent_timestampAsc().
+                                    count();
+                        }
 
                         int offset = 0;
                         int rowcount = MESSAGE_PAGING_NUM_MSGS_PER_PAGE;
@@ -506,18 +519,42 @@ public class GroupMessageListFragmentJ extends JPanel
                             older_messages = false;
                         }
 
-                        ml = orma.selectFromGroupMessage().
-                                group_identifierEq(current_group_id.toLowerCase()).
-                                orderBySent_timestampAsc().
-                                limit(rowcount, offset).
-                                toList();
+                        if (PREF__conference_show_system_messages)
+                        {
+                            ml = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    orderBySent_timestampAsc().
+                                    limit(rowcount, offset).
+                                    toList();
+                        }
+                        else
+                        {
+                            ml = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    tox_group_peer_pubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                    orderBySent_timestampAsc().
+                                    limit(rowcount, offset).
+                                    toList();
+                        }
                     }
                     else
                     {
-                        ml = orma.selectFromGroupMessage().
-                                group_identifierEq(current_group_id.toLowerCase()).
-                                orderBySent_timestampAsc().
-                                toList();
+
+                        if (PREF__conference_show_system_messages)
+                        {
+                            ml = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    orderBySent_timestampAsc().
+                                    toList();
+                        }
+                        else
+                        {
+                            ml = orma.selectFromGroupMessage().
+                                    group_identifierEq(current_group_id.toLowerCase()).
+                                    tox_group_peer_pubkeyNotEq(TRIFA_SYSTEM_MESSAGE_PEER_PUBKEY).
+                                    orderBySent_timestampAsc().
+                                    toList();
+                        }
                     }
 
                     if (ml != null)

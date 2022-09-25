@@ -125,7 +125,6 @@ import static com.zoffcc.applications.trifa.HelperConference.get_last_conference
 import static com.zoffcc.applications.trifa.HelperFiletransfer.check_auto_accept_incoming_filetransfer;
 import static com.zoffcc.applications.trifa.HelperFiletransfer.get_incoming_filetransfer_local_filename;
 import static com.zoffcc.applications.trifa.HelperFriend.get_friend_msgv3_capability;
-import static com.zoffcc.applications.trifa.HelperFriend.get_friend_name_from_num;
 import static com.zoffcc.applications.trifa.HelperFriend.main_get_friend;
 import static com.zoffcc.applications.trifa.HelperFriend.send_friend_msg_receipt_v2_wrapper;
 import static com.zoffcc.applications.trifa.HelperFriend.tox_friend_by_public_key__wrapper;
@@ -330,6 +329,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static boolean PREF__force_gc = false;
     static boolean PREF__high_quality_audio = false;
     static boolean PREF__faster_filetransfers = false;
+    static boolean PREF__conference_show_system_messages = false;
 
     static Random global_random = null;
 
@@ -1186,6 +1186,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             PREF__show_image_thumbnails = true;
         }
+        Log.i(TAG, "load_prefs:PREF__show_image_thumbnails=" + PREF__show_image_thumbnails);
 
         if (get_g_opts("PREF__high_quality_audio") != null)
         {
@@ -1232,7 +1233,21 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             PREF__faster_filetransfers = false;
         }
 
-        Log.i(TAG, "load_prefs:PREF__show_image_thumbnails=" + PREF__show_image_thumbnails);
+        if (get_g_opts("PREF__conference_show_system_messages") != null)
+        {
+            if (get_g_opts("PREF__conference_show_system_messages").equals("true"))
+            {
+                PREF__conference_show_system_messages = true;
+            }
+            else
+            {
+                PREF__conference_show_system_messages = false;
+            }
+        }
+        else
+        {
+            PREF__conference_show_system_messages = false;
+        }
     }
 
     static void set_message_panel(int i)
