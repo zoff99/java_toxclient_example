@@ -55,6 +55,49 @@ jobs:
             cat trifa.log
             cat trifa.log | grep "MainActivity:MyToxID:"
 
+  macos12-test-run:
+    runs-on: macos-12
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Display the OS Version1
+      run: sw_vers -productVersion
+
+    - name: Display the OS Version2
+      run: system_profiler SPSoftwareDataType
+
+    - name: display java version
+      run:  |
+            type java
+            java -version || exit 0
+            /usr/libexec/java_home -V
+            /usr/libexec/java_home -v 11
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            java -version
+            $JAVA_HOME/bin/java -version
+            $JAVA_HOME/bin/javac -version
+
+    - name: java compile
+      run:  |
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            export PATH="$JAVA_HOME/bin:$PATH"
+            java -version
+            javac -version
+            cd trifa_desktop/app/src/main/java/
+            ./do_compile.sh
+
+    - name: java run
+      run:  |
+            export JAVA_HOME=$(/usr/libexec/java_home -v11)
+            export PATH="$JAVA_HOME/bin:$PATH"
+            java -version
+            javac -version
+            cd trifa_desktop/app/src/main/java/
+            ./do_run.sh > trifa.log 2>&1 &
+            sleep 80
+            cat trifa.log
+            cat trifa.log | grep "MainActivity:MyToxID:"
+
   windows-test-run:
     runs-on: windows-latest
     steps:
