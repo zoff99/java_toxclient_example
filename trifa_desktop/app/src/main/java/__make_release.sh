@@ -8,6 +8,7 @@ export _HOME_
 echo $_HOME_
 cd $_HOME_
 
+mkdir -p releases/
 mkdir -p release/
 cd release/ && rm -Rf *
 
