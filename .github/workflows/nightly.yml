@@ -29,8 +29,8 @@ jobs:
       - name: Move nightly tag to head for nightly release
         run: git tag -f nightly && git push origin nightly -f
 
-  build-night-artifact:
-    name: Appimage
+  build-nightly-artifact:
+    name: Nightly Artifact Build
     runs-on: ubuntu-latest
     needs: [update-nightly-tag]
     if: |
@@ -41,6 +41,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
+      - name: show java version
+        run:  type -a java;java -version
       - name: Run build
         run:  id;pwd;ls -al;./trifa_desktop/app/src/main/java/do_compile.sh
       - name: make release file
