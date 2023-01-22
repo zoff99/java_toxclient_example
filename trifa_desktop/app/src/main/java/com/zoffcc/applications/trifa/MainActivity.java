@@ -4626,6 +4626,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         }
     }
 
+    static void android_tox_callback_group_connection_status_cb_method(long group_number, int a_TOX_GROUP_CONNECTION_STATUS)
+    {
+        Log.i(TAG,"group_connection_status_cb:group_number=" + group_number + " status=" + a_TOX_GROUP_CONNECTION_STATUS);
+    }
+
     static void android_tox_callback_group_topic_cb_method(long group_number, long peer_id, String topic, long topic_length)
     {
         // Log.i(TAG, "group_topic_cb: groupnum=" + group_number + " peer=" + peer_id + " topic=" + topic);
