@@ -225,6 +225,7 @@ import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_DATA;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_FILE_KIND.TOX_FILE_KIND_FTV2;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_HASH_LENGTH;
+import static com.zoffcc.applications.trifa.ToxVars.TOX_MAX_NGC_FILE_AND_HEADER_SIZE;
 import static com.zoffcc.applications.trifa.ToxVars.TOX_PUBLIC_KEY_SIZE;
 import static com.zoffcc.applications.trifa.TrifaToxService.orma;
 import static com.zoffcc.applications.trifa.TrifaToxService.resend_old_messages;
@@ -2002,7 +2003,13 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native long tox_group_self_get_peer_id(long group_number);
 
+    public static native int tox_group_self_set_name(long group_number, String my_peer_name);
+
     public static native String tox_group_self_get_public_key(long group_number);
+
+    public static native int tox_group_self_get_role(long group_number);
+
+    public static native int tox_group_peer_get_role(long group_number, long peer_id);
 
     public static native int tox_group_get_chat_id(long group_number, ByteBuffer chat_id_buffer);
 
@@ -2022,7 +2029,13 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native int tox_group_get_privacy_state(long group_number);
 
+    public static native int tox_group_mod_kick_peer(long group_number, long peer_id);
+
+    public static native int tox_group_mod_set_role(long group_number, long peer_id, int a_Tox_Group_Role);
+
     public static native String tox_group_peer_get_public_key(long group_number, long peer_id);
+
+    public static native long tox_group_peer_by_public_key(long group_number, String peer_public_key_string);
 
     public static native String tox_group_peer_get_name(long group_number, long peer_id);
 
@@ -2037,6 +2050,10 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     public static native int tox_group_is_connected(long group_number);
 
     public static native int tox_group_reconnect(long group_number);
+
+    public static native int tox_group_send_custom_packet(long group_number, int lossless, byte[] data, int data_length);
+
+    public static native int tox_group_send_custom_private_packet(long group_number, long peer_id, int lossless, byte[] data, int data_length);
 
     /**
      * Send a text chat message to the group.
@@ -2073,6 +2090,25 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
      * @return true on success.
      */
     public static native int tox_group_send_private_message(long group_number, long peer_id, int a_TOX_MESSAGE_TYPE, String message);
+
+    /**
+     * Send a text chat message to the specified peer in the specified group.
+     * <p>
+     * This function creates a group private message packet and pushes it into the send
+     * queue.
+     * <p>
+     * The message length may not exceed TOX_MAX_MESSAGE_LENGTH. Larger messages
+     * must be split by the client and sent as separate messages. Other clients can
+     * then reassemble the fragments. Messages may not be empty.
+     *
+     * @param group_number           The group number of the group the message is intended for.
+     * @param peer_public_key_string A memory region of at least TOX_PUBLIC_KEY_SIZE bytes of the peer the
+     *                               message is intended for. If this parameter is NULL, this function will return false.
+     * @param message                A non-NULL pointer to the first element of a byte array
+     *                               containing the message text.
+     * @return 0 on success. return < 0 on error.
+     */
+    public static native int tox_group_send_private_message_by_peerpubkey(long group_number, String peer_public_key_string, int a_TOX_MESSAGE_TYPE, String message);
 
     /**
      * Accept an invite to a group chat that the client previously received from a friend. The invite
@@ -4643,6 +4679,146 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         update_group_in_friendlist(group_identifier);
         update_group_in_groupmessagelist(group_identifier);
     }
+
+    static void android_tox_callback_group_custom_packet_cb_method(long group_number, long peer_id, final byte[] data, long length)
+    {
+        try
+        {
+            //Log.i(TAG,
+            //      "group_custom_packet_cb:group_number=" + group_number + " peer_id=" + peer_id + " length=" + length +
+            //      " data=" + HelperGeneric.bytesToHex(data, 0, (int) length));
+        }
+        catch(Exception e)
+        {
+        }
+
+        // check for correct signature of packets
+        final long header = 6 + 1 + 1 + 32 + 4 + 255;
+        if ((length > TOX_MAX_NGC_FILE_AND_HEADER_SIZE) || (length < (header + 1)))
+        {
+            // Log.i(TAG, "group_custom_packet_cb: data length has wrong size: " + length);
+            return;
+        }
+
+        // @formatter:off
+            /*
+            | what      | Length in bytes| Contents                                           |
+            |------     |--------        |------------------                                  |
+            | magic     |       6        |  0x667788113435                                    |
+            | version   |       1        |  0x01                                              |
+            | pkt id    |       1        |  0x11
+             */
+        // @formatter:on
+
+        if (
+                (data[0] == (byte)0x66) &&
+                (data[1] == (byte)0x77) &&
+                (data[2] == (byte)0x88) &&
+                (data[3] == (byte)0x11) &&
+                (data[4] == (byte)0x34) &&
+                (data[5] == (byte)0x35))
+        {
+            if ((data[6] == (byte)0x1) && (data[7] == (byte)0x11))
+            {
+                // handle_incoming_group_file(group_number, peer_id, data, length, header);
+            }
+            else
+            {
+                Log.i(TAG, "group_custom_packet_cb:wrong signature 2");
+            }
+        }
+        else
+        {
+            Log.i(TAG, "group_custom_packet_cb:wrong signature 1");
+        }
+    }
+
+    static void android_tox_callback_group_custom_private_packet_cb_method(long group_number, long peer_id, final byte[] data, long length)
+    {
+        try
+        {
+            //Log.i(TAG,
+            //      "group_custom_private_packet_cb:group_number=" + group_number + " peer_id=" + peer_id + " length=" + length +
+            //      " data=" + HelperGeneric.bytesToHex(data, 0, (int) length));
+        }
+        catch(Exception e)
+        {
+        }
+
+        try
+        {
+            long res = tox_group_self_get_peer_id(group_number);
+            if (res == peer_id)
+            {
+                // HINT: ignore own packets
+                Log.i(TAG, "group_custom_private_packet_cb:gn=" + group_number + " peerid=" + peer_id + " ignoring own packet");
+                return;
+            }
+        }
+        catch(Exception e)
+        {
+        }
+
+        // check for correct signature of packets
+        final long header = 6 + 1 + 1;
+        if ((length > TOX_MAX_NGC_FILE_AND_HEADER_SIZE) || (length < header))
+        {
+            Log.i(TAG, "group_custom_private_packet_cb: data length has wrong size: " + length);
+            return;
+        }
+
+        // @formatter:off
+            /*
+            | what      | Length in bytes| Contents                                           |
+            |------     |--------        |------------------                                  |
+            | magic     |       6        |  0x667788113435                                    |
+            | version   |       1        |  0x01                                              |
+             */
+        // @formatter:on
+
+        if (
+                (data[0] == (byte)0x66) &&
+                (data[1] == (byte)0x77) &&
+                (data[2] == (byte)0x88) &&
+                (data[3] == (byte)0x11) &&
+                (data[4] == (byte)0x34) &&
+                (data[5] == (byte)0x35))
+        {
+            if ((data[6] == (byte)0x1) && (data[7] == (byte)0x1))
+            {
+                Log.i(TAG, "group_custom_private_packet_cb: got ngch_request");
+                int privacy_state = tox_group_get_privacy_state(group_number);
+                if (privacy_state == ToxVars.TOX_GROUP_PRIVACY_STATE.TOX_GROUP_PRIVACY_STATE_PUBLIC.value)
+                {
+                    // sync_group_message_history(group_number, peer_id);
+                }
+                else
+                {
+                    Log.i(TAG, "group_custom_private_packet_cb: only sync history for public groups!");
+                }
+            }
+            else if ((data[6] == (byte)0x1) && (data[7] == (byte)0x2))
+            {
+                final int header_syncmsg = 6 + 1 + 1 + 4 + 32 + 4 + 25;
+                if (length >= (header_syncmsg + 1))
+                {
+                    Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncmsg");
+                    // handle_incoming_sync_group_message(group_number, peer_id, data, length);
+                }
+            }
+            else if ((data[6] == (byte)0x1) && (data[7] == (byte)0x3))
+            {
+                Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile:xxxxxxx");
+                final int header_syncfile = 6 + 1 + 1 + 32 + 32 + 4 + 25 + 255;
+                if (length >= (header_syncfile + 1))
+                {
+                    Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile");
+                    // handle_incoming_sync_group_file(group_number, peer_id, data, length);
+                }
+            }
+        }
+    }
+
 
     // -------- called by native new Group methods --------
     // -------- called by native new Group methods --------
