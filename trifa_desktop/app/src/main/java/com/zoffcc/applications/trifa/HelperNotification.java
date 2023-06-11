@@ -81,11 +81,14 @@ public class HelperNotification
         {
             if (SystemTray.isSupported())
             {
-                SystemTray tray = SystemTray.getSystemTray();
-                Image image = Toolkit.getDefaultToolkit().getImage("trifa_icon.png");
-                trayIcon = new TrayIcon(image, "TRIfA");
-                trayIcon.setImageAutoSize(true);
-                tray.add(trayIcon);
+                if (OperatingSystem.getCurrent() != OperatingSystem.LINUX)
+                {
+                    SystemTray tray = SystemTray.getSystemTray();
+                    Image image = Toolkit.getDefaultToolkit().getImage("trifa_icon.png");
+                    trayIcon = new TrayIcon(image, "TRIfA");
+                    trayIcon.setImageAutoSize(true);
+                    tray.add(trayIcon);
+                }
             }
         }
         catch (Exception e)
