@@ -1567,6 +1567,14 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
         Log.i(TAG, "loaded:c-toxcore:v" + tox_version_major() + "." + tox_version_minor() + "." + tox_version_patch());
         Log.i(TAG, "loaded:jni-c-toxcore:v" + jnictoxcore_version());
+        if ((OperatingSystem.getCurrent() == OperatingSystem.LINUX)
+            || (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS))
+        {
+            // TODO: enable for macos and raspi when jni lib for those are updated
+            Log.i(TAG, "loaded:libavutil:v" + libavutil_version());
+            Log.i(TAG, "loaded:libopus:" + libopus_version());
+            Log.i(TAG, "loaded:libsodium:" + libsodium_version());
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -1814,6 +1822,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     public static native long tox_version_patch();
 
     public static native String jnictoxcore_version();
+
+    public static native String libavutil_version();
+
+    public static native String libopus_version();
+
+    public static native String libsodium_version();
 
     public static native long tox_max_filename_length();
 
