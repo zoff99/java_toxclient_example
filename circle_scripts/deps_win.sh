@@ -39,12 +39,13 @@ if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
-FFMPEG_VERSION=4.1.3
-FFMPEG_FILENAME="ffmpeg-$FFMPEG_VERSION.tar.xz"
-rm -f ffmpeg-*.tar.xz
-wget $WGET_OPTIONS "https://www.ffmpeg.org/releases/$FFMPEG_FILENAME" -O "$FFMPEG_FILENAME"
-tar -xf "$FFMPEG_FILENAME"
-cd ffmpeg-4.1.3/
+FFMPEG_VERSION=n6.0
+FFMPEG_FILENAME="$FFMPEG_VERSION.tar.gz"
+rm -f "ffmpeg"*.tar.*
+wget $WGET_OPTIONS "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/$FFMPEG_FILENAME" -O "ffmpeg_""$FFMPEG_FILENAME"
+tar -xf "ffmpeg_""$FFMPEG_FILENAME"
+rm -f "ffmpeg"*.tar.*
+cd *mpeg*/
 
   ./configure --arch="$ARCH" \
               --enable-gpl \
@@ -65,7 +66,6 @@ cd ffmpeg-4.1.3/
               --disable-doc \
               --disable-sdl2 \
               --disable-avfilter \
-              --disable-avresample \
               --disable-filters \
               --disable-iconv \
               --disable-network \
@@ -76,7 +76,6 @@ cd ffmpeg-4.1.3/
               --disable-dct \
               --disable-dwt \
               --disable-lsp \
-              --disable-lzo \
               --disable-mdct \
               --disable-rdft \
               --disable-fft \
@@ -96,6 +95,9 @@ cd ffmpeg-4.1.3/
               --enable-parser=h264 \
               --enable-decoder=h264 || exit 1
 
+#              --disable-lzo \
+#              --disable-avresample \
+
   make -j || exit 1
   make install
 
@@ -110,13 +112,15 @@ if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
-OPUS_VERSION=1.3.1
-OPUS_FILENAME="opus-$OPUS_VERSION.tar.gz"
-rm -f opus-*.tar.gz
-wget $WGET_OPTIONS "https://archive.mozilla.org/pub/opus/$OPUS_FILENAME" -O "$OPUS_FILENAME"
-tar -xf "$OPUS_FILENAME"
+OPUS_VERSION=v1.4
+OPUS_FILENAME="$OPUS_VERSION.tar.gz"
+rm -f "opus"*.tar.gz
+wget $WGET_OPTIONS "https://github.com/xiph/opus/archive/refs/tags/$OPUS_FILENAME" -O "opus_""$OPUS_FILENAME"
+tar -xf "opus_""$OPUS_FILENAME"
+rm -f "opus"*.tar.gz
 cd opus*/
 
+  ./autogen.sh
   CFLAGS="-O2 -g0" ./configure --host="$ARCH-w64-mingw32" \
                                --prefix="$_INST_" \
                                --disable-shared \
