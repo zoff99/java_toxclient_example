@@ -46,3 +46,4 @@ cp -a \
 
 cd release && zip -r ../releases/trifa_desktop_1.0.xx.zip *
 
+
