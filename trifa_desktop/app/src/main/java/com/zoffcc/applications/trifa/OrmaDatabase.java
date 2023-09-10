@@ -121,6 +121,38 @@ public class OrmaDatabase
         return results;
     }
 
+    public static String get_current_sqlite_version()
+    {
+        String ret = "unknown";
+
+        try
+        {
+            final Statement statement = sqldb.createStatement();
+            final ResultSet rs = statement.executeQuery("SELECT sqlite_version()");
+            if (rs.next())
+            {
+                ret = rs.getString(1);
+            }
+
+            try
+            {
+                statement.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            return ret;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
     public static int get_current_db_version()
     {
         int ret = 0;

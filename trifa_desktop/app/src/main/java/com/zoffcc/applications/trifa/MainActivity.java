@@ -163,6 +163,7 @@ import static com.zoffcc.applications.trifa.MessageListFragmentJ.setFriendName;
 import static com.zoffcc.applications.trifa.MessageListFragmentJ.typing_flag_thread;
 import static com.zoffcc.applications.trifa.OrmaDatabase.create_db;
 import static com.zoffcc.applications.trifa.OrmaDatabase.get_current_db_version;
+import static com.zoffcc.applications.trifa.OrmaDatabase.get_current_sqlite_version;
 import static com.zoffcc.applications.trifa.OrmaDatabase.update_db;
 import static com.zoffcc.applications.trifa.Screenshot.getDisplayInfo;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.AVATAR_INCOMING_MAX_BYTE_SIZE;
@@ -1634,6 +1635,8 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             e.printStackTrace();
         }
+
+        Log.i(TAG, "loaded:sqlite:" + get_current_sqlite_version());
 
         // --------------- CREATE THE DATABASE ---------------
         // --------------- CREATE THE DATABASE ---------------
