@@ -4629,7 +4629,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     static void android_tox_callback_group_peer_join_cb_method(long group_number, long peer_id)
     {
-        Log.i(TAG, "group_peer_join_cb:group_number=" + group_number + " peer_id=" + peer_id);
+        // Log.i(TAG, "group_peer_join_cb:group_number=" + group_number + " peer_id=" + peer_id);
 
         final String temp_group_identifier = tox_group_by_groupnum__wrapper(group_number);
         update_group_in_friendlist(temp_group_identifier);
@@ -4803,7 +4803,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         {
             if ((data[6] == (byte)0x1) && (data[7] == (byte)0x1))
             {
-                Log.i(TAG, "group_custom_private_packet_cb: got ngch_request");
+                // Log.i(TAG, "group_custom_private_packet_cb: got ngch_request");
                 int privacy_state = tox_group_get_privacy_state(group_number);
                 if (privacy_state == ToxVars.TOX_GROUP_PRIVACY_STATE.TOX_GROUP_PRIVACY_STATE_PUBLIC.value)
                 {
@@ -4819,17 +4819,17 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
                 final int header_syncmsg = 6 + 1 + 1 + 4 + 32 + 4 + 25;
                 if (length >= (header_syncmsg + 1))
                 {
-                    Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncmsg");
+                    // Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncmsg");
                     // handle_incoming_sync_group_message(group_number, peer_id, data, length);
                 }
             }
             else if ((data[6] == (byte)0x1) && (data[7] == (byte)0x3))
             {
-                Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile:xxxxxxx");
+                // Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile:xxxxxxx");
                 final int header_syncfile = 6 + 1 + 1 + 32 + 32 + 4 + 25 + 255;
                 if (length >= (header_syncfile + 1))
                 {
-                    Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile");
+                    // Log.i(TAG, "group_custom_private_packet_cb: got ngch_syncfile");
                     // handle_incoming_sync_group_file(group_number, peer_id, data, length);
                 }
             }
