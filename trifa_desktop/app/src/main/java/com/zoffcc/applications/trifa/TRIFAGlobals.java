@@ -60,6 +60,14 @@ public class TRIFAGlobals
     final static int NORMAL_GLOBAL_AUDIO_BITRATE = 16; // 64;
     final static int LOWER_GLOBAL_AUDIO_BITRATE = 8;
 
+    final static int HIGHER_NGC_VIDEO_BITRATE = 400;
+    final static int LOWER_NGC_VIDEO_BITRATE = 90;
+
+    final static int NGC_AUDIO_BITRATE = 8000;
+
+    final static int HIGHER_NGC_VIDEO_QUANTIZER = 38; // higher here means "higer video quality" which is a lower q value!
+    final static int LOWER_NGC_VIDEO_QUANTIZER = 51;
+
     static int GLOBAL_VIDEO_BITRATE = NORMAL_GLOBAL_VIDEO_BITRATE; // this works nice: 2500;
     static int GLOBAL_AUDIO_BITRATE = NORMAL_GLOBAL_AUDIO_BITRATE; // allowed values: (xx>=6) && (xx<=510)
 

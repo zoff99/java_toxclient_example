@@ -64,7 +64,6 @@ import static com.zoffcc.applications.trifa.MainActivity.lo;
 import static com.zoffcc.applications.trifa.MainActivity.lookup_peer_listnum_pubkey;
 import static com.zoffcc.applications.trifa.MainActivity.messageInputTextField;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_name;
-import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_offline_peerlist;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_get_peerlist;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_offline_peer_count;
 import static com.zoffcc.applications.trifa.MainActivity.tox_group_peer_count;
@@ -808,7 +807,7 @@ public class GroupMessageListFragmentJ extends JPanel
 
         if (offline_num_peers > 0)
         {
-            long[] offline_peers = tox_group_get_offline_peerlist(conference_num);
+            long[] offline_peers = null;
             if (offline_peers != null)
             {
                 long i = 0;

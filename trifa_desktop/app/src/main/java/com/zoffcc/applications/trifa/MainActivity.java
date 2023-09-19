@@ -178,7 +178,10 @@ import static com.zoffcc.applications.trifa.TRIFAGlobals.GLOBAL_VIDEO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.GROUP_ID_LENGTH;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.HIGHER_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.IMAGE_THUMBNAIL_PLACEHOLDER;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.LOWER_NGC_VIDEO_BITRATE;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.LOWER_NGC_VIDEO_QUANTIZER;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.MESSAGE_SYNC_DOUBLE_INTERVAL_SECS;
+import static com.zoffcc.applications.trifa.TRIFAGlobals.NGC_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.NORMAL_GLOBAL_AUDIO_BITRATE;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_INCOMING;
 import static com.zoffcc.applications.trifa.TRIFAGlobals.TRIFA_FT_DIRECTION.TRIFA_FT_DIRECTION_OUTGOING;
@@ -332,6 +335,12 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     static boolean PREF__high_quality_audio = false;
     static boolean PREF__faster_filetransfers = false;
     static boolean PREF__conference_show_system_messages = false;
+    static int PREF__ngc_video_bitrate = LOWER_NGC_VIDEO_BITRATE; // ~600 kbits/s -> ~60 kbytes/s
+    static int PREF__ngc_video_frame_delta_ms = 120; // 120 ms -> 8.3 fps
+    static int PREF__ngc_video_max_quantizer = LOWER_NGC_VIDEO_QUANTIZER; // 47 -> default, 51 -> lowest quality, 30 -> very high quality and lots of bandwidth!
+    static int PREF__ngc_audio_bitrate = NGC_AUDIO_BITRATE;
+    static int PREF__ngc_audio_samplerate = 48000;
+    static int PREF__ngc_audio_channels = 1;
 
     static Random global_random = null;
 
@@ -1670,7 +1679,11 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
             app_files_directory = "." + File.separator;
             Log.i(TAG, "init:PREF__udp_enabled=" + PREF__udp_enabled);
             init(app_files_directory, PREF__udp_enabled, PREF__local_discovery_enabled, PREF__orbot_enabled_to_int,
-                 ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only);
+                 ORBOT_PROXY_HOST, ORBOT_PROXY_PORT, password_hash, PREF__ipv6_enabled, PREF__force_udp_only,
+                 PREF__ngc_video_bitrate,
+                 PREF__ngc_video_max_quantizer,
+                 PREF__ngc_audio_bitrate, PREF__ngc_audio_samplerate,
+                 PREF__ngc_audio_channels);
 
             tox_service_fg.tox_thread_start_fg();
         }
@@ -1776,7 +1789,7 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
     // -------- native methods --------
     // -------- native methods --------
     // -------- native methods --------
-    public static native void init(String data_dir, int udp_enabled, int local_discovery_enabled, int orbot_enabled, String orbot_host, long orbot_port, String tox_encrypt_passphrase_hash, int enable_ipv6, int force_udp_only_mode);
+    public static native void init(String data_dir, int udp_enabled, int local_discovery_enabled, int orbot_enabled, String orbot_host, long orbot_port, String tox_encrypt_passphrase_hash, int enable_ipv6, int force_udp_only_mode, int ngc_video_bitrate, int max_quantizer, int ngc_audio_bitrate, int ngc_audio_sampling_rate, int ngc_audio_channel_count);
 
     public native String getNativeLibAPI();
 
@@ -2036,11 +2049,13 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
 
     public static native long tox_group_peer_count(long group_number);
 
+    public static native int tox_group_get_peer_limit(long group_number);
+
+    public static native int tox_group_founder_set_peer_limit(long group_number, int max_peers);
+
     public static native long tox_group_offline_peer_count(long group_number);
 
     public static native long[] tox_group_get_peerlist(long group_number);
-
-    public static native long[] tox_group_get_offline_peerlist(long group_number);
 
     public static native long tox_group_by_chat_id(ByteBuffer chat_id_buffer);
 
@@ -4676,6 +4691,37 @@ public class MainActivity extends JFrame implements WindowListener, WindowFocusL
         if (have_own_relay())
         {
             invite_to_group_own_relay(group_number);
+        }
+    }
+
+    static void android_tox_callback_group_moderation_cb_method(long group_number, long source_peer_id, long target_peer_id, int a_Tox_Group_Mod_Event)
+    {
+        try
+        {
+            if ((source_peer_id == UINT32_MAX_JAVA) || (target_peer_id == UINT32_MAX_JAVA))
+            {
+                // Log.i(TAG, "group_moderation_cb:ERROR:group_number=" + group_number + " speer=" + source_peer_id + " tpeer=" + target_peer_id + " a_Tox_Group_Mod_Event=" + a_Tox_Group_Mod_Event);
+                return;
+            }
+
+            final String group_identifier = tox_group_by_groupnum__wrapper(group_number);
+            Log.i(TAG, "group_moderation_cb:group_number=" + group_number + " group_identifier=" + group_identifier + " speer=" + source_peer_id + " tpeer=" + target_peer_id + " a_Tox_Group_Mod_Event=" + a_Tox_Group_Mod_Event);
+
+            String group_peer_pubkey = null;
+            try
+            {
+                group_peer_pubkey = tox_group_peer_get_public_key(group_number, target_peer_id);
+            }
+            catch(Exception e)
+            {
+                return;
+            }
+
+            update_group_in_groupmessagelist(group_identifier);
+            update_savedata_file_wrapper();
+        }
+        catch(Exception e)
+        {
         }
     }
 
