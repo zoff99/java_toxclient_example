@@ -147,7 +147,7 @@ if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
-SODIUM_VERSION=1.0.18
+SODIUM_VERSION=1.0.19
 SODIUM_FILENAME="libsodium-$SODIUM_VERSION.tar.gz"
 rm -f libsodium-*.tar.gz
 wget $WGET_OPTIONS "https://download.libsodium.org/libsodium/releases/$SODIUM_FILENAME" -O "$SODIUM_FILENAME"
@@ -174,7 +174,7 @@ if [ 1 == 1 ]; then
 
 cd "$_SRC_"
 
-VPX_VERSION=v1.8.0
+VPX_VERSION=v1.13.1
 VPX_FILENAME="libvpx-$VPX_VERSION.tar.gz"
 rm -f libvpx-*.tar.gz
 wget $WGET_OPTIONS "https://github.com/webmproject/libvpx/archive/$VPX_VERSION.tar.gz" -O "$VPX_FILENAME"
@@ -216,7 +216,7 @@ cd "$_SRC_"
     rm -Rf nasm
     git clone http://repo.or.cz/nasm.git
     cd nasm/
-    git checkout nasm-2.13.03
+    git checkout nasm-2.16.01
 
     ./autogen.sh
     ./configure --prefix=/
@@ -245,7 +245,7 @@ if [ 1 == 1 ]; then
 cd "$_SRC_"
 
 git clone https://code.videolan.org/videolan/x264.git
-_X264_VERSION_="1771b556ee45207f8711744ccbd5d42a3949b14c"
+_X264_VERSION_="baee400fa9ced6f5481a728138fed6e867b0ff7f"
 cd x264/
 
   git checkout "$_X264_VERSION_"

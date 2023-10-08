@@ -9,7 +9,7 @@ echo "$_HOME_"
 cd "$_HOME_" || exit
 
 
-build_for='ubuntu:16.04
+build_for='ubuntu:20.04
 '
 
 # ubuntu:18.04
