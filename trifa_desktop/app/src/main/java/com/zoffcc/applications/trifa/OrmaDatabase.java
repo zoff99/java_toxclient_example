@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Random;
 
 import static com.zoffcc.applications.trifa.HelperOSFile.sha256sum_of_file;
 import static com.zoffcc.applications.trifa.MainActivity.sqldb;

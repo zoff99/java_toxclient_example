@@ -176,21 +176,7 @@ public class AudioSelectInBox extends JComboBox implements ItemListener, LineLis
                                                     global_audio_out_vu = 0;
                                                 }
                                             }
-
-                                            //Log.i(TAG, "set_audio_in_bar_level:" + global_audio_out_vu_);
                                             set_audio_in_bar_level((int) global_audio_out_vu);
-
-                                    /*
-                                    if (sample_count > 1)
-                                    {
-                                        for (int i = 0; i < sample_count; i = i + 2)
-                                        {
-                                            short s = (short) ((data[i] & 0xff) | (data[i + 1] << 8));
-                                            pcm_wave_rec.add_pcm((int) s);
-                                        }
-                                    }
-                                    */
-
                                         }
                                     };
                                     t_audio_bar_set.start();
