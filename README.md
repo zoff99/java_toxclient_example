@@ -1,3 +1,12 @@
+# Please switch to the more modern<br>and still well maintained [TRIfA Material](https://github.com/Zoxcore/trifa_material)
+
+<img src="https://github.com/Zoxcore/trifa_material/releases/download/nightly/screenshot-macos.png" width="90%">
+
+
+[TRIfA Material](https://github.com/Zoxcore/trifa_material)
+
+<br><br><br><br><br><br><br><br><br>
+
 # TRIfA Desktop&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Tux.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Raspberry_Pi_Logo.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Windows_logo_-_2012.svg" height="45"></a>&nbsp;<a href="https://github.com/zoff99/java_toxclient_example/releases/latest/download/trifa_desktop.zip"><img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/Apple_logo_black.svg" height="45"></a>
 
 <img src="https://raw.githubusercontent.com/zoff99/java_toxclient_example/master/doc/trifa_desktop_macos10.png" width="90%">
